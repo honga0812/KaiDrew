@@ -18,7 +18,7 @@
       touch-action: none;
     }
     .drawer-panel {
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease;
     }
     .drawer-closed {
       transform: translateX(-110%);
@@ -40,24 +40,28 @@
       background: radial-gradient(circle at 30% 30%, #ffffff 0%, #f7f7f4 70%, #ecebe4 100%);
       box-shadow: inset 0 2px 6px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.25);
     }
-    .color-swatch-glow:hover {
-      transform: translateY(-2px) scale(1.05);
-      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
-    }
     .active-swatch-ring {
       box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px #f59e0b;
+    }
+    /* 笔刷粗细指示圆圈动效 */
+    #brushSizePreviewOverlay {
+      transition: opacity 0.2s ease, transform 0.05s ease;
     }
   </style>
 </head>
 <body class="text-white antialiased h-screen flex flex-col p-2 select-none relative overflow-hidden bg-stone-950">
 
-  <!-- 顶部超纯净极简导航条 (纯图标，最大化画布空间) -->
+  <!-- ==================== 顶部超纯净导航条 (左上角画风选择，无底部遮挡) ==================== -->
   <header class="bg-stone-900/90 backdrop-blur-md border border-stone-700/60 rounded-2xl px-3 py-1.5 flex items-center justify-between gap-2 shadow-lg shrink-0 z-30">
-    <!-- 左侧：返回、撤销、重做、清屏 -->
+    <!-- 左侧：左上角画风切换大按钮 (点选后动态跳出选择页) + 撤销/重做/清屏 -->
     <div class="flex items-center gap-1.5">
-      <button id="btnBack" class="p-2 rounded-xl bg-stone-800/80 hover:bg-stone-700 active:scale-95 transition" title="返回画册">
-        <span class="text-base">◀</span>
+      <!-- 左上角动态画风选择按钮 -->
+      <button id="btnOpenStyleSelector" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/25 to-amber-600/30 border-2 border-amber-500 hover:border-amber-400 text-amber-300 font-bold text-xs flex items-center gap-2 shadow-lg shadow-amber-500/15 active:scale-95 transition" title="点选展开画风与画具选择">
+        <span id="currentMediumIcon" class="text-base">🖌️</span>
+        <span id="currentMediumName">水彩画室</span>
+        <span class="text-[10px] text-amber-400/80">▼</span>
       </button>
+
       <div class="h-4 w-px bg-stone-700 mx-0.5"></div>
       <button id="btnUndo" class="p-2 rounded-xl bg-stone-800/80 hover:bg-stone-700 active:scale-95 transition opacity-50 cursor-not-allowed" title="撤销 (Command+Z)">
         <span class="text-base">↩️</span>
@@ -70,40 +74,62 @@
       </button>
     </div>
 
-    <!-- 中间：当前工具纯视觉提示 -->
-    <div class="flex items-center gap-2">
-      <div id="currentSwatchCircle" class="w-7 h-7 rounded-full border-2 border-white shadow-md transition-transform" style="background: rgb(20, 85, 210);" title="当前画笔颜色"></div>
-      <button id="btnWashBucket" class="px-2.5 py-1 rounded-xl bg-sky-500/20 border border-sky-500/40 hover:bg-sky-500/30 active:scale-95 transition flex items-center gap-1 text-xs font-bold text-sky-400" title="点击洗笔桶：稀释画笔颜色">
-        <span id="bucketIcon" class="text-lg">🪣</span>
-        <span id="bucketDiluteBadge" class="text-[11px] font-mono px-1.5 py-0.2 rounded bg-sky-500 text-white">100%</span>
+    <!-- 中间：当前颜色、洗笔桶、平滑 1~120px 粗细滑块 -->
+    <div class="flex items-center gap-2 flex-1 max-w-md justify-center">
+      <div id="currentSwatchCircle" class="w-7 h-7 rounded-full border-2 border-white shadow-md transition-transform shrink-0" style="background: rgb(20, 85, 210);" title="当前画笔颜色 (点击快速吸色)"></div>
+      <button id="btnWashBucket" class="px-2 py-1 rounded-xl bg-sky-500/20 border border-sky-500/40 hover:bg-sky-500/30 active:scale-95 transition flex items-center gap-1 text-xs font-bold text-sky-400 shrink-0" title="点击洗笔桶：稀释画笔颜色">
+        <span id="bucketIcon" class="text-base">🪣</span>
+        <span id="bucketDiluteBadge" class="text-[11px] font-mono px-1 py-0.2 rounded bg-sky-500 text-white">100%</span>
       </button>
+
       <div class="h-4 w-px bg-stone-700 mx-0.5"></div>
-      <!-- 笔触粗细飞梭调节按钮 -->
-      <button id="btnJogBrushSize" class="px-2.5 py-1 rounded-xl bg-stone-800/80 border border-stone-600 hover:bg-stone-700 active:scale-95 transition flex items-center gap-1.5 text-xs font-mono font-bold" title="点击展开飞梭旋钮调大小">
-        <span>⭕</span>
-        <span id="brushSizeBadge">24px</span>
-      </button>
+
+      <!-- 平滑 1 ~ 120px 笔触粗细调节条 -->
+      <div class="flex items-center gap-2 flex-1 min-w-[120px] max-w-[210px] bg-stone-800/80 px-2.5 py-1 rounded-xl border border-stone-700">
+        <span class="text-stone-400 text-xs font-bold shrink-0">⭕</span>
+        <input id="brushSizeSlider" type="range" min="1" max="120" value="24" class="w-full accent-amber-500 cursor-pointer h-1.5 bg-stone-700 rounded-lg" title="平滑调节画笔粗细 (1~120px)" />
+        <span id="brushSizeLabel" class="text-xs font-mono font-bold text-amber-400 w-11 text-right shrink-0">24px</span>
+      </div>
     </div>
 
-    <!-- 右侧：画纸切换、拍照实验室、参考线、全屏与导出 -->
+    <!-- 右侧：九宫格辅助线、防误触切换、参考底图、相片转换、视野居中、导出 -->
     <div class="flex items-center gap-1.5">
+      <!-- 1. 九宫格辅助线 -->
+      <button id="btnToggleGrid" class="p-2 rounded-xl bg-stone-800/80 hover:bg-stone-700 border border-transparent active:scale-95 transition" title="开启/关闭九宫格黄金分割辅助线">
+        <span class="text-base">#️⃣</span>
+      </button>
+
+      <!-- 2. 手掌防误触与输入模式切换 (仅手写笔 / 自由模式) -->
+      <button id="btnTogglePalmRejection" class="px-2.5 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30 active:scale-95 transition flex items-center gap-1 text-xs font-bold" title="手掌防误触切换：开启后双指缩放拖动画布，仅笔绘图">
+        <span id="palmIcon">🛡️</span>
+        <span id="palmText" class="hidden md:inline">防误触</span>
+      </button>
+
+      <!-- 3. 视野居中复位 (100%) -->
+      <button id="btnResetView" class="p-2 rounded-xl bg-stone-800/80 hover:bg-stone-700 active:scale-95 transition" title="视野居中复位 (100%)">
+        <span class="text-base">🔄</span>
+      </button>
+
+      <!-- 4. 显示/隐藏描摹底图 -->
       <button id="btnToggleRef" class="p-2 rounded-xl bg-stone-800/80 hover:bg-stone-700 active:scale-95 transition" title="显示/隐藏描摹底图">
         <span id="refEyeIcon" class="text-base">👁️</span>
       </button>
-      <button id="btnToggleGrid" class="p-2 rounded-xl bg-stone-800/80 hover:bg-stone-700 active:scale-95 transition" title="九宫格辅助构图线">
-        <span class="text-base">#️⃣</span>
-      </button>
+
       <div class="h-4 w-px bg-stone-700 mx-0.5"></div>
-      <button id="btnOpenCameraModal" class="px-2.5 py-1 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center gap-1 hover:bg-emerald-500/30 active:scale-95 transition" title="拍照/相片转画风与黑白描摹草稿">
-        <span>📸</span> <span>相片转换</span>
+
+      <!-- 5. 拍照与相片转换实验室 -->
+      <button id="btnOpenCameraModal" class="px-2.5 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center gap-1 hover:bg-emerald-500/30 active:scale-95 transition" title="拍照/相片转画风与黑白描摹草稿">
+        <span>📸</span> <span class="hidden sm:inline">相片转换</span>
       </button>
+
+      <!-- 6. 保存画作导出 -->
       <button id="btnExport" class="p-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 active:scale-95 transition" title="保存高清画作到相册">
         <span class="text-base">💾</span>
       </button>
     </div>
   </header>
 
-  <!-- 主画布视口区 (全屏铺满，纯净开阔) -->
+  <!-- ==================== 主画布视口区 (全屏铺满至底，无底部遮挡) ==================== -->
   <main id="viewportContainer" class="flex-1 relative overflow-hidden rounded-2xl border border-stone-800 shadow-inner bg-stone-950/80 flex items-center justify-center min-h-0 touch-none my-1">
     <!-- 硬件加速视口变形包裹层 (Transform Wrapper) -->
     <div id="transformCanvasWrapper" class="relative rounded-xl overflow-hidden shadow-2xl border border-stone-700 origin-center transition-none shrink-0" style="width: 720px; height: 520px; transform: translate(0px, 0px) scale(1);">
@@ -117,8 +143,13 @@
       <canvas id="overlayCanvas" width="720" height="520" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
     </div>
 
-    <!-- 实时笔刷尺寸指示圆圈 (跟着触控笔/光标走，绝对1:1贴合) -->
+    <!-- 实时笔刷尺寸指示圆圈 (跟着光标走，绝对1:1贴合) -->
     <div id="brushCursorRing" class="pointer-events-none fixed top-0 left-0 rounded-full border border-white/80 bg-white/10 shadow-sm z-50 transition-none hidden"></div>
+
+    <!-- 调节粗细时的画面中心动态大圆圈指示器 (1~120px 精准比例展示) -->
+    <div id="brushSizePreviewOverlay" class="pointer-events-none absolute z-40 rounded-full border-2 border-amber-400 bg-amber-400/20 shadow-2xl flex items-center justify-center opacity-0 transition-opacity duration-200">
+      <span id="brushSizeCenterNumber" class="text-white text-xs font-mono font-bold drop-shadow-md bg-black/60 px-2 py-0.5 rounded-full">24px</span>
+    </div>
 
     <!-- 智能提示条 -->
     <div id="toastNotification" class="pointer-events-none fixed top-16 left-1/2 -translate-x-1/2 px-4 py-2 rounded-2xl bg-black/85 backdrop-blur-md border border-amber-500/40 text-amber-300 text-xs font-bold shadow-2xl z-50 transition-opacity duration-300 opacity-0"></div>
@@ -133,87 +164,86 @@
       </span>
     </div>
 
-    <!-- 视口左下角：视口复位控制按钮 -->
+    <!-- 视口左下角：双指操作提示与微调缩放 -->
     <div class="absolute left-3 bottom-3 flex items-center gap-1 z-20">
-      <button id="btnResetView" class="px-2.5 py-1.5 rounded-xl bg-black/60 backdrop-blur hover:bg-black/80 border border-white/20 text-xs text-white font-medium shadow active:scale-95 transition">
-        🔄 视野居中
-      </button>
-      <button id="btnZoomIn" class="w-8 h-8 rounded-xl bg-black/60 backdrop-blur hover:bg-black/80 border border-white/20 text-xs text-white font-bold flex items-center justify-center active:scale-95 transition">
+      <span class="text-[11px] px-2.5 py-1 rounded-xl bg-black/60 backdrop-blur border border-white/15 text-stone-300 shadow flex items-center gap-1 pointer-events-none">
+        ✌️ 双指平移/捏合缩放
+      </span>
+      <button id="btnZoomIn" class="w-7 h-7 rounded-lg bg-black/60 backdrop-blur hover:bg-black/80 border border-white/20 text-xs text-white font-bold flex items-center justify-center active:scale-95 transition">
         ➕
       </button>
-      <button id="btnZoomOut" class="w-8 h-8 rounded-xl bg-black/60 backdrop-blur hover:bg-black/80 border border-white/20 text-xs text-white font-bold flex items-center justify-center active:scale-95 transition">
+      <button id="btnZoomOut" class="w-7 h-7 rounded-lg bg-black/60 backdrop-blur hover:bg-black/80 border border-white/20 text-xs text-white font-bold flex items-center justify-center active:scale-95 transition">
         ➖
       </button>
     </div>
   </main>
 
-  <!-- 底部拟物画具快捷切换条 (水彩、蜡笔、马克笔、画纸材质) -->
-  <footer class="bg-stone-900/95 backdrop-blur-md border border-stone-700/60 rounded-2xl p-1.5 flex items-center justify-center gap-2 shadow-2xl shrink-0 z-30">
-    <!-- 水彩笔刷抽屉开关 -->
-    <button data-drawer="watercolor" class="drawer-trigger-btn px-4 py-2 rounded-xl border-2 border-amber-500 bg-amber-500/25 ring-2 ring-amber-400/40 text-amber-300 font-bold flex items-center gap-2 active:scale-95 transition shadow-lg shadow-amber-500/20">
-      <span class="text-lg">🖌️</span>
-      <span class="text-xs">水彩画室</span>
-    </button>
-
-    <!-- 蜡笔抽屉开关 -->
-    <button data-drawer="crayon" class="drawer-trigger-btn px-4 py-2 rounded-xl border border-stone-700 bg-stone-800/80 text-xs font-semibold flex items-center gap-2 active:scale-95 transition opacity-80 hover:opacity-100">
-      <span class="text-lg">🖍️</span>
-      <span class="text-xs">儿童蜡笔</span>
-    </button>
-
-    <!-- 双头马克笔抽屉开关 -->
-    <button data-drawer="marker" class="drawer-trigger-btn px-4 py-2 rounded-xl border border-stone-700 bg-stone-800/80 text-xs font-semibold flex items-center gap-2 active:scale-95 transition opacity-80 hover:opacity-100">
-      <span class="text-lg">🖊️</span>
-      <span class="text-xs">双头马克笔</span>
-    </button>
-
-    <div class="h-5 w-px bg-stone-700 mx-1"></div>
-
-    <!-- 画纸材质抽屉开关 -->
-    <button data-drawer="paper" class="drawer-trigger-btn px-4 py-2 rounded-xl border border-stone-700 bg-stone-800/80 text-xs font-semibold flex items-center gap-2 active:scale-95 transition opacity-80 hover:opacity-100">
-      <span class="text-lg">📜</span>
-      <span class="text-xs">画纸材质</span>
-    </button>
-  </footer>
-
-  <!-- ==================== 抽屉式拟物画具面板 (Drawer Panel) ==================== -->
-  <aside id="mainDrawer" class="drawer-panel drawer-closed fixed left-2 top-14 bottom-16 w-84 max-w-[88vw] bg-stone-900/95 backdrop-blur-xl border border-stone-700/80 rounded-2xl p-3 shadow-2xl z-40 flex flex-col gap-3 overflow-y-auto">
-    <!-- 抽屉顶部标题与关闭按钮 -->
+  <!-- ==================== 左上角动态弹出的画风与画具控制抽屉 ==================== -->
+  <aside id="mainDrawer" class="drawer-panel drawer-closed fixed left-2 top-14 bottom-4 w-88 max-w-[90vw] bg-stone-900/95 backdrop-blur-xl border border-stone-700/80 rounded-2xl p-3 shadow-2xl z-40 flex flex-col gap-3 overflow-y-auto">
+    <!-- 抽屉顶部：画风切换标签页 (4大画种卡片) -->
     <div class="flex items-center justify-between border-b border-stone-700/60 pb-2">
-      <div class="flex items-center gap-1.5 font-bold text-xs" id="drawerTitle">
-        <span>🖌️</span> <span>水彩画室</span>
-      </div>
-      <button id="btnCloseDrawer" class="w-7 h-7 rounded-lg bg-stone-800 hover:bg-stone-700 text-xs font-bold flex items-center justify-center">
+      <div class="text-xs font-bold text-stone-300">选择绘画风格与工具：</div>
+      <button id="btnCloseDrawer" class="w-7 h-7 rounded-lg bg-stone-800 hover:bg-stone-700 text-xs font-bold flex items-center justify-center active:scale-95 transition">
         ✕
       </button>
     </div>
 
-    <!-- 1. 水彩画室抽屉内容 -->
+    <!-- 4 大绘画风格快捷切换标签 (水彩、蜡笔、马克笔、画纸材质) -->
+    <div class="grid grid-cols-4 gap-1.5 p-1 bg-stone-950/80 rounded-xl border border-stone-800">
+      <button data-modetab="watercolor" class="medium-tab-btn py-1.5 rounded-lg text-xs font-bold transition flex flex-col items-center gap-0.5 bg-amber-500 text-white shadow">
+        <span class="text-base">🖌️</span>
+        <span class="text-[10px]">水彩</span>
+      </button>
+      <button data-modetab="crayon" class="medium-tab-btn py-1.5 rounded-lg text-xs font-semibold text-stone-400 hover:text-white transition flex flex-col items-center gap-0.5">
+        <span class="text-base">🖍️</span>
+        <span class="text-[10px]">蜡笔</span>
+      </button>
+      <button data-modetab="marker" class="medium-tab-btn py-1.5 rounded-lg text-xs font-semibold text-stone-400 hover:text-white transition flex flex-col items-center gap-0.5">
+        <span class="text-base">🖊️</span>
+        <span class="text-[10px]">马克笔</span>
+      </button>
+      <button data-modetab="paper" class="medium-tab-btn py-1.5 rounded-lg text-xs font-semibold text-stone-400 hover:text-white transition flex flex-col items-center gap-0.5">
+        <span class="text-base">📜</span>
+        <span class="text-[10px]">画纸</span>
+      </button>
+    </div>
+
+    <!-- 1. 水彩画室详细设置 -->
     <div id="drawerWatercolorContent" class="flex flex-col gap-3">
       <!-- 12 块金属盒固体水彩块 (拟物半块造型) -->
       <div class="bg-stone-950/80 p-2.5 rounded-xl border border-stone-800">
         <div class="text-[11px] font-bold text-stone-400 mb-1.5 flex items-center justify-between">
           <span>🎨 大师级 12 色半块固体水彩</span>
-          <span class="text-[10px] text-stone-500">点击蘸取颜料</span>
+          <span class="text-[10px] text-stone-500">点击选色</span>
         </div>
         <div class="grid grid-cols-6 gap-2" id="watercolorPansGrid"></div>
       </div>
 
-      <!-- 白瓷流动融合调色盘 (真实水彩混色) -->
+      <!-- 白瓷流动融合调色盘 (修复颜色被冲掉的问题，支持研磨 vs 吸色) -->
       <div class="porcelain-plate rounded-xl p-2.5 border-2 border-stone-300/80 shadow-md flex flex-col gap-2">
         <div class="flex items-center justify-between">
           <span class="text-[11px] font-bold text-stone-800 flex items-center gap-1">🥣 白瓷流动融合调色盘</span>
           <div class="flex items-center gap-1">
-            <button id="btnWetPalette" class="text-[10px] px-2 py-0.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 border border-sky-300 font-semibold active:scale-95 transition" title="注入清水稀释">💧 滴水</button>
-            <button id="btnSpongePalette" class="text-[10px] px-2 py-0.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-semibold active:scale-95 transition" title="海绵吸水淡化">🧽 吸水</button>
+            <button id="btnDropActiveColor" class="text-[10px] px-2 py-0.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 font-bold active:scale-95 transition" title="将当前选中的颜色滴入调色盘中">💧 滴入色</button>
+            <button id="btnWetPalette" class="text-[10px] px-2 py-0.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 border border-sky-300 font-semibold active:scale-95 transition" title="注入清水稀释">💦 加水</button>
             <button id="btnWashPorcelain" class="text-[10px] px-2 py-0.5 rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-800 border border-stone-300 font-semibold active:scale-95 transition" title="擦拭洗净调色盘">🧼 洗净</button>
           </div>
         </div>
+
+        <!-- 调色模式切换：研磨混色 vs 吸取颜色 -->
+        <div class="flex items-center justify-between bg-stone-200/70 p-1 rounded-lg text-xs font-semibold">
+          <div class="flex items-center gap-1">
+            <button id="btnModeMix" class="px-2.5 py-0.5 rounded-md bg-stone-900 text-white font-bold text-[10px] active:scale-95 transition">🎨 研磨调色</button>
+            <button id="btnModePick" class="px-2.5 py-0.5 rounded-md bg-stone-100 text-stone-700 hover:bg-stone-300 font-semibold text-[10px] active:scale-95 transition">💉 吸取调色</button>
+          </div>
+          <span id="palModeHint" class="text-[10px] text-stone-600">用画笔研磨混色</span>
+        </div>
+
         <div class="relative w-full rounded-xl overflow-hidden border border-stone-300 shadow-inner bg-[#faf9f5]">
           <canvas id="watercolorPaletteCanvas" width="280" height="110" class="w-full h-28 touch-none cursor-crosshair block"></canvas>
           <div id="paletteSampleRing" class="absolute pointer-events-none w-5 h-5 rounded-full border-2 border-white shadow-md -translate-x-1/2 -translate-y-1/2 hidden"></div>
         </div>
-        <div class="text-[10px] text-stone-600 text-center">💡 用触控笔在白瓷盘上画圈研磨混合，手指/笔触点击任意位置即吸取中间过渡色</div>
+        <div class="text-[10px] text-stone-600 text-center">💡 在调色盘上画圈研磨不会弄乱画笔选色；切换「吸取调色」可精准提取混合出的中间色</div>
       </div>
 
       <!-- 自由全色域调色区 -->
@@ -221,7 +251,7 @@
         <div class="flex items-center justify-between text-xs font-semibold">
           <span class="text-stone-300">🌈 自由全色域色盘</span>
           <div class="flex items-center gap-1.5">
-            <span class="text-[11px] text-stone-400">自定水彩块:</span>
+            <span class="text-[11px] text-stone-400">当前水彩块:</span>
             <div id="customWatercolorPreview" class="w-6 h-5 rounded border border-black/40 shadow-inner" style="background: rgb(20, 85, 210);"></div>
           </div>
         </div>
@@ -246,9 +276,8 @@
       </div>
     </div>
 
-    <!-- 2. 蜡笔画室抽屉内容 -->
+    <!-- 2. 蜡笔画室详细设置 -->
     <div id="drawerCrayonContent" class="hidden flex flex-col gap-3">
-      <!-- 12 支带纸套笔身与蜡质尖头的拟物蜡笔盒 -->
       <div class="bg-amber-950/30 border border-amber-600/30 rounded-xl p-2.5 crayons-box-shadow">
         <div class="text-[11px] font-bold text-amber-300 mb-2 flex items-center justify-between">
           <span>🖍️ 经典油性蜡笔盒 (12色)</span>
@@ -257,11 +286,9 @@
         <div class="grid grid-cols-6 gap-2" id="crayonBoxContainer"></div>
       </div>
 
-      <!-- 自由全色域调色区 (动态更新自定蜡笔) -->
       <div class="bg-stone-950/80 p-2.5 rounded-xl border border-stone-800 flex flex-col gap-2">
         <div class="flex items-center justify-between text-xs font-semibold">
           <span class="text-stone-300">🌈 自定专属蜡笔</span>
-          <!-- 拟物专属蜡笔预览 -->
           <div id="customCrayonPreview" class="flex flex-col items-center cursor-pointer">
             <div class="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[8px]" style="border-bottom-color: rgb(255, 125, 20);"></div>
             <div class="w-3.5 h-6 rounded-b-sm border border-black/30 shadow-inner" style="background: rgb(255, 125, 20);"></div>
@@ -274,7 +301,6 @@
         </div>
       </div>
 
-      <!-- 笔触形式与纸张颗粒感 -->
       <div class="bg-stone-950/80 p-2.5 rounded-xl border border-stone-800 flex flex-col gap-2">
         <div class="grid grid-cols-2 gap-1.5 text-xs">
           <button data-crayontip="tip" class="crayon-tip-btn py-1.5 rounded-lg border-2 border-amber-500 bg-amber-500/20 font-bold active:scale-95 transition">✏️ 笔尖细勾</button>
@@ -287,9 +313,8 @@
       </div>
     </div>
 
-    <!-- 3. 马克笔画室抽屉内容 -->
+    <!-- 3. 马克笔画室详细设置 -->
     <div id="drawerMarkerContent" class="hidden flex flex-col gap-3">
-      <!-- 12 支专业双头马克笔笔架 (带彩帽与白笔身) -->
       <div class="bg-stone-950 p-2.5 rounded-xl border border-stone-800 shadow-inner">
         <div class="text-[11px] font-bold text-indigo-300 mb-2 flex items-center justify-between">
           <span>🖊️ 专业双头马克笔架 (12色)</span>
@@ -298,11 +323,9 @@
         <div class="grid grid-cols-6 gap-2" id="markerRackContainer"></div>
       </div>
 
-      <!-- 自由全色域调色区 (动态更新自定马克笔) -->
       <div class="bg-stone-950/80 p-2.5 rounded-xl border border-stone-800 flex flex-col gap-2">
         <div class="flex items-center justify-between text-xs font-semibold">
           <span class="text-stone-300">🌈 自定专属马克笔</span>
-          <!-- 拟物专属马克笔预览 -->
           <div id="customMarkerPreview" class="flex flex-col items-center">
             <div class="w-3.5 h-4 rounded-t-sm border border-black/30" style="background: rgb(240, 50, 70);"></div>
             <div class="w-3.5 h-6 bg-stone-200 border-x border-b border-stone-400 rounded-b-xs"></div>
@@ -315,7 +338,6 @@
         </div>
       </div>
 
-      <!-- 笔尖形态切换 -->
       <div class="bg-stone-950/80 p-2.5 rounded-xl border border-stone-800 flex flex-col gap-1.5">
         <div class="text-[11px] font-bold text-stone-400 mb-1">笔头造型切换：</div>
         <div class="grid grid-cols-3 gap-1 text-xs">
@@ -326,7 +348,7 @@
       </div>
     </div>
 
-    <!-- 4. 画纸材质选择抽屉内容 (4款经典纸张：宣纸、云彩纸、细纹卡纸、冷压水彩纸) -->
+    <!-- 4. 画纸材质设置 -->
     <div id="drawerPaperContent" class="hidden flex flex-col gap-2">
       <div class="text-xs text-stone-400 font-medium mb-1">点击切换真实物理画纸纹理与物理交互：</div>
       <div class="flex flex-col gap-2" id="paperOptionsList"></div>
@@ -343,7 +365,6 @@
         <button id="btnCloseCameraModal" class="px-2.5 py-1 rounded-xl bg-stone-800 text-xs font-bold active:scale-95 transition">✕ 关闭</button>
       </div>
 
-      <!-- 拍照与上传操作 -->
       <div class="bg-emerald-500/15 border border-emerald-500/40 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
         <div>
           <div class="text-xs font-bold text-emerald-400">📸 拍摄真实物体转换为手绘艺术或黑白练习草稿</div>
@@ -360,7 +381,6 @@
         </div>
       </div>
 
-      <!-- 预设示例与风格强度控制 -->
       <div class="flex items-center justify-between gap-2 flex-wrap bg-stone-950 p-2.5 rounded-xl border border-stone-800">
         <div class="flex items-center gap-1.5 text-xs">
           <span class="text-stone-400">内置示例:</span>
@@ -375,9 +395,8 @@
         </div>
       </div>
 
-      <!-- 4 大模式对比预览网格 (黑白描摹草稿 + 3 大非光栅艺术图像处理) -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-        <!-- 1. 黑白草稿描边图 (新增核心功能) -->
+        <!-- 1. 黑白草稿描边图 -->
         <div class="bg-stone-950 border-2 border-stone-700 hover:border-amber-500 rounded-xl p-2 flex flex-col items-center gap-2">
           <div class="flex items-center justify-between w-full">
             <span class="text-xs font-bold text-amber-400">✏️ 黑白描摹草稿</span>
@@ -567,10 +586,11 @@
     const overlayCanvas = document.getElementById('overlayCanvas');
     const overlayCtx = overlayCanvas.getContext('2d');
     const wrapper = document.getElementById('transformCanvasWrapper');
+    const viewportContainer = document.getElementById('viewportContainer');
 
     let currentBrushMedium = 'watercolor';
     let activeBrushRGB = [20, 85, 210];
-    let brushRadius = 12;
+    let brushRadius = 24; // 默认 24px
     let brushDilution = 1.0;
     let isDrawing = false;
     let lastX = 0, lastY = 0;
@@ -583,11 +603,12 @@
     // 马克笔特有状态
     let markerTip = 'round';
 
-    // 描摹参考图
+    // 辅助工具状态
     let refVisible = false;
     let refOpacity = 60;
     let refStyle = 'sketch';
     let showGrid = false;
+    let palmRejectionEnabled = true; // 默认开启手掌防误触
 
     // 撤销重做系统
     const undoStack = [];
@@ -652,13 +673,12 @@
       paperCtx.fillRect(0, 0, W, H);
 
       if (paperId === 'coldpress') {
-        // 粗纹冷压水彩纸：高清晰度凹凸棉絮微坑 (Tooth Pits) 与光影颗粒
+        // 粗纹冷压水彩纸：凹凸棉絮微坑 (Tooth Pits) 与光影颗粒
         const imgData = paperCtx.getImageData(0, 0, W, H);
         const d = imgData.data;
         for (let y = 0; y < H; y++) {
           for (let x = 0; x < W; x++) {
             const idx = (y * W + x) * 4;
-            // 双频多尺度伪噪波
             const n1 = Math.sin(x * 0.42 + y * 0.28) * Math.cos(x * 0.31 - y * 0.39);
             const n2 = Math.sin(x * 1.25 + y * 1.15) * 0.5;
             const grain = (n1 * 0.7 + n2 * 0.3);
@@ -670,9 +690,8 @@
         }
         paperCtx.putImageData(imgData, 0, 0);
       } else if (paperId === 'xuan') {
-        // 传统熟宣纸：纵横植物长纤维与微量天然金箔斑点
+        // 传统熟宣纸：纵横植物长纤维与微量天然真金箔斑点
         paperCtx.save();
-        // 1. 植物纤维丝
         for (let i = 0; i < 90; i++) {
           paperCtx.strokeStyle = `rgba(140, 115, 80, ${0.08 + Math.random() * 0.12})`;
           paperCtx.lineWidth = 0.6 + Math.random() * 1.2;
@@ -689,7 +708,6 @@
           );
           paperCtx.stroke();
         }
-        // 2. 传统真金箔微斑
         for (let gi = 0; gi < 28; gi++) {
           const gx = Math.random() * W, gy = Math.random() * H;
           const gw = 1.5 + Math.random() * 3.5, gh = 1.2 + Math.random() * 2.8;
@@ -698,7 +716,7 @@
         }
         paperCtx.restore();
       } else if (paperId === 'cloud') {
-        // 棉絮云彩纸：轻盈飘渺的团状棉絮云雾
+        // 棉絮云彩纸：轻盈团状棉絮云雾
         paperCtx.save();
         for (let ci = 0; ci < 45; ci++) {
           const cx = Math.random() * W, cy = Math.random() * H;
@@ -713,7 +731,7 @@
         }
         paperCtx.restore();
       } else if (paperId === 'toned') {
-        // 细纹暖灰卡纸：细腻均匀的温润哑光灰调，极平整
+        // 细纹暖灰卡纸：细腻均匀温润卡纸
         paperCtx.save();
         const imgData = paperCtx.getImageData(0, 0, W, H);
         const d = imgData.data;
@@ -729,7 +747,7 @@
     }
 
     /********************************************************************
-     * 6. iPad 触控笔坐标无漂移逆投影计算
+     * 6. 双指平移/缩放手势引擎 & 触控笔坐标逆投影计算
      ********************************************************************/
     let viewScale = 1.0;
     let viewPanX = 0, viewPanY = 0;
@@ -748,9 +766,75 @@
       return { x: cx, y: cy };
     }
 
+    // 多点触控手势状态
+    const activeTouches = new Map();
+    let isPinching = false;
+    let pinchStartDist = 0;
+    let pinchStartScale = 1.0;
+    let pinchStartMid = { x: 0, y: 0 };
+    let pinchStartPan = { x: 0, y: 0 };
+
+    viewportContainer.addEventListener('pointerdown', (e) => {
+      // 追踪触控点
+      if (e.pointerType === 'touch') {
+        activeTouches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (activeTouches.size === 2) {
+          // 触发双指捏合缩放/平移
+          isPinching = true;
+          isDrawing = false; // 取消单指绘画
+          const pts = Array.from(activeTouches.values());
+          pinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+          pinchStartMid = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
+          pinchStartScale = viewScale;
+          pinchStartPan = { x: viewPanX, y: viewPanY };
+          return;
+        }
+      }
+    }, { passive: true });
+
+    viewportContainer.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch' && activeTouches.has(e.pointerId)) {
+        activeTouches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (isPinching && activeTouches.size >= 2) {
+          const pts = Array.from(activeTouches.values());
+          const curDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+          const curMid = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
+          
+          if (pinchStartDist > 0) {
+            const factor = curDist / pinchStartDist;
+            viewScale = Math.min(3.5, Math.max(0.4, pinchStartScale * factor));
+            viewPanX = pinchStartPan.x + (curMid.x - pinchStartMid.x);
+            viewPanY = pinchStartPan.y + (curMid.y - pinchStartMid.y);
+            applyViewportTransform();
+          }
+          return;
+        }
+      }
+    }, { passive: true });
+
+    function removeTouch(e) {
+      if (activeTouches.has(e.pointerId)) {
+        activeTouches.delete(e.pointerId);
+      }
+      if (activeTouches.size < 2) {
+        isPinching = false;
+      }
+    }
+    viewportContainer.addEventListener('pointerup', removeTouch, { passive: true });
+    viewportContainer.addEventListener('pointercancel', removeTouch, { passive: true });
+
+    // 鼠标滚轮缩放 (Mac 触控板捏合与鼠标支持)
+    viewportContainer.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
+      viewScale = Math.min(3.5, Math.max(0.4, viewScale * zoomFactor));
+      applyViewportTransform();
+    }, { passive: false });
+
+    // 笔刷跟随光标环
     const cursorRing = document.getElementById('brushCursorRing');
     function updateCursorRing(clientX, clientY) {
-      if (isDrawing) {
+      if (isDrawing || isPinching) {
         cursorRing.classList.add('hidden');
         return;
       }
@@ -765,8 +849,6 @@
     /********************************************************************
      * 7. 3 大画种真实笔触渲染算法 (彻底重构水彩流体扩散)
      ********************************************************************/
-
-    // 关键升级：真实水彩流体自然渗透扩散算法 (彻底消除生硬同心重叠圈！)
     function stampWatercolor(prevX, prevY, x, y, radius, pressure) {
       const p = (pressure && pressure > 0) ? pressure : 0.65;
       const effRadius = Math.max(3, radius * (0.6 + p * 0.7));
@@ -777,13 +859,11 @@
       const baseAlpha = 0.18 * brushDilution * (0.7 + wetness * 0.5);
 
       paintCtx.save();
-      // 使用真实连续流体笔刷：柔和外边缘自然衰减，内部均匀半透平滑过渡
       for (let s = 0; s < steps; s++) {
         const t = steps === 1 ? 1 : s / steps;
         const cx = prevX + (x - prevX) * t;
         const cy = prevY + (y - prevY) * t;
 
-        // 柔和流体晕染径向渐变 (绝不加突兀的内部暗圈，保持极佳水润感)
         const radGrad = paintCtx.createRadialGradient(cx, cy, 0, cx, cy, effRadius);
         radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${baseAlpha * 1.1})`);
         radGrad.addColorStop(0.75, `rgba(${r}, ${g}, ${b}, ${baseAlpha * 0.85})`);
@@ -794,9 +874,7 @@
         paintCtx.arc(cx, cy, effRadius, 0, Math.PI * 2);
         paintCtx.fill();
 
-        // 纸张物理特性互动：
         if (currentPaperId === 'coldpress' && wetness > 0.4) {
-          // 粗纹冷压水彩纸天然凹坑沉淀颗粒 (Granulation)
           const gCount = Math.floor(effRadius * 0.5);
           for (let gi = 0; gi < gCount; gi++) {
             const grAngle = Math.random() * Math.PI * 2;
@@ -810,7 +888,6 @@
             }
           }
         } else if (currentPaperId === 'xuan' && wetness > 0.4 && s % 2 === 0) {
-          // 熟宣纸：微渗植物纤维羽化丝 (Capillary Bleed)
           const bAngle = Math.random() * Math.PI * 2;
           const bDist = effRadius * (0.85 + Math.random() * 0.3 * wetness);
           const bx = cx + Math.cos(bAngle) * bDist;
@@ -828,7 +905,6 @@
       paintCtx.restore();
     }
 
-    // 蜡笔笔触：与纸张微观齿度物理互动 (凹陷飞白、凸起压实)
     function stampCrayon(prevX, prevY, x, y, radius) {
       const isSide = crayonTipMode === 'side';
       const effRadius = isSide ? radius * 1.6 : radius;
@@ -847,12 +923,11 @@
           const rad = Math.sqrt(Math.random()) * effRadius;
           const px = cx + Math.cos(angle) * rad, py = cy + Math.sin(angle) * rad;
 
-          // 依据纸张类型决定蜡粉着床率
           let toothThreshold = (crayonRoughness / 100) * 0.9;
           if (currentPaperId === 'coldpress') {
-            toothThreshold = 0.52; // 粗纹水彩纸凹陷深，蜡粉显著飞白
+            toothThreshold = 0.52;
           } else if (currentPaperId === 'toned') {
-            toothThreshold = 0.85; // 暖灰平滑卡纸着色极密
+            toothThreshold = 0.85;
           }
 
           const noise = ((Math.floor(px * 17) + Math.floor(py * 31)) % 19) / 19;
@@ -865,7 +940,6 @@
       paintCtx.restore();
     }
 
-    // 马克笔笔触：高饱和、边缘锋利、无半透明虚化
     function stampMarker(prevX, prevY, x, y, radius, pressure) {
       const [r, g, b] = activeBrushRGB;
       const alpha = Math.min(1.0, brushDilution);
@@ -876,7 +950,7 @@
       paintCtx.strokeStyle = col;
 
       if (markerTip === 'round') {
-        paintCtx.lineWidth = Math.max(3.0, radius * 1.15);
+        paintCtx.lineWidth = Math.max(2.5, radius * 1.15);
         paintCtx.lineCap = 'round';
         paintCtx.lineJoin = 'round';
         paintCtx.beginPath();
@@ -885,7 +959,7 @@
         paintCtx.stroke();
       } else if (markerTip === 'brush') {
         const p = (pressure && pressure > 0) ? pressure : 0.55;
-        paintCtx.lineWidth = Math.max(2.5, radius * (0.35 + p * 1.35));
+        paintCtx.lineWidth = Math.max(2.0, radius * (0.35 + p * 1.35));
         paintCtx.lineCap = 'round';
         paintCtx.lineJoin = 'round';
         paintCtx.beginPath();
@@ -894,7 +968,7 @@
         paintCtx.stroke();
       } else if (markerTip === 'chisel') {
         const angle = -Math.PI / 4;
-        const hw = Math.max(4.0, radius * 1.15);
+        const hw = Math.max(3.5, radius * 1.15);
         const dx = Math.cos(angle) * hw;
         const dy = Math.sin(angle) * hw;
         paintCtx.beginPath();
@@ -919,9 +993,18 @@
     }
 
     /********************************************************************
-     * 8. 画布触控与 Apple Pencil 监听
+     * 8. 画布绘画事件 (Apple Pencil 防误触与单指控制)
      ********************************************************************/
     paintCanvas.addEventListener('pointerdown', (e) => {
+      // 开启防误触时：手指仅用于双指缩放拖移，触控笔专职画画
+      if (palmRejectionEnabled && e.pointerType === 'touch' && activeTouches.size >= 2) {
+        return;
+      }
+      if (palmRejectionEnabled && e.pointerType === 'touch' && e.pointerType !== 'pen') {
+        // 如果开启防误触且用户手指单独触碰，记录触控但不触发画笔
+        return;
+      }
+
       paintCanvas.setPointerCapture(e.pointerId);
       isDrawing = true;
       saveUndoState();
@@ -933,7 +1016,7 @@
 
     paintCanvas.addEventListener('pointermove', (e) => {
       updateCursorRing(e.clientX, e.clientY);
-      if (!isDrawing) return;
+      if (!isDrawing || isPinching) return;
       const pt = screenToCanvas(e.clientX, e.clientY);
       drawStroke(lastX, lastY, pt.x, pt.y, e.pressure);
       lastX = pt.x; lastY = pt.y;
@@ -954,21 +1037,51 @@
     });
 
     /********************************************************************
-     * 9. 白瓷流动融合调色盘交互引擎 (真实水彩混色)
+     * 9. 动态 1~120px 笔触粗细滑动条与大圆圈视觉指示器
+     ********************************************************************/
+    const sizeSlider = document.getElementById('brushSizeSlider');
+    const sizeLabel = document.getElementById('brushSizeLabel');
+    const sizePreviewOverlay = document.getElementById('brushSizePreviewOverlay');
+    const sizeCenterNumber = document.getElementById('brushSizeCenterNumber');
+    let sizePreviewHideTimeout = null;
+
+    function updateBrushSize(val) {
+      brushRadius = Math.max(1, Math.min(120, parseInt(val)));
+      sizeLabel.textContent = `${brushRadius}px`;
+      sizeCenterNumber.textContent = `${brushRadius}px`;
+
+      // 画面中央动态大圆圈指示器 (精准 1:1 直径)
+      const diameter = brushRadius * 2 * viewScale;
+      sizePreviewOverlay.style.width = `${diameter}px`;
+      sizePreviewOverlay.style.height = `${diameter}px`;
+      sizePreviewOverlay.style.opacity = '1';
+
+      if (sizePreviewHideTimeout) clearTimeout(sizePreviewHideTimeout);
+      sizePreviewHideTimeout = setTimeout(() => {
+        sizePreviewOverlay.style.opacity = '0';
+      }, 900);
+    }
+
+    sizeSlider.addEventListener('input', (e) => {
+      updateBrushSize(e.target.value);
+    });
+
+    /********************************************************************
+     * 10. 白瓷流动融合调色盘交互引擎 (独立调色与取色，彻底解决串色)
      ********************************************************************/
     const palCanvas = document.getElementById('watercolorPaletteCanvas');
     const palCtx = palCanvas.getContext('2d');
     const palSampleRing = document.getElementById('paletteSampleRing');
-    let isPaletteMixing = false;
+    let paletteMode = 'mix'; // 'mix' (研磨混色) 或 'pick' (吸取调色)
+    let isPaletteInteracting = false;
 
     function initPorcelainPalette() {
       palCtx.fillStyle = '#fcfcf8';
       palCtx.fillRect(0, 0, palCanvas.width, palCanvas.height);
       // 预置两摊自然湿融水彩 (蓝色与黄色，相融出翠绿)
-      dropPalettePigment(60, 55, [20, 85, 210], 36, 0.7);
-      dropPalettePigment(220, 55, [255, 210, 0], 36, 0.7);
-      // 中间湿润过渡
-      dropPalettePigment(140, 55, [40, 180, 85], 42, 0.6);
+      dropPalettePigment(60, 55, [20, 85, 210], 34, 0.75);
+      dropPalettePigment(220, 55, [255, 210, 0], 34, 0.75);
+      dropPalettePigment(140, 55, [40, 180, 85], 40, 0.65);
     }
 
     function dropPalettePigment(cx, cy, rgb, radius, alpha) {
@@ -982,6 +1095,7 @@
       palCtx.fill();
     }
 
+    // 调色盘操作事件：研磨混色时不污染画笔纯色！
     function handlePalettePointer(e) {
       const rect = palCanvas.getBoundingClientRect();
       const px = (e.clientX - rect.left) * (palCanvas.width / rect.width);
@@ -989,46 +1103,67 @@
       const x = Math.max(0, Math.min(palCanvas.width - 1, px));
       const y = Math.max(0, Math.min(palCanvas.height - 1, py));
 
-      // 采样当前位置已有颜色
-      const pix = palCtx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
-      if (isPaletteMixing) {
-        // 将当前画笔颜色以水彩流体研磨注入瓷盘
+      if (paletteMode === 'mix') {
+        // 模式一：研磨混色 —— 仅在瓷盘上混合，绝不修改画笔颜色！
+        const pix = palCtx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
         const blendRGB = mixPigmentRGB([pix[0], pix[1], pix[2]], activeBrushRGB, 0.35);
-        dropPalettePigment(x, y, blendRGB, 16, 0.5);
+        dropPalettePigment(x, y, blendRGB, 15, 0.45);
+      } else {
+        // 模式二：吸取调色 —— 明确取色
+        const samplePix = palCtx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
+        if (samplePix[3] > 10 && !(samplePix[0] > 250 && samplePix[1] > 250 && samplePix[2] > 245)) {
+          applyBrushColor([samplePix[0], samplePix[1], samplePix[2]]);
+          // 样本指示环随动反馈
+          palSampleRing.classList.remove('hidden');
+          palSampleRing.style.left = `${(e.clientX - rect.left)}px`;
+          palSampleRing.style.top = `${(e.clientY - rect.top)}px`;
+          palSampleRing.style.backgroundColor = `rgb(${activeBrushRGB[0]}, ${activeBrushRGB[1]}, ${activeBrushRGB[2]})`;
+        }
       }
-
-      // 吸取最终研磨出的混合色彩
-      const samplePix = palCtx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
-      if (samplePix[3] > 10 && !(samplePix[0] > 250 && samplePix[1] > 250 && samplePix[2] > 245)) {
-        applyBrushColor([samplePix[0], samplePix[1], samplePix[2]]);
-      }
-
-      // 样本指示环随动
-      palSampleRing.classList.remove('hidden');
-      palSampleRing.style.left = `${(e.clientX - rect.left)}px`;
-      palSampleRing.style.top = `${(e.clientY - rect.top)}px`;
-      palSampleRing.style.backgroundColor = `rgb(${activeBrushRGB[0]}, ${activeBrushRGB[1]}, ${activeBrushRGB[2]})`;
     }
 
     palCanvas.addEventListener('pointerdown', (e) => {
       palCanvas.setPointerCapture(e.pointerId);
-      isPaletteMixing = true;
+      isPaletteInteracting = true;
       handlePalettePointer(e);
     });
 
     palCanvas.addEventListener('pointermove', (e) => {
-      if (isPaletteMixing) handlePalettePointer(e);
+      if (isPaletteInteracting) handlePalettePointer(e);
     });
 
     function endPalettePointer(e) {
-      if (!isPaletteMixing) return;
-      isPaletteMixing = false;
+      if (!isPaletteInteracting) return;
+      isPaletteInteracting = false;
       try { palCanvas.releasePointerCapture(e.pointerId); } catch (_) {}
-      setTimeout(() => palSampleRing.classList.add('hidden'), 600);
+      setTimeout(() => palSampleRing.classList.add('hidden'), 500);
     }
-
     palCanvas.addEventListener('pointerup', endPalettePointer);
     palCanvas.addEventListener('pointercancel', endPalettePointer);
+
+    // 模式切换按钮：研磨 vs 吸色
+    const btnModeMix = document.getElementById('btnModeMix');
+    const btnModePick = document.getElementById('btnModePick');
+    const palModeHint = document.getElementById('palModeHint');
+
+    btnModeMix.addEventListener('click', () => {
+      paletteMode = 'mix';
+      btnModeMix.className = 'px-2.5 py-0.5 rounded-md bg-stone-900 text-white font-bold text-[10px] active:scale-95 transition';
+      btnModePick.className = 'px-2.5 py-0.5 rounded-md bg-stone-100 text-stone-700 hover:bg-stone-300 font-semibold text-[10px] active:scale-95 transition';
+      palModeHint.textContent = '用画笔研磨混色';
+    });
+
+    btnModePick.addEventListener('click', () => {
+      paletteMode = 'pick';
+      btnModePick.className = 'px-2.5 py-0.5 rounded-md bg-stone-900 text-white font-bold text-[10px] active:scale-95 transition';
+      btnModeMix.className = 'px-2.5 py-0.5 rounded-md bg-stone-100 text-stone-700 hover:bg-stone-300 font-semibold text-[10px] active:scale-95 transition';
+      palModeHint.textContent = '点按吸取过渡色';
+    });
+
+    // 滴入当前画笔颜色至调色盘
+    document.getElementById('btnDropActiveColor').addEventListener('click', () => {
+      dropPalettePigment(palCanvas.width / 2, palCanvas.height / 2, activeBrushRGB, 30, 0.7);
+    });
 
     document.getElementById('btnWashPorcelain').addEventListener('click', () => {
       palCtx.fillStyle = '#fcfcf8';
@@ -1036,31 +1171,22 @@
     });
 
     document.getElementById('btnWetPalette').addEventListener('click', () => {
-      // 注入柔和清水扩散
       dropPalettePigment(palCanvas.width / 2, palCanvas.height / 2, [255, 255, 255], 65, 0.45);
     });
 
-    document.getElementById('btnSpongePalette').addEventListener('click', () => {
-      // 海绵淡化
-      palCtx.fillStyle = 'rgba(252, 252, 248, 0.4)';
-      palCtx.fillRect(0, 0, palCanvas.width, palCanvas.height);
-    });
-
     /********************************************************************
-     * 10. 自由色域选色器 & 笔具拟物图标装配
+     * 11. 自由色域选色器 & 笔具拟物图标装配
      ********************************************************************/
     function applyBrushColor(rgb) {
       activeBrushRGB = [...rgb];
       const circle = document.getElementById('currentSwatchCircle');
       circle.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
-      // 联动更新抽屉内自定预览
       document.getElementById('customWatercolorPreview').style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       document.querySelector('#customCrayonPreview div:first-child').style.borderBottomColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       document.querySelector('#customCrayonPreview div:last-child').style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       document.querySelector('#customMarkerPreview div:first-child').style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
     }
 
-    // 自由全色域滑块联动
     function setupColorRangePicker(hueId, lightId) {
       const hSlider = document.getElementById(hueId);
       const lSlider = document.getElementById(lightId);
@@ -1077,7 +1203,6 @@
     setupColorRangePicker('hueSliderCrayon', 'lightnessSliderCrayon');
     setupColorRangePicker('hueSliderMarker', 'lightnessSliderMarker');
 
-    // 渲染水彩半块固体铁盒
     function renderWatercolorPans() {
       const box = document.getElementById('watercolorPansGrid');
       box.innerHTML = '';
@@ -1093,7 +1218,6 @@
       });
     }
 
-    // 渲染带纸套与蜡质尖头的拟物蜡笔盒
     function renderCrayonBox() {
       const box = document.getElementById('crayonBoxContainer');
       box.innerHTML = '';
@@ -1119,7 +1243,6 @@
       });
     }
 
-    // 渲染双头马克笔笔架
     function renderMarkerRack() {
       const rack = document.getElementById('markerRackContainer');
       rack.innerHTML = '';
@@ -1143,7 +1266,6 @@
       });
     }
 
-    // 渲染画纸选项列表
     function renderPaperOptions() {
       const list = document.getElementById('paperOptionsList');
       list.innerHTML = '';
@@ -1175,65 +1297,74 @@
     }
 
     /********************************************************************
-     * 11. 抽屉开启与画种模式切换
+     * 12. 左上角动态画风弹窗与抽屉控制
      ********************************************************************/
-    let currentDrawerOpen = null;
+    let isDrawerOpen = false;
+    let activeMediumTab = 'watercolor';
     const drawer = document.getElementById('mainDrawer');
+    const btnOpenStyleSelector = document.getElementById('btnOpenStyleSelector');
+    const currentMediumIcon = document.getElementById('currentMediumIcon');
+    const currentMediumName = document.getElementById('currentMediumName');
+
+    const MEDIUM_INFO = {
+      watercolor: { name: '水彩画室', icon: '🖌️' },
+      crayon: { name: '儿童蜡笔', icon: '🖍️' },
+      marker: { name: '双头马克笔', icon: '🖊️' },
+      paper: { name: '画纸材质', icon: '📜' }
+    };
 
     function switchBrushMedium(medium) {
-      currentBrushMedium = medium;
-      const triggers = document.querySelectorAll('.drawer-trigger-btn');
-      triggers.forEach(b => {
-        if (b.dataset.drawer === medium) {
-          b.className = 'drawer-trigger-btn px-4 py-2 rounded-xl border-2 border-amber-500 bg-amber-500/25 ring-2 ring-amber-400/40 text-amber-300 font-bold flex items-center gap-2 active:scale-95 transition shadow-lg shadow-amber-500/20';
-        } else if (b.dataset.drawer !== 'paper') {
-          b.className = 'drawer-trigger-btn px-4 py-2 rounded-xl border border-stone-700 bg-stone-800/80 text-xs font-semibold flex items-center gap-2 active:scale-95 transition opacity-80 hover:opacity-100';
+      if (medium !== 'paper') {
+        currentBrushMedium = medium;
+      }
+      activeMediumTab = medium;
+      currentMediumIcon.textContent = MEDIUM_INFO[medium].icon;
+      currentMediumName.textContent = MEDIUM_INFO[medium].name;
+
+      // 更新抽屉内部标签按钮
+      document.querySelectorAll('.medium-tab-btn').forEach(b => {
+        if (b.dataset.modetab === medium) {
+          b.className = 'medium-tab-btn py-1.5 rounded-lg text-xs font-bold transition flex flex-col items-center gap-0.5 bg-amber-500 text-white shadow';
+        } else {
+          b.className = 'medium-tab-btn py-1.5 rounded-lg text-xs font-semibold text-stone-400 hover:text-white transition flex flex-col items-center gap-0.5';
         }
       });
-    }
 
-    function openDrawer(type) {
-      currentDrawerOpen = type;
-      drawer.classList.remove('drawer-closed');
-      drawer.classList.add('drawer-open');
-      if (type !== 'paper') switchBrushMedium(type);
-
+      // 切换详细内容区域
       ['drawerWatercolorContent', 'drawerCrayonContent', 'drawerMarkerContent', 'drawerPaperContent'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
       });
 
-      const titleMap = {
-        watercolor: '🖌️ 水彩画室',
-        crayon: '🖍️ 儿童蜡笔盒',
-        marker: '🖊️ 双头马克笔架',
-        paper: '📜 画纸材质'
-      };
-      document.getElementById('drawerTitle').innerHTML = titleMap[type] || '画具设置';
+      if (medium === 'watercolor') document.getElementById('drawerWatercolorContent').classList.remove('hidden');
+      else if (medium === 'crayon') document.getElementById('drawerCrayonContent').classList.remove('hidden');
+      else if (medium === 'marker') document.getElementById('drawerMarkerContent').classList.remove('hidden');
+      else if (medium === 'paper') document.getElementById('drawerPaperContent').classList.remove('hidden');
+    }
 
-      if (type === 'watercolor') document.getElementById('drawerWatercolorContent').classList.remove('hidden');
-      else if (type === 'crayon') document.getElementById('drawerCrayonContent').classList.remove('hidden');
-      else if (type === 'marker') document.getElementById('drawerMarkerContent').classList.remove('hidden');
-      else if (type === 'paper') document.getElementById('drawerPaperContent').classList.remove('hidden');
+    function openDrawer() {
+      isDrawerOpen = true;
+      drawer.classList.remove('drawer-closed');
+      drawer.classList.add('drawer-open');
     }
 
     function closeDrawer() {
+      isDrawerOpen = false;
       drawer.classList.remove('drawer-open');
       drawer.classList.add('drawer-closed');
-      currentDrawerOpen = null;
     }
 
-    document.querySelectorAll('.drawer-trigger-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const target = btn.dataset.drawer;
-        if (currentDrawerOpen === target) {
-          closeDrawer();
-        } else {
-          openDrawer(target);
-        }
-      });
+    btnOpenStyleSelector.addEventListener('click', () => {
+      if (isDrawerOpen) closeDrawer();
+      else openDrawer();
     });
 
     document.getElementById('btnCloseDrawer').addEventListener('click', closeDrawer);
+
+    document.querySelectorAll('.medium-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        switchBrushMedium(btn.dataset.modetab);
+      });
+    });
 
     // 水彩水分控制
     document.getElementById('waterSlider').addEventListener('input', (e) => {
@@ -1289,8 +1420,35 @@
       document.getElementById('bucketDiluteBadge').textContent = `${Math.round(brushDilution * 100)}%`;
     });
 
+    // 防误触模式切换
+    const btnTogglePalm = document.getElementById('btnTogglePalmRejection');
+    const palmIcon = document.getElementById('palmIcon');
+    const palmText = document.getElementById('palmText');
+
+    btnTogglePalm.addEventListener('click', () => {
+      palmRejectionEnabled = !palmRejectionEnabled;
+      if (palmRejectionEnabled) {
+        btnTogglePalm.className = 'px-2.5 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30 active:scale-95 transition flex items-center gap-1 text-xs font-bold';
+        palmIcon.textContent = '🛡️';
+        palmText.textContent = '防误触开';
+        showToast('已开启手掌防误触：仅 Apple Pencil 可作画，双指平移缩放');
+      } else {
+        btnTogglePalm.className = 'px-2.5 py-1.5 rounded-xl bg-stone-800/80 border border-stone-700 text-stone-300 hover:bg-stone-700 active:scale-95 transition flex items-center gap-1 text-xs font-semibold';
+        palmIcon.textContent = '🖐️';
+        palmText.textContent = '自由模式';
+        showToast('已切换为自由模式：手指与触控笔皆可作画');
+      }
+    });
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      toast.textContent = msg;
+      toast.style.opacity = '1';
+      setTimeout(() => { toast.style.opacity = '0'; }, 1800);
+    }
+
     /********************************************************************
-     * 12. 照片智能转四大画风 (黑白草稿描摹 + 3大真实非光栅图像处理)
+     * 13. 照片智能转四大画风 (黑白草稿描摹 + 3大真实非光栅图像处理)
      ********************************************************************/
     const sourcePhotoCanvas = document.createElement('canvas');
     sourcePhotoCanvas.width = W; sourcePhotoCanvas.height = H;
@@ -1343,7 +1501,6 @@
       renderRefCanvas();
     }
 
-    // 核心重构：真正基于非光栅图像处理的艺术风格转换与黑白线稿描摹
     function applyFilterTo(targetCanvas, styleType, strengthVal) {
       const tw = targetCanvas.width, th = targetCanvas.height;
       const tCtx = targetCanvas.getContext('2d');
@@ -1355,28 +1512,22 @@
       const d = imgData.data;
 
       if (styleType === 'sketch') {
-        /******************************************************************
-         * 1. 【黑白线稿描摹图】(Sobel 边缘梯度提取 + 白纸黑线铅笔描边)
-         ******************************************************************/
         for (let y = 1; y < th - 1; y++) {
           for (let x = 1; x < tw - 1; x++) {
             const idx = (y * tw + x) * 4;
-            // 灰度亮度
             const lum = (x0, y0) => {
               const i = (y0 * tw + x0) * 4;
               return s[i] * 0.299 + s[i+1] * 0.587 + s[i+2] * 0.114;
             };
 
-            // 3x3 Sobel 算子
             const gx = (lum(x+1, y-1) + 2*lum(x+1, y) + lum(x+1, y+1)) - (lum(x-1, y-1) + 2*lum(x-1, y) + lum(x-1, y+1));
             const gy = (lum(x-1, y+1) + 2*lum(x, y+1) + lum(x+1, y+1)) - (lum(x-1, y-1) + 2*lum(x, y-1) + lum(x+1, y-1));
             const edge = Math.hypot(gx, gy);
 
-            // 线条阈值动态调校：白底深灰/黑线，清晰呈现外轮廓方便描边
             const edgeVal = Math.min(255, edge * (1.2 + str * 1.5));
             let v = 255 - edgeVal;
-            if (v < 180) v = Math.max(25, v * 0.7); // 突出描边轮廓线
-            else v = 255; // 白纸留白
+            if (v < 180) v = Math.max(25, v * 0.7);
+            else v = 255;
 
             d[idx]     = v;
             d[idx + 1] = v;
@@ -1384,9 +1535,6 @@
           }
         }
       } else if (styleType === 'watercolor') {
-        /******************************************************************
-         * 2. 【真·水彩水渍晕染】(平滑色块 + 咖啡环水痕暗边 + 冷压纸颗粒沉淀)
-         ******************************************************************/
         const blur = new Uint8ClampedArray(s);
         for (let y = 1; y < th - 1; y++) {
           for (let x = 1; x < tw - 1; x++) {
@@ -1424,31 +1572,24 @@
           }
         }
       } else if (styleType === 'crayon') {
-        /******************************************************************
-         * 3. 【真·儿童蜡笔质感】(色彩聚类成蜡粉原色 + 45°排线起伏 + 凹陷飞白)
-         ******************************************************************/
         for (let y = 0; y < th; y++) {
           for (let x = 0; x < tw; x++) {
             const idx = (y * tw + x) * 4;
-            // 蜡笔色阶量化 (将照片像素归类为蜡笔饱和色素)
             const step = 36;
             let r = Math.round(s[idx] / step) * step;
             let g = Math.round(s[idx+1] / step) * step;
             let b = Math.round(s[idx+2] / step) * step;
 
-            // 45° 蜡笔手绘排线
             const strokeLine = Math.sin((x + y) * 0.45) * 0.5 + 0.5;
             const tooth = ((Math.sin(x * 15.3 + y * 3.7) * 43758.54) % 1 + 1) * 0.5;
             const waxDeposit = (tooth * 0.6 + strokeLine * 0.4);
 
             const threshold = 0.32 + (1.0 - str) * 0.3;
             if (waxDeposit < threshold) {
-              // 凹陷飞白：露出画纸底色
               d[idx]     = Math.min(255, r * 0.6 + 248 * 0.4);
               d[idx + 1] = Math.min(255, g * 0.6 + 244 * 0.4);
               d[idx + 2] = Math.min(255, b * 0.6 + 236 * 0.4);
             } else {
-              // 凸起蜡粉压实高饱和沉淀
               d[idx]     = Math.min(255, r * 1.08);
               d[idx + 1] = Math.min(255, g * 1.08);
               d[idx + 2] = Math.min(255, b * 1.08);
@@ -1456,9 +1597,6 @@
           }
         }
       } else if (styleType === 'marker') {
-        /******************************************************************
-         * 4. 【真·专业双头马克笔】(醇墨大色块分阶 + 笔尖叠色深色勾边)
-         ******************************************************************/
         for (let y = 1; y < th - 1; y++) {
           for (let x = 1; x < tw - 1; x++) {
             const idx = (y * tw + x) * 4;
@@ -1467,7 +1605,6 @@
             let g = Math.round(s[idx+1] / step) * step;
             let b = Math.round(s[idx+2] / step) * step;
 
-            // 醇墨交界渗透勾边
             const diff = Math.abs(s[idx] - s[idx+4]) + Math.abs(s[idx+1] - s[idx+5]) + Math.abs(s[idx+2] - s[idx+6]);
             if (diff > 48 * (1.1 - str * 0.4)) {
               r = Math.max(0, r * 0.55);
@@ -1511,7 +1648,6 @@
       refCtx.restore();
     }
 
-    // 弹窗与相片导入事件
     const camModal = document.getElementById('cameraModal');
     document.getElementById('btnOpenCameraModal').addEventListener('click', () => {
       camModal.classList.remove('hidden'); camModal.classList.add('flex');
@@ -1546,7 +1682,6 @@
       });
     });
 
-    // 直接导入为画布线稿 (填色模式)
     document.getElementById('btnImportSketchToPaint').addEventListener('click', () => {
       saveUndoState();
       const strength = Number(document.getElementById('styleIntensitySlider').value);
@@ -1599,45 +1734,69 @@
     });
 
     /********************************************************************
-     * 13. 视口居中与缩放控制
+     * 14. 辅助构图九宫格与视口复位控制
      ********************************************************************/
-    document.getElementById('btnResetView').addEventListener('click', () => {
-      viewScale = 1.0; viewPanX = 0; viewPanY = 0;
-      applyViewportTransform();
-    });
-    document.getElementById('btnZoomIn').addEventListener('click', () => {
-      viewScale = Math.min(2.5, viewScale + 0.15);
-      applyViewportTransform();
-    });
-    document.getElementById('btnZoomOut').addEventListener('click', () => {
-      viewScale = Math.max(0.6, viewScale - 0.15);
-      applyViewportTransform();
-    });
-
-    // 辅助九宫格线
     document.getElementById('btnToggleGrid').addEventListener('click', () => {
       showGrid = !showGrid;
+      const btn = document.getElementById('btnToggleGrid');
       overlayCtx.clearRect(0, 0, W, H);
       if (showGrid) {
-        overlayCtx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
-        overlayCtx.lineWidth = 1;
+        btn.classList.add('bg-amber-500/25', 'border-amber-500/50', 'text-amber-300');
+        btn.classList.remove('bg-stone-800/80', 'border-transparent');
+        // 绘制九宫格黄金分割比例参考线
+        overlayCtx.save();
+        overlayCtx.strokeStyle = 'rgba(245, 158, 11, 0.45)';
+        overlayCtx.lineWidth = 1.2;
+        overlayCtx.setLineDash([6, 6]);
         overlayCtx.beginPath();
+        // 三等分垂直线
         overlayCtx.moveTo(W / 3, 0); overlayCtx.lineTo(W / 3, H);
         overlayCtx.moveTo((W / 3) * 2, 0); overlayCtx.lineTo((W / 3) * 2, H);
+        // 三等分水平线
         overlayCtx.moveTo(0, H / 3); overlayCtx.lineTo(W, H / 3);
         overlayCtx.moveTo(0, (H / 3) * 2); overlayCtx.lineTo(W, (H / 3) * 2);
         overlayCtx.stroke();
+        // 4 个黄金交叉焦点标记
+        const pts = [
+          [W / 3, H / 3], [(W / 3) * 2, H / 3],
+          [W / 3, (H / 3) * 2], [(W / 3) * 2, (H / 3) * 2]
+        ];
+        overlayCtx.setLineDash([]);
+        overlayCtx.fillStyle = '#f59e0b';
+        pts.forEach(([px, py]) => {
+          overlayCtx.beginPath();
+          overlayCtx.arc(px, py, 4, 0, Math.PI * 2);
+          overlayCtx.fill();
+        });
+        overlayCtx.restore();
+        showToast('已开启九宫格构图辅助线');
+      } else {
+        btn.classList.remove('bg-amber-500/25', 'border-amber-500/50', 'text-amber-300');
+        btn.classList.add('bg-stone-800/80', 'border-transparent');
+        showToast('已关闭九宫格辅助线');
       }
     });
 
-    // 高清画作导出
+    document.getElementById('btnResetView').addEventListener('click', () => {
+      viewScale = 1.0; viewPanX = 0; viewPanY = 0;
+      applyViewportTransform();
+      showToast('视野已重置居中 (100%)');
+    });
+
+    document.getElementById('btnZoomIn').addEventListener('click', () => {
+      viewScale = Math.min(3.5, viewScale + 0.15);
+      applyViewportTransform();
+    });
+    document.getElementById('btnZoomOut').addEventListener('click', () => {
+      viewScale = Math.max(0.4, viewScale - 0.15);
+      applyViewportTransform();
+    });
+
     document.getElementById('btnExport').addEventListener('click', () => {
       const expCanvas = document.createElement('canvas');
       expCanvas.width = W; expCanvas.height = H;
       const expCtx = expCanvas.getContext('2d');
-      // 1. 纸张底色与纹理
       expCtx.drawImage(paperCanvas, 0, 0);
-      // 2. 绘画图层
       expCtx.drawImage(paintCanvas, 0, 0);
       const url = expCanvas.toDataURL('image/png');
       const a = document.createElement('a');
@@ -1646,17 +1805,8 @@
       a.click();
     });
 
-    // 笔刷大小快捷切换
-    const BRUSH_SIZES = [8, 16, 24, 38, 56];
-    let brushSizeIdx = 2;
-    document.getElementById('btnJogBrushSize').addEventListener('click', () => {
-      brushSizeIdx = (brushSizeIdx + 1) % BRUSH_SIZES.length;
-      brushRadius = BRUSH_SIZES[brushSizeIdx];
-      document.getElementById('brushSizeBadge').textContent = `${brushRadius}px`;
-    });
-
     /********************************************************************
-     * 14. 初始化装配
+     * 15. 初始化系统装配
      ********************************************************************/
     drawPaperTexture('coldpress');
     renderWatercolorPans();
@@ -1667,6 +1817,7 @@
     drawPresetPhoto('shiba');
     applyBrushColor([20, 85, 210]);
     switchBrushMedium('watercolor');
+    updateBrushSize(24);
     applyViewportTransform();
   </script>
 </body>
