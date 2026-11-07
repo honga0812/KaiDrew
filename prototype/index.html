@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="h-full bg-stone-950">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>KaiDraw - 纯粹3大画种 (水彩/蜡笔/马克笔) & 真实纸张物理引擎</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      overscroll-behavior: none;
+      touch-action: none;
+    }
+    .drawer-panel {
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+    }
+    .drawer-closed {
+      transform: translateX(-110%);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .drawer-open {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .hue-slider {
+      background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+    }
+    .crayons-box-shadow {
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .porcelain-plate {
+      background: radial-gradient(circle at 30% 30%, #ffffff 0%, #f7f7f4 70%, #ecebe4 100%);
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.25);
+    }
+    .color-swatch-glow:hover {
+      transform: translateY(-2px) scale(1.05);
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+    }
+    .active-swatch-ring {
+      box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px #f59e0b;
+    }
+  </style>
+</head>
+<body class="text-white antialiased h-screen flex flex-col p-2 select-none relative overflow-hidden bg-stone-950">
+
+  <!-- 顶部超纯净极简导航条 (纯图标，最大化画布空间) -->
+  <header class="bg-stone-900/90 backdrop-blur-md border border-stone-700/60 rounded-2xl px-3 py-1.5 flex items-center justify-between gap-2 shadow-lg shrink-0 z-30">
+    <!-- 左侧：返回、撤销、重做、清屏 -->
+    <div class="flex items-center gap-1.5">
+      <button id="btnBack" class="p-2 rounded-xl bg-stone-800/80 hover:bg-stone-700 active:scale-95 transition" title="返回画册">
+        <span class="text-base">◀</span>
+      </button>
+      <div class="h-4 w-px bg-stone-700 mx-0.5"></div>
+      <button id="btnUndo" class="p-2 rounded-xl bg-stone-800/80 hover:bg-stone-700 active:scale-95 transition opacity-50 cursor-not-allowed" title="撤销 (Command+Z)">
+        <span class="text-base">↩️</span>
+      </button>
+      <button id="btnRedo" class="p-2 rounded-xl bg-stone-800/80 hover:bg-stone-700 active:scale-95 transition opacity-50 cursor-not-allowed" title="重做 (Command+Shift+Z)">
+        <span class="text-base">↪️</span>
+      </button>
+      <button id="btnClear" class="p-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 active:scale-95 transition" title="清空画纸">
+        <span class="text-base">🗑️</span>
+      </button>
+    </div>
+
+    <!-- 中间：当前工具纯视觉提示 -->
+    <div class="flex items-center gap-2">
+      <div id="currentSwatchCircle" class="w-7 h-7 rounded-full border-2 border-white shadow-md transition-transform" style="background: rgb(20, 85, 210);" title="当前画笔颜色"></div>
+      <button id="btnWashBucket" class="px-2.5 py-1 rounded-xl bg-sky-500/20 border border-sky-500/40 hover:bg-sky-500/30 active:scale-95 transition flex items-center gap-1 text-xs font-bold text-sky-400" title="点击洗笔桶：稀释画笔颜色">
+        <span id="bucketIcon" class="text-lg">🪣</span>
+        <span id="bucketDiluteBadge" class="text-[11px] font-mono px-1.5 py-0.2 rounded bg-sky-500 text-white">100%</span>
+      </button>
+      <div class="h-4 w-px bg-stone-700 mx-0.5"></div>
+      <!-- 笔触粗细飞梭调节按钮 -->
+      <button id="btnJogBrushSize" class="px-2.5 py-1 rounded-xl bg-stone-800/80 border border-stone-600 hover:bg-stone-700 active:scale-95 transition flex items-center gap-1.5 text-xs font-mono font-bold" title="点击展开飞梭旋钮调大小">
+        <span>⭕</span>
+        <span id="brushSizeBadge">24px</span>
+      </button>
+    </div>
+
+    <!-- 右侧：画纸切换、拍照实验室、参考线、全屏与导出 -->
+    <div class="flex items-center gap-1.5">
+      <button id="btnToggleRef" class="p-2 rounded-xl bg-stone-800/80 hover:bg-stone-700 active:scale-95 transition" title="显示/隐藏描摹底图">
+        <span id="refEyeIcon" class="text-base">👁️</span>
+      </button>
+      <button id="btnToggleGrid" class="p-2 rounded-xl bg-stone-800/80 hover:bg-stone-700 active:scale-95 transition" title="九宫格辅助构图线">
+        <span class="text-base">#️⃣</span>
+      </button>
+      <div class="h-4 w-px bg-stone-700 mx-0.5"></div>
+      <button id="btnOpenCameraModal" class="px-2.5 py-1 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center gap-1 hover:bg-emerald-500/30 active:scale-95 transition" title="拍照/相片转画风与黑白描摹草稿">
+        <span>📸</span> <span>相片转换</span>
+      </button>
+      <button id="btnExport" class="p-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 active:scale-95 transition" title="保存高清画作到相册">
+        <span class="text-base">💾</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主画布视口区 (全屏铺满，纯净开阔) -->
+  <main id="viewportContainer" class="flex-1 relative overflow-hidden rounded-2xl border border-stone-800 shadow-inner bg-stone-950/80 flex items-center justify-center min-h-0 touch-none my-1">
+    <!-- 硬件加速视口变形包裹层 (Transform Wrapper) -->
+    <div id="transformCanvasWrapper" class="relative rounded-xl overflow-hidden shadow-2xl border border-stone-700 origin-center transition-none shrink-0" style="width: 720px; height: 520px; transform: translate(0px, 0px) scale(1);">
+      <!-- 0. 真实物理纸张材质底层 (4大纸张微观纤维与纹理) -->
+      <canvas id="paperCanvas" width="720" height="520" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+      <!-- 1. 参考底图层 (支持照片艺术转换与黑白线稿描摹) -->
+      <canvas id="refCanvas" width="720" height="520" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+      <!-- 2. 真实绘画交互主图层 -->
+      <canvas id="paintCanvas" width="720" height="520" class="absolute inset-0 w-full h-full cursor-none"></canvas>
+      <!-- 3. 九宫格辅助线层 -->
+      <canvas id="overlayCanvas" width="720" height="520" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+    </div>
+
+    <!-- 实时笔刷尺寸指示圆圈 (跟着触控笔/光标走，绝对1:1贴合) -->
+    <div id="brushCursorRing" class="pointer-events-none fixed top-0 left-0 rounded-full border border-white/80 bg-white/10 shadow-sm z-50 transition-none hidden"></div>
+
+    <!-- 智能提示条 -->
+    <div id="toastNotification" class="pointer-events-none fixed top-16 left-1/2 -translate-x-1/2 px-4 py-2 rounded-2xl bg-black/85 backdrop-blur-md border border-amber-500/40 text-amber-300 text-xs font-bold shadow-2xl z-50 transition-opacity duration-300 opacity-0"></div>
+
+    <!-- 视口左上角状态：当前画纸材质 & 缩放比例 -->
+    <div class="absolute left-3 top-3 flex items-center gap-2 pointer-events-none z-20">
+      <span id="currentPaperBadge" class="text-xs px-2.5 py-1 rounded-xl bg-black/60 backdrop-blur border border-white/15 text-stone-200 font-semibold shadow">
+        📜 粗纹冷压水彩纸
+      </span>
+      <span id="zoomPercentBadge" class="text-xs px-2 py-1 rounded-xl bg-black/60 backdrop-blur border border-white/15 text-amber-400 font-mono font-semibold shadow">
+        100%
+      </span>
+    </div>
+
+    <!-- 视口左下角：视口复位控制按钮 -->
+    <div class="absolute left-3 bottom-3 flex items-center gap-1 z-20">
+      <button id="btnResetView" class="px-2.5 py-1.5 rounded-xl bg-black/60 backdrop-blur hover:bg-black/80 border border-white/20 text-xs text-white font-medium shadow active:scale-95 transition">
+        🔄 视野居中
+      </button>
+      <button id="btnZoomIn" class="w-8 h-8 rounded-xl bg-black/60 backdrop-blur hover:bg-black/80 border border-white/20 text-xs text-white font-bold flex items-center justify-center active:scale-95 transition">
+        ➕
+      </button>
+      <button id="btnZoomOut" class="w-8 h-8 rounded-xl bg-black/60 backdrop-blur hover:bg-black/80 border border-white/20 text-xs text-white font-bold flex items-center justify-center active:scale-95 transition">
+        ➖
+      </button>
+    </div>
+  </main>
+
+  <!-- 底部拟物画具快捷切换条 (水彩、蜡笔、马克笔、画纸材质) -->
+  <footer class="bg-stone-900/95 backdrop-blur-md border border-stone-700/60 rounded-2xl p-1.5 flex items-center justify-center gap-2 shadow-2xl shrink-0 z-30">
+    <!-- 水彩笔刷抽屉开关 -->
+    <button data-drawer="watercolor" class="drawer-trigger-btn px-4 py-2 rounded-xl border-2 border-amber-500 bg-amber-500/25 ring-2 ring-amber-400/40 text-amber-300 font-bold flex items-center gap-2 active:scale-95 transition shadow-lg shadow-amber-500/20">
+      <span class="text-lg">🖌️</span>
+      <span class="text-xs">水彩画室</span>
+    </button>
+
+    <!-- 蜡笔抽屉开关 -->
+    <button data-drawer="crayon" class="drawer-trigger-btn px-4 py-2 rounded-xl border border-stone-700 bg-stone-800/80 text-xs font-semibold flex items-center gap-2 active:scale-95 transition opacity-80 hover:opacity-100">
+      <span class="text-lg">🖍️</span>
+      <span class="text-xs">儿童蜡笔</span>
+    </button>
+
+    <!-- 双头马克笔抽屉开关 -->
+    <button data-drawer="marker" class="drawer-trigger-btn px-4 py-2 rounded-xl border border-stone-700 bg-stone-800/80 text-xs font-semibold flex items-center gap-2 active:scale-95 transition opacity-80 hover:opacity-100">
+      <span class="text-lg">🖊️</span>
+      <span class="text-xs">双头马克笔</span>
+    </button>
+
+    <div class="h-5 w-px bg-stone-700 mx-1"></div>
+
+    <!-- 画纸材质抽屉开关 -->
+    <button data-drawer="paper" class="drawer-trigger-btn px-4 py-2 rounded-xl border border-stone-700 bg-stone-800/80 text-xs font-semibold flex items-center gap-2 active:scale-95 transition opacity-80 hover:opacity-100">
+      <span class="text-lg">📜</span>
+      <span class="text-xs">画纸材质</span>
+    </button>
+  </footer>
+
+  <!-- ==================== 抽屉式拟物画具面板 (Drawer Panel) ==================== -->
+  <aside id="mainDrawer" class="drawer-panel drawer-closed fixed left-2 top-14 bottom-16 w-84 max-w-[88vw] bg-stone-900/95 backdrop-blur-xl border border-stone-700/80 rounded-2xl p-3 shadow-2xl z-40 flex flex-col gap-3 overflow-y-auto">
+    <!-- 抽屉顶部标题与关闭按钮 -->
+    <div class="flex items-center justify-between border-b border-stone-700/60 pb-2">
+      <div class="flex items-center gap-1.5 font-bold text-xs" id="drawerTitle">
+        <span>🖌️</span> <span>水彩画室</span>
+      </div>
+      <button id="btnCloseDrawer" class="w-7 h-7 rounded-lg bg-stone-800 hover:bg-stone-700 text-xs font-bold flex items-center justify-center">
+        ✕
+      </button>
+    </div>
+
+    <!-- 1. 水彩画室抽屉内容 -->
+    <div id="drawerWatercolorContent" class="flex flex-col gap-3">
+      <!-- 12 块金属盒固体水彩块 (拟物半块造型) -->
+      <div class="bg-stone-950/80 p-2.5 rounded-xl border border-stone-800">
+        <div class="text-[11px] font-bold text-stone-400 mb-1.5 flex items-center justify-between">
+          <span>🎨 大师级 12 色半块固体水彩</span>
+          <span class="text-[10px] text-stone-500">点击蘸取颜料</span>
+        </div>
+        <div class="grid grid-cols-6 gap-2" id="watercolorPansGrid"></div>
+      </div>
+
+      <!-- 白瓷流动融合调色盘 (真实水彩混色) -->
+      <div class="porcelain-plate rounded-xl p-2.5 border-2 border-stone-300/80 shadow-md flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-bold text-stone-800 flex items-center gap-1">🥣 白瓷流动融合调色盘</span>
+          <div class="flex items-center gap-1">
+            <button id="btnWetPalette" class="text-[10px] px-2 py-0.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 border border-sky-300 font-semibold active:scale-95 transition" title="注入清水稀释">💧 滴水</button>
+            <button id="btnSpongePalette" class="text-[10px] px-2 py-0.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-semibold active:scale-95 transition" title="海绵吸水淡化">🧽 吸水</button>
+            <button id="btnWashPorcelain" class="text-[10px] px-2 py-0.5 rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-800 border border-stone-300 font-semibold active:scale-95 transition" title="擦拭洗净调色盘">🧼 洗净</button>
+          </div>
+        </div>
+        <div class="relative w-full rounded-xl overflow-hidden border border-stone-300 shadow-inner bg-[#faf9f5]">
+          <canvas id="watercolorPaletteCanvas" width="280" height="110" class="w-full h-28 touch-none cursor-crosshair block"></canvas>
+          <div id="paletteSampleRing" class="absolute pointer-events-none w-5 h-5 rounded-full border-2 border-white shadow-md -translate-x-1/2 -translate-y-1/2 hidden"></div>
+        </div>
+        <div class="text-[10px] text-stone-600 text-center">💡 用触控笔在白瓷盘上画圈研磨混合，手指/笔触点击任意位置即吸取中间过渡色</div>
+      </div>
+
+      <!-- 自由全色域调色区 -->
+      <div class="bg-stone-950/80 p-2.5 rounded-xl border border-stone-800 flex flex-col gap-2">
+        <div class="flex items-center justify-between text-xs font-semibold">
+          <span class="text-stone-300">🌈 自由全色域色盘</span>
+          <div class="flex items-center gap-1.5">
+            <span class="text-[11px] text-stone-400">自定水彩块:</span>
+            <div id="customWatercolorPreview" class="w-6 h-5 rounded border border-black/40 shadow-inner" style="background: rgb(20, 85, 210);"></div>
+          </div>
+        </div>
+        <input id="hueSliderWatercolor" type="range" min="0" max="360" value="220" class="w-full hue-slider h-3 rounded-lg appearance-none cursor-pointer" />
+        <div class="flex items-center gap-2 text-xs">
+          <span class="text-stone-400 shrink-0 text-[11px]">浓度明暗:</span>
+          <input id="lightnessSliderWatercolor" type="range" min="15" max="95" value="45" class="flex-1 accent-sky-500" />
+        </div>
+      </div>
+
+      <!-- 水分调控 -->
+      <div class="bg-stone-950/80 p-2.5 rounded-xl border border-stone-800 flex flex-col gap-2">
+        <div class="flex items-center justify-between text-xs font-semibold">
+          <span>💧 水分稀释与晕染</span>
+          <span id="waterValueLabel" class="text-sky-400 font-bold">65%</span>
+        </div>
+        <input id="waterSlider" type="range" min="10" max="95" value="65" class="w-full accent-sky-500" />
+        <div class="grid grid-cols-2 gap-1.5 text-xs">
+          <button id="btnSponge" class="py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 font-semibold active:scale-95 transition">🧽 海绵吸干</button>
+          <button id="btnDryCanvas" class="py-1.5 rounded-lg bg-purple-500/20 border border-purple-500/40 text-purple-400 font-semibold active:scale-95 transition">🌬️ 吹干画纸</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 蜡笔画室抽屉内容 -->
+    <div id="drawerCrayonContent" class="hidden flex flex-col gap-3">
+      <!-- 12 支带纸套笔身与蜡质尖头的拟物蜡笔盒 -->
+      <div class="bg-amber-950/30 border border-amber-600/30 rounded-xl p-2.5 crayons-box-shadow">
+        <div class="text-[11px] font-bold text-amber-300 mb-2 flex items-center justify-between">
+          <span>🖍️ 经典油性蜡笔盒 (12色)</span>
+          <span class="text-[10px] text-amber-400/80">点击蜡笔选用</span>
+        </div>
+        <div class="grid grid-cols-6 gap-2" id="crayonBoxContainer"></div>
+      </div>
+
+      <!-- 自由全色域调色区 (动态更新自定蜡笔) -->
+      <div class="bg-stone-950/80 p-2.5 rounded-xl border border-stone-800 flex flex-col gap-2">
+        <div class="flex items-center justify-between text-xs font-semibold">
+          <span class="text-stone-300">🌈 自定专属蜡笔</span>
+          <!-- 拟物专属蜡笔预览 -->
+          <div id="customCrayonPreview" class="flex flex-col items-center cursor-pointer">
+            <div class="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[8px]" style="border-bottom-color: rgb(255, 125, 20);"></div>
+            <div class="w-3.5 h-6 rounded-b-sm border border-black/30 shadow-inner" style="background: rgb(255, 125, 20);"></div>
+          </div>
+        </div>
+        <input id="hueSliderCrayon" type="range" min="0" max="360" value="25" class="w-full hue-slider h-3 rounded-lg appearance-none cursor-pointer" />
+        <div class="flex items-center gap-2 text-xs">
+          <span class="text-stone-400 shrink-0 text-[11px]">蜡质深浅:</span>
+          <input id="lightnessSliderCrayon" type="range" min="20" max="95" value="55" class="flex-1 accent-amber-500" />
+        </div>
+      </div>
+
+      <!-- 笔触形式与纸张颗粒感 -->
+      <div class="bg-stone-950/80 p-2.5 rounded-xl border border-stone-800 flex flex-col gap-2">
+        <div class="grid grid-cols-2 gap-1.5 text-xs">
+          <button data-crayontip="tip" class="crayon-tip-btn py-1.5 rounded-lg border-2 border-amber-500 bg-amber-500/20 font-bold active:scale-95 transition">✏️ 笔尖细勾</button>
+          <button data-crayontip="side" class="crayon-tip-btn py-1.5 rounded-lg border border-stone-700 bg-stone-800 font-semibold active:scale-95 transition">🖍️ 侧锋大面涂</button>
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <span class="text-stone-400 shrink-0 text-[11px]">颗粒粗糙度:</span>
+          <input id="crayonTextureSlider" type="range" min="15" max="95" value="65" class="w-full accent-amber-500" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 马克笔画室抽屉内容 -->
+    <div id="drawerMarkerContent" class="hidden flex flex-col gap-3">
+      <!-- 12 支专业双头马克笔笔架 (带彩帽与白笔身) -->
+      <div class="bg-stone-950 p-2.5 rounded-xl border border-stone-800 shadow-inner">
+        <div class="text-[11px] font-bold text-indigo-300 mb-2 flex items-center justify-between">
+          <span>🖊️ 专业双头马克笔架 (12色)</span>
+          <span class="text-[10px] text-stone-500">点击笔帽取笔</span>
+        </div>
+        <div class="grid grid-cols-6 gap-2" id="markerRackContainer"></div>
+      </div>
+
+      <!-- 自由全色域调色区 (动态更新自定马克笔) -->
+      <div class="bg-stone-950/80 p-2.5 rounded-xl border border-stone-800 flex flex-col gap-2">
+        <div class="flex items-center justify-between text-xs font-semibold">
+          <span class="text-stone-300">🌈 自定专属马克笔</span>
+          <!-- 拟物专属马克笔预览 -->
+          <div id="customMarkerPreview" class="flex flex-col items-center">
+            <div class="w-3.5 h-4 rounded-t-sm border border-black/30" style="background: rgb(240, 50, 70);"></div>
+            <div class="w-3.5 h-6 bg-stone-200 border-x border-b border-stone-400 rounded-b-xs"></div>
+          </div>
+        </div>
+        <input id="hueSliderMarker" type="range" min="0" max="360" value="350" class="w-full hue-slider h-3 rounded-lg appearance-none cursor-pointer" />
+        <div class="flex items-center gap-2 text-xs">
+          <span class="text-stone-400 shrink-0 text-[11px]">墨水饱和度:</span>
+          <input id="lightnessSliderMarker" type="range" min="20" max="95" value="55" class="flex-1 accent-indigo-500" />
+        </div>
+      </div>
+
+      <!-- 笔尖形态切换 -->
+      <div class="bg-stone-950/80 p-2.5 rounded-xl border border-stone-800 flex flex-col gap-1.5">
+        <div class="text-[11px] font-bold text-stone-400 mb-1">笔头造型切换：</div>
+        <div class="grid grid-cols-3 gap-1 text-xs">
+          <button data-tip="round" class="tip-btn py-1.5 rounded-lg border-2 border-amber-500 bg-amber-500/20 font-bold active:scale-95 transition">⏺️ 圆头</button>
+          <button data-tip="brush" class="tip-btn py-1.5 rounded-lg border border-stone-700 bg-stone-800 font-semibold active:scale-95 transition">🖌️ 软尖头</button>
+          <button data-tip="chisel" class="tip-btn py-1.5 rounded-lg border border-stone-700 bg-stone-800 font-semibold active:scale-95 transition">📐 斜切头</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 画纸材质选择抽屉内容 (4款经典纸张：宣纸、云彩纸、细纹卡纸、冷压水彩纸) -->
+    <div id="drawerPaperContent" class="hidden flex flex-col gap-2">
+      <div class="text-xs text-stone-400 font-medium mb-1">点击切换真实物理画纸纹理与物理交互：</div>
+      <div class="flex flex-col gap-2" id="paperOptionsList"></div>
+    </div>
+  </aside>
+
+  <!-- ==================== 弹窗：相片转画风与黑白描摹草稿实验室 ==================== -->
+  <div id="cameraModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden items-center justify-center p-3">
+    <div class="bg-stone-900 border border-stone-700 rounded-2xl max-w-4xl w-full p-4 shadow-2xl flex flex-col gap-3 max-h-[94vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-stone-700 pb-2">
+        <div class="flex items-center gap-2 font-bold text-sm">
+          <span>📸</span> <span>相片智能转画风与黑白描摹草稿实验室</span>
+        </div>
+        <button id="btnCloseCameraModal" class="px-2.5 py-1 rounded-xl bg-stone-800 text-xs font-bold active:scale-95 transition">✕ 关闭</button>
+      </div>
+
+      <!-- 拍照与上传操作 -->
+      <div class="bg-emerald-500/15 border border-emerald-500/40 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <div class="text-xs font-bold text-emerald-400">📸 拍摄真实物体转换为手绘艺术或黑白练习草稿</div>
+          <div class="text-[11px] text-stone-300">支持直接转为黑白线条图供临摹描边上色，或转为真实水彩晕染、蜡笔颗粒、马克笔色块！</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btnMacHardwareSnap" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow active:scale-95 transition">
+            📸 启动相机拍一张
+          </button>
+          <label class="px-3 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs cursor-pointer shadow active:scale-95 transition">
+            📂 上传相片
+            <input id="fileUploadInput" type="file" accept="image/*" class="hidden" />
+          </label>
+        </div>
+      </div>
+
+      <!-- 预设示例与风格强度控制 -->
+      <div class="flex items-center justify-between gap-2 flex-wrap bg-stone-950 p-2.5 rounded-xl border border-stone-800">
+        <div class="flex items-center gap-1.5 text-xs">
+          <span class="text-stone-400">内置示例:</span>
+          <button data-camerapreset="shiba" class="cam-preset-btn px-2.5 py-1 rounded-lg bg-amber-500 text-white font-bold active:scale-95 transition">🐶 小柴犬</button>
+          <button data-camerapreset="sunflower" class="cam-preset-btn px-2.5 py-1 rounded-lg bg-stone-800 text-stone-300 font-semibold active:scale-95 transition">🌻 向日葵小屋</button>
+          <button data-camerapreset="balloon" class="cam-preset-btn px-2.5 py-1 rounded-lg bg-stone-800 text-stone-300 font-semibold active:scale-95 transition">🎈 彩色热气球</button>
+        </div>
+        <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+          <span class="text-xs font-bold text-stone-300 shrink-0">🎨 艺术处理强度:</span>
+          <input id="styleIntensitySlider" type="range" min="0" max="100" value="75" class="flex-1 accent-amber-500" />
+          <span id="styleIntensityVal" class="text-xs font-bold text-amber-500 w-9 text-right">75%</span>
+        </div>
+      </div>
+
+      <!-- 4 大模式对比预览网格 (黑白描摹草稿 + 3 大非光栅艺术图像处理) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <!-- 1. 黑白草稿描边图 (新增核心功能) -->
+        <div class="bg-stone-950 border-2 border-stone-700 hover:border-amber-500 rounded-xl p-2 flex flex-col items-center gap-2">
+          <div class="flex items-center justify-between w-full">
+            <span class="text-xs font-bold text-amber-400">✏️ 黑白描摹草稿</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300">描边先练</span>
+          </div>
+          <canvas id="prevSketch" width="260" height="180" class="w-full rounded-lg bg-white border border-stone-700"></canvas>
+          <div class="flex flex-col gap-1 w-full">
+            <button data-pickstyle="sketch" class="pick-style-btn w-full py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-bold active:scale-95 transition">
+              👁️ 设为半透明描摹底图
+            </button>
+            <button id="btnImportSketchToPaint" class="w-full py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold active:scale-95 transition">
+              🎨 导入为画布线稿 (填色模式)
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. 真·水彩水渍风格 -->
+        <div class="bg-stone-950 border border-stone-800 hover:border-sky-500 rounded-xl p-2 flex flex-col items-center gap-2">
+          <div class="flex items-center justify-between w-full">
+            <span class="text-xs font-bold text-sky-400">🖌️ 真·水彩晕染</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300">水痕暗边</span>
+          </div>
+          <canvas id="prevWatercolor" width="260" height="180" class="w-full rounded-lg bg-white border border-stone-700"></canvas>
+          <button data-pickstyle="watercolor" class="pick-style-btn w-full py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold mt-auto active:scale-95 transition">
+            设为画板底图
+          </button>
+        </div>
+
+        <!-- 3. 真·儿童蜡笔风格 -->
+        <div class="bg-stone-950 border border-stone-800 hover:border-amber-500 rounded-xl p-2 flex flex-col items-center gap-2">
+          <div class="flex items-center justify-between w-full">
+            <span class="text-xs font-bold text-amber-400">🖍️ 真·蜡笔颗粒</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300">蜡粉沉积分层</span>
+          </div>
+          <canvas id="prevCrayon" width="260" height="180" class="w-full rounded-lg bg-white border border-stone-700"></canvas>
+          <button data-pickstyle="crayon" class="pick-style-btn w-full py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold mt-auto active:scale-95 transition">
+            设为画板底图
+          </button>
+        </div>
+
+        <!-- 4. 真·双头马克笔风格 -->
+        <div class="bg-stone-950 border border-stone-800 hover:border-indigo-500 rounded-xl p-2 flex flex-col items-center gap-2">
+          <div class="flex items-center justify-between w-full">
+            <span class="text-xs font-bold text-indigo-400">🖊️ 真·马克笔色块</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300">醇墨色阶</span>
+          </div>
+          <canvas id="prevMarker" width="260" height="180" class="w-full rounded-lg bg-white border border-stone-700"></canvas>
+          <button data-pickstyle="marker" class="pick-style-btn w-full py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold mt-auto active:scale-95 transition">
+            设为画板底图
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /********************************************************************
+     * 1. 颜色数据库 (三大画种各 12 种高纯度大师原色)
+     ********************************************************************/
+    const WATERCOLOR_COLORS_12 = [
+      [250, 250, 250], [255, 210, 0], [205, 133, 63], [230, 40, 50],
+      [195, 30, 80],   [120, 50, 160], [20, 85, 210],  [15, 45, 95],
+      [30, 165, 75],   [100, 120, 45], [110, 65, 40],  [35, 35, 35]
+    ];
+    const CRAYON_COLORS_12 = [
+      [255, 215, 0], [255, 125, 20], [235, 35, 60], [255, 140, 180],
+      [140, 50, 190], [25, 95, 230],  [70, 200, 120], [25, 125, 60],
+      [105, 55, 30],  [255, 255, 255], [30, 30, 30],   [95, 185, 250]
+    ];
+    const MARKER_COLORS_12 = [
+      [255, 225, 0], [255, 130, 25], [240, 50, 70], [245, 145, 190],
+      [135, 65, 185], [20, 85, 220],  [70, 185, 245], [25, 160, 85],
+      [155, 215, 45], [115, 65, 35],  [20, 20, 20],   [255, 255, 255]
+    ];
+
+    /********************************************************************
+     * 2. 4 款经典画纸材质体系 (冷压水彩纸、熟宣纸、云彩纸、细纹暖灰卡纸)
+     ********************************************************************/
+    const PAPER_TYPES = [
+      { id: 'coldpress', name: '粗纹冷压水彩纸', bg: '#faf7ee', desc: '天然棉絮凹凸，水彩沉淀颗粒显著，蜡笔飞白明显' },
+      { id: 'xuan', name: '传统熟宣纸', bg: '#f8f4e6', desc: '纵横交织植物长纤维与微量真金箔斑点，微渗水墨' },
+      { id: 'cloud', name: '棉絮云彩纸', bg: '#f5f2e8', desc: '柔和棉絮云雾肌理，粉彩蜡笔附着柔顺' },
+      { id: 'toned', name: '细纹暖灰卡纸', bg: '#ded5c4', desc: '法国暖灰高密度卡纸，马克笔边缘极度锐利不渗墨' }
+    ];
+    let currentPaperId = 'coldpress';
+
+    /********************************************************************
+     * 3. RYB 美术三原色混色引擎
+     ********************************************************************/
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h = 0, s = 0, l = (max + min) / 2;
+      if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = ((g - b) / d + (g < b ? 6 : 0)) * 60; break;
+          case g: h = ((b - r) / d + 2) * 60; break;
+          case b: h = ((r - g) / d + 4) * 60; break;
+        }
+      }
+      return [h, s, l];
+    }
+
+    function hslToRgb(h, s, l) {
+      h = ((h % 360) + 360) % 360;
+      const c = (1 - Math.abs(2 * l - 1)) * s;
+      const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+      const m = l - c / 2;
+      let r = 0, g = 0, b = 0;
+      if (h < 60)       { r = c; g = x; b = 0; }
+      else if (h < 120) { r = x; g = c; b = 0; }
+      else if (h < 180) { r = 0; g = c; b = x; }
+      else if (h < 240) { r = 0; g = x; b = c; }
+      else if (h < 300) { r = x; g = 0; b = c; }
+      else              { r = c; g = 0; b = x; }
+      return [
+        Math.round(Math.min(255, Math.max(0, (r + m) * 255))),
+        Math.round(Math.min(255, Math.max(0, (g + m) * 255))),
+        Math.round(Math.min(255, Math.max(0, (b + m) * 255)))
+      ];
+    }
+
+    const RGB_HUE_KNOTS = [0, 28, 50, 142, 218, 285, 360];
+    const RYB_HUE_KNOTS = [0, 60, 120, 180, 240, 300, 360];
+
+    function rgbHueToRyb(h) {
+      h = ((h % 360) + 360) % 360;
+      for (let i = 0; i < RGB_HUE_KNOTS.length - 1; i++) {
+        if (h >= RGB_HUE_KNOTS[i] && h <= RGB_HUE_KNOTS[i + 1]) {
+          const ratio = (h - RGB_HUE_KNOTS[i]) / (RGB_HUE_KNOTS[i + 1] - RGB_HUE_KNOTS[i]);
+          return RYB_HUE_KNOTS[i] + ratio * (RYB_HUE_KNOTS[i + 1] - RYB_HUE_KNOTS[i]);
+        }
+      }
+      return h;
+    }
+
+    function rybHueToRgb(rybH) {
+      rybH = ((rybH % 360) + 360) % 360;
+      for (let i = 0; i < RYB_HUE_KNOTS.length - 1; i++) {
+        if (rybH >= RYB_HUE_KNOTS[i] && rybH <= RYB_HUE_KNOTS[i + 1]) {
+          const ratio = (rybH - RYB_HUE_KNOTS[i]) / (RYB_HUE_KNOTS[i + 1] - RYB_HUE_KNOTS[i]);
+          return RGB_HUE_KNOTS[i] + ratio * (RGB_HUE_KNOTS[i + 1] - RGB_HUE_KNOTS[i]);
+        }
+      }
+      return rybH;
+    }
+
+    function mixPigmentRGB(rgbA, rgbB, t) {
+      if (t <= 0.001) return [...rgbA];
+      if (t >= 0.999) return [...rgbB];
+      if (Math.abs(rgbA[0] - rgbB[0]) <= 3 && Math.abs(rgbA[1] - rgbB[1]) <= 3 && Math.abs(rgbA[2] - rgbB[2]) <= 3) {
+        return [...rgbA];
+      }
+      const [h1, s1, l1] = rgbToHsl(rgbA[0], rgbA[1], rgbA[2]);
+      const [h2, s2, l2] = rgbToHsl(rgbB[0], rgbB[1], rgbB[2]);
+      if (s1 < 0.08 || s2 < 0.08) {
+        return [
+          Math.round(rgbA[0] * (1 - t) + rgbB[0] * t),
+          Math.round(rgbA[1] * (1 - t) + rgbB[1] * t),
+          Math.round(rgbA[2] * (1 - t) + rgbB[2] * t)
+        ];
+      }
+      const rybH1 = rgbHueToRyb(h1), rybH2 = rgbHueToRyb(h2);
+      let dH = rybH2 - rybH1;
+      if (dH > 180) dH -= 360;
+      if (dH < -180) dH += 360;
+      const mixedRybH = (rybH1 + dH * t + 360) % 360;
+      const mixedRgbH = rybHueToRgb(mixedRybH);
+      const mixedS = Math.min(1, Math.max(0, s1 * (1 - t) + s2 * t));
+      const subDarken = Math.sin(Math.abs(dH) * (Math.PI / 360)) * 0.12 * Math.min(s1, s2);
+      const mixedL = Math.min(1, Math.max(0, l1 * (1 - t) + l2 * t - subDarken));
+      return hslToRgb(mixedRgbH, mixedS, mixedL);
+    }
+
+    /********************************************************************
+     * 4. 全局画布与画笔交互核心状态
+     ********************************************************************/
+    const W = 720, H = 520;
+    const paperCanvas = document.getElementById('paperCanvas');
+    const paperCtx = paperCanvas.getContext('2d');
+    const paintCanvas = document.getElementById('paintCanvas');
+    const paintCtx = paintCanvas.getContext('2d');
+    const refCanvas = document.getElementById('refCanvas');
+    const refCtx = refCanvas.getContext('2d');
+    const overlayCanvas = document.getElementById('overlayCanvas');
+    const overlayCtx = overlayCanvas.getContext('2d');
+    const wrapper = document.getElementById('transformCanvasWrapper');
+
+    let currentBrushMedium = 'watercolor';
+    let activeBrushRGB = [20, 85, 210];
+    let brushRadius = 12;
+    let brushDilution = 1.0;
+    let isDrawing = false;
+    let lastX = 0, lastY = 0;
+
+    // 水彩特有状态
+    let waterLevel = 65;
+    // 蜡笔特有状态
+    let crayonTipMode = 'tip';
+    let crayonRoughness = 65;
+    // 马克笔特有状态
+    let markerTip = 'round';
+
+    // 描摹参考图
+    let refVisible = false;
+    let refOpacity = 60;
+    let refStyle = 'sketch';
+    let showGrid = false;
+
+    // 撤销重做系统
+    const undoStack = [];
+    const redoStack = [];
+    const MAX_UNDO = 20;
+
+    function saveUndoState() {
+      if (undoStack.length >= MAX_UNDO) undoStack.shift();
+      undoStack.push(paintCtx.getImageData(0, 0, W, H));
+      redoStack.length = 0;
+      updateUndoRedoUI();
+    }
+
+    function updateUndoRedoUI() {
+      const uBtn = document.getElementById('btnUndo');
+      const rBtn = document.getElementById('btnRedo');
+      if (undoStack.length > 0) {
+        uBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      } else {
+        uBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+      if (redoStack.length > 0) {
+        rBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      } else {
+        rBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+    }
+
+    document.getElementById('btnUndo').addEventListener('click', () => {
+      if (undoStack.length > 0) {
+        redoStack.push(paintCtx.getImageData(0, 0, W, H));
+        const prev = undoStack.pop();
+        paintCtx.putImageData(prev, 0, 0);
+        updateUndoRedoUI();
+      }
+    });
+
+    document.getElementById('btnRedo').addEventListener('click', () => {
+      if (redoStack.length > 0) {
+        undoStack.push(paintCtx.getImageData(0, 0, W, H));
+        const next = redoStack.pop();
+        paintCtx.putImageData(next, 0, 0);
+        updateUndoRedoUI();
+      }
+    });
+
+    document.getElementById('btnClear').addEventListener('click', () => {
+      saveUndoState();
+      paintCtx.clearRect(0, 0, W, H);
+    });
+
+    /********************************************************************
+     * 5. 真实物理纸张材质底层渲染引擎 (4大纸张纹理)
+     ********************************************************************/
+    function drawPaperTexture(paperId) {
+      paperCtx.clearRect(0, 0, W, H);
+      const p = PAPER_TYPES.find(x => x.id === paperId) || PAPER_TYPES[0];
+      wrapper.style.backgroundColor = p.bg;
+
+      // 绘制基底色
+      paperCtx.fillStyle = p.bg;
+      paperCtx.fillRect(0, 0, W, H);
+
+      if (paperId === 'coldpress') {
+        // 粗纹冷压水彩纸：高清晰度凹凸棉絮微坑 (Tooth Pits) 与光影颗粒
+        const imgData = paperCtx.getImageData(0, 0, W, H);
+        const d = imgData.data;
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            const idx = (y * W + x) * 4;
+            // 双频多尺度伪噪波
+            const n1 = Math.sin(x * 0.42 + y * 0.28) * Math.cos(x * 0.31 - y * 0.39);
+            const n2 = Math.sin(x * 1.25 + y * 1.15) * 0.5;
+            const grain = (n1 * 0.7 + n2 * 0.3);
+            const shift = grain * 14;
+            d[idx]     = Math.min(255, Math.max(0, d[idx] + shift));
+            d[idx + 1] = Math.min(255, Math.max(0, d[idx + 1] + shift));
+            d[idx + 2] = Math.min(255, Math.max(0, d[idx + 2] + shift - 1));
+          }
+        }
+        paperCtx.putImageData(imgData, 0, 0);
+      } else if (paperId === 'xuan') {
+        // 传统熟宣纸：纵横植物长纤维与微量天然金箔斑点
+        paperCtx.save();
+        // 1. 植物纤维丝
+        for (let i = 0; i < 90; i++) {
+          paperCtx.strokeStyle = `rgba(140, 115, 80, ${0.08 + Math.random() * 0.12})`;
+          paperCtx.lineWidth = 0.6 + Math.random() * 1.2;
+          paperCtx.beginPath();
+          const sx = Math.random() * W, sy = Math.random() * H;
+          const len = 35 + Math.random() * 85;
+          const angle = (Math.random() - 0.5) * Math.PI * 0.8;
+          paperCtx.moveTo(sx, sy);
+          paperCtx.quadraticCurveTo(
+            sx + Math.cos(angle) * len * 0.5 + (Math.random() - 0.5) * 15,
+            sy + Math.sin(angle) * len * 0.5 + (Math.random() - 0.5) * 15,
+            sx + Math.cos(angle) * len,
+            sy + Math.sin(angle) * len
+          );
+          paperCtx.stroke();
+        }
+        // 2. 传统真金箔微斑
+        for (let gi = 0; gi < 28; gi++) {
+          const gx = Math.random() * W, gy = Math.random() * H;
+          const gw = 1.5 + Math.random() * 3.5, gh = 1.2 + Math.random() * 2.8;
+          paperCtx.fillStyle = `rgba(212, 175, 55, ${0.35 + Math.random() * 0.35})`;
+          paperCtx.fillRect(gx, gy, gw, gh);
+        }
+        paperCtx.restore();
+      } else if (paperId === 'cloud') {
+        // 棉絮云彩纸：轻盈飘渺的团状棉絮云雾
+        paperCtx.save();
+        for (let ci = 0; ci < 45; ci++) {
+          const cx = Math.random() * W, cy = Math.random() * H;
+          const cr = 20 + Math.random() * 55;
+          const cGrad = paperCtx.createRadialGradient(cx, cy, 0, cx, cy, cr);
+          cGrad.addColorStop(0, `rgba(255, 255, 255, ${0.15 + Math.random() * 0.18})`);
+          cGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          paperCtx.fillStyle = cGrad;
+          paperCtx.beginPath();
+          paperCtx.arc(cx, cy, cr, 0, Math.PI * 2);
+          paperCtx.fill();
+        }
+        paperCtx.restore();
+      } else if (paperId === 'toned') {
+        // 细纹暖灰卡纸：细腻均匀的温润哑光灰调，极平整
+        paperCtx.save();
+        const imgData = paperCtx.getImageData(0, 0, W, H);
+        const d = imgData.data;
+        for (let i = 0; i < d.length; i += 4) {
+          const noise = (Math.random() - 0.5) * 6;
+          d[i]     = Math.min(255, Math.max(0, d[i] + noise));
+          d[i + 1] = Math.min(255, Math.max(0, d[i + 1] + noise));
+          d[i + 2] = Math.min(255, Math.max(0, d[i + 2] + noise));
+        }
+        paperCtx.putImageData(imgData, 0, 0);
+        paperCtx.restore();
+      }
+    }
+
+    /********************************************************************
+     * 6. iPad 触控笔坐标无漂移逆投影计算
+     ********************************************************************/
+    let viewScale = 1.0;
+    let viewPanX = 0, viewPanY = 0;
+
+    function applyViewportTransform() {
+      wrapper.style.transform = `translate(${viewPanX}px, ${viewPanY}px) scale(${viewScale})`;
+      document.getElementById('zoomPercentBadge').textContent = `${Math.round(viewScale * 100)}%`;
+    }
+
+    function screenToCanvas(clientX, clientY) {
+      const rect = wrapper.getBoundingClientRect();
+      const originX = rect.left + rect.width / 2;
+      const originY = rect.top + rect.height / 2;
+      const cx = (clientX - originX) / viewScale + W / 2;
+      const cy = (clientY - originY) / viewScale + H / 2;
+      return { x: cx, y: cy };
+    }
+
+    const cursorRing = document.getElementById('brushCursorRing');
+    function updateCursorRing(clientX, clientY) {
+      if (isDrawing) {
+        cursorRing.classList.add('hidden');
+        return;
+      }
+      cursorRing.classList.remove('hidden');
+      const screenDiameter = brushRadius * 2 * viewScale;
+      const screenRadius = screenDiameter / 2;
+      cursorRing.style.width = `${screenDiameter}px`;
+      cursorRing.style.height = `${screenDiameter}px`;
+      cursorRing.style.transform = `translate(${clientX - screenRadius}px, ${clientY - screenRadius}px)`;
+    }
+
+    /********************************************************************
+     * 7. 3 大画种真实笔触渲染算法 (彻底重构水彩流体扩散)
+     ********************************************************************/
+
+    // 关键升级：真实水彩流体自然渗透扩散算法 (彻底消除生硬同心重叠圈！)
+    function stampWatercolor(prevX, prevY, x, y, radius, pressure) {
+      const p = (pressure && pressure > 0) ? pressure : 0.65;
+      const effRadius = Math.max(3, radius * (0.6 + p * 0.7));
+      const dist = Math.hypot(x - prevX, y - prevY);
+      const steps = Math.max(1, Math.ceil(dist / 3.0));
+      const [r, g, b] = activeBrushRGB;
+      const wetness = waterLevel / 100;
+      const baseAlpha = 0.18 * brushDilution * (0.7 + wetness * 0.5);
+
+      paintCtx.save();
+      // 使用真实连续流体笔刷：柔和外边缘自然衰减，内部均匀半透平滑过渡
+      for (let s = 0; s < steps; s++) {
+        const t = steps === 1 ? 1 : s / steps;
+        const cx = prevX + (x - prevX) * t;
+        const cy = prevY + (y - prevY) * t;
+
+        // 柔和流体晕染径向渐变 (绝不加突兀的内部暗圈，保持极佳水润感)
+        const radGrad = paintCtx.createRadialGradient(cx, cy, 0, cx, cy, effRadius);
+        radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${baseAlpha * 1.1})`);
+        radGrad.addColorStop(0.75, `rgba(${r}, ${g}, ${b}, ${baseAlpha * 0.85})`);
+        radGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+
+        paintCtx.fillStyle = radGrad;
+        paintCtx.beginPath();
+        paintCtx.arc(cx, cy, effRadius, 0, Math.PI * 2);
+        paintCtx.fill();
+
+        // 纸张物理特性互动：
+        if (currentPaperId === 'coldpress' && wetness > 0.4) {
+          // 粗纹冷压水彩纸天然凹坑沉淀颗粒 (Granulation)
+          const gCount = Math.floor(effRadius * 0.5);
+          for (let gi = 0; gi < gCount; gi++) {
+            const grAngle = Math.random() * Math.PI * 2;
+            const grDist = Math.sqrt(Math.random()) * effRadius * 0.88;
+            const gx = cx + Math.cos(grAngle) * grDist;
+            const gy = cy + Math.sin(grAngle) * grDist;
+            const toothNoise = (Math.sin(gx * 0.42 + gy * 0.28) * 0.5 + 0.5);
+            if (toothNoise > 0.55) {
+              paintCtx.fillStyle = `rgba(${Math.max(0, r - 30)}, ${Math.max(0, g - 30)}, ${Math.max(0, b - 30)}, ${baseAlpha * 0.7 * toothNoise})`;
+              paintCtx.fillRect(gx, gy, 1.5, 1.5);
+            }
+          }
+        } else if (currentPaperId === 'xuan' && wetness > 0.4 && s % 2 === 0) {
+          // 熟宣纸：微渗植物纤维羽化丝 (Capillary Bleed)
+          const bAngle = Math.random() * Math.PI * 2;
+          const bDist = effRadius * (0.85 + Math.random() * 0.3 * wetness);
+          const bx = cx + Math.cos(bAngle) * bDist;
+          const by = cy + Math.sin(bAngle) * bDist;
+          const bR = effRadius * (0.15 + Math.random() * 0.25);
+          const bGrad = paintCtx.createRadialGradient(bx, by, 0, bx, by, bR);
+          bGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${baseAlpha * 0.6})`);
+          bGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+          paintCtx.fillStyle = bGrad;
+          paintCtx.beginPath();
+          paintCtx.arc(bx, by, bR, 0, Math.PI * 2);
+          paintCtx.fill();
+        }
+      }
+      paintCtx.restore();
+    }
+
+    // 蜡笔笔触：与纸张微观齿度物理互动 (凹陷飞白、凸起压实)
+    function stampCrayon(prevX, prevY, x, y, radius) {
+      const isSide = crayonTipMode === 'side';
+      const effRadius = isSide ? radius * 1.6 : radius;
+      const dist = Math.hypot(x - prevX, y - prevY);
+      const steps = Math.max(1, Math.ceil(dist / 2.5));
+      const [r, g, b] = activeBrushRGB;
+
+      paintCtx.save();
+      for (let s = 0; s < steps; s++) {
+        const t = steps === 1 ? 1 : s / steps;
+        const cx = prevX + (x - prevX) * t, cy = prevY + (y - prevY) * t;
+        const density = Math.floor(effRadius * effRadius * (isSide ? 0.35 : 0.6));
+
+        for (let i = 0; i < density; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const rad = Math.sqrt(Math.random()) * effRadius;
+          const px = cx + Math.cos(angle) * rad, py = cy + Math.sin(angle) * rad;
+
+          // 依据纸张类型决定蜡粉着床率
+          let toothThreshold = (crayonRoughness / 100) * 0.9;
+          if (currentPaperId === 'coldpress') {
+            toothThreshold = 0.52; // 粗纹水彩纸凹陷深，蜡粉显著飞白
+          } else if (currentPaperId === 'toned') {
+            toothThreshold = 0.85; // 暖灰平滑卡纸着色极密
+          }
+
+          const noise = ((Math.floor(px * 17) + Math.floor(py * 31)) % 19) / 19;
+          if (noise > toothThreshold) continue;
+
+          paintCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${0.85 * brushDilution})`;
+          paintCtx.fillRect(px, py, 2.2, 2.2);
+        }
+      }
+      paintCtx.restore();
+    }
+
+    // 马克笔笔触：高饱和、边缘锋利、无半透明虚化
+    function stampMarker(prevX, prevY, x, y, radius, pressure) {
+      const [r, g, b] = activeBrushRGB;
+      const alpha = Math.min(1.0, brushDilution);
+      const col = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+
+      paintCtx.save();
+      paintCtx.fillStyle = col;
+      paintCtx.strokeStyle = col;
+
+      if (markerTip === 'round') {
+        paintCtx.lineWidth = Math.max(3.0, radius * 1.15);
+        paintCtx.lineCap = 'round';
+        paintCtx.lineJoin = 'round';
+        paintCtx.beginPath();
+        paintCtx.moveTo(prevX, prevY);
+        paintCtx.lineTo(x, y);
+        paintCtx.stroke();
+      } else if (markerTip === 'brush') {
+        const p = (pressure && pressure > 0) ? pressure : 0.55;
+        paintCtx.lineWidth = Math.max(2.5, radius * (0.35 + p * 1.35));
+        paintCtx.lineCap = 'round';
+        paintCtx.lineJoin = 'round';
+        paintCtx.beginPath();
+        paintCtx.moveTo(prevX, prevY);
+        paintCtx.lineTo(x, y);
+        paintCtx.stroke();
+      } else if (markerTip === 'chisel') {
+        const angle = -Math.PI / 4;
+        const hw = Math.max(4.0, radius * 1.15);
+        const dx = Math.cos(angle) * hw;
+        const dy = Math.sin(angle) * hw;
+        paintCtx.beginPath();
+        paintCtx.moveTo(prevX - dx, prevY - dy);
+        paintCtx.lineTo(prevX + dx, prevY + dy);
+        paintCtx.lineTo(x + dx, y + dy);
+        paintCtx.lineTo(x - dx, y - dy);
+        paintCtx.closePath();
+        paintCtx.fill();
+      }
+      paintCtx.restore();
+    }
+
+    function drawStroke(x0, y0, x1, y1, pressure) {
+      if (currentBrushMedium === 'watercolor') {
+        stampWatercolor(x0, y0, x1, y1, brushRadius, pressure);
+      } else if (currentBrushMedium === 'crayon') {
+        stampCrayon(x0, y0, x1, y1, brushRadius);
+      } else if (currentBrushMedium === 'marker') {
+        stampMarker(x0, y0, x1, y1, brushRadius, pressure);
+      }
+    }
+
+    /********************************************************************
+     * 8. 画布触控与 Apple Pencil 监听
+     ********************************************************************/
+    paintCanvas.addEventListener('pointerdown', (e) => {
+      paintCanvas.setPointerCapture(e.pointerId);
+      isDrawing = true;
+      saveUndoState();
+      const pt = screenToCanvas(e.clientX, e.clientY);
+      lastX = pt.x; lastY = pt.y;
+      drawStroke(lastX, lastY, pt.x, pt.y, e.pressure);
+      updateCursorRing(e.clientX, e.clientY);
+    });
+
+    paintCanvas.addEventListener('pointermove', (e) => {
+      updateCursorRing(e.clientX, e.clientY);
+      if (!isDrawing) return;
+      const pt = screenToCanvas(e.clientX, e.clientY);
+      drawStroke(lastX, lastY, pt.x, pt.y, e.pressure);
+      lastX = pt.x; lastY = pt.y;
+    });
+
+    function endDrawing(e) {
+      if (!isDrawing) return;
+      isDrawing = false;
+      try { paintCanvas.releasePointerCapture(e.pointerId); } catch (_) {}
+      cursorRing.classList.remove('hidden');
+    }
+
+    paintCanvas.addEventListener('pointerup', endDrawing);
+    paintCanvas.addEventListener('pointercancel', endDrawing);
+
+    paintCanvas.addEventListener('pointerleave', () => {
+      cursorRing.classList.add('hidden');
+    });
+
+    /********************************************************************
+     * 9. 白瓷流动融合调色盘交互引擎 (真实水彩混色)
+     ********************************************************************/
+    const palCanvas = document.getElementById('watercolorPaletteCanvas');
+    const palCtx = palCanvas.getContext('2d');
+    const palSampleRing = document.getElementById('paletteSampleRing');
+    let isPaletteMixing = false;
+
+    function initPorcelainPalette() {
+      palCtx.fillStyle = '#fcfcf8';
+      palCtx.fillRect(0, 0, palCanvas.width, palCanvas.height);
+      // 预置两摊自然湿融水彩 (蓝色与黄色，相融出翠绿)
+      dropPalettePigment(60, 55, [20, 85, 210], 36, 0.7);
+      dropPalettePigment(220, 55, [255, 210, 0], 36, 0.7);
+      // 中间湿润过渡
+      dropPalettePigment(140, 55, [40, 180, 85], 42, 0.6);
+    }
+
+    function dropPalettePigment(cx, cy, rgb, radius, alpha) {
+      const grad = palCtx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+      grad.addColorStop(0, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`);
+      grad.addColorStop(0.8, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha * 0.65})`);
+      grad.addColorStop(1, 'rgba(252, 252, 248, 0)');
+      palCtx.fillStyle = grad;
+      palCtx.beginPath();
+      palCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+      palCtx.fill();
+    }
+
+    function handlePalettePointer(e) {
+      const rect = palCanvas.getBoundingClientRect();
+      const px = (e.clientX - rect.left) * (palCanvas.width / rect.width);
+      const py = (e.clientY - rect.top) * (palCanvas.height / rect.height);
+      const x = Math.max(0, Math.min(palCanvas.width - 1, px));
+      const y = Math.max(0, Math.min(palCanvas.height - 1, py));
+
+      // 采样当前位置已有颜色
+      const pix = palCtx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
+      if (isPaletteMixing) {
+        // 将当前画笔颜色以水彩流体研磨注入瓷盘
+        const blendRGB = mixPigmentRGB([pix[0], pix[1], pix[2]], activeBrushRGB, 0.35);
+        dropPalettePigment(x, y, blendRGB, 16, 0.5);
+      }
+
+      // 吸取最终研磨出的混合色彩
+      const samplePix = palCtx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
+      if (samplePix[3] > 10 && !(samplePix[0] > 250 && samplePix[1] > 250 && samplePix[2] > 245)) {
+        applyBrushColor([samplePix[0], samplePix[1], samplePix[2]]);
+      }
+
+      // 样本指示环随动
+      palSampleRing.classList.remove('hidden');
+      palSampleRing.style.left = `${(e.clientX - rect.left)}px`;
+      palSampleRing.style.top = `${(e.clientY - rect.top)}px`;
+      palSampleRing.style.backgroundColor = `rgb(${activeBrushRGB[0]}, ${activeBrushRGB[1]}, ${activeBrushRGB[2]})`;
+    }
+
+    palCanvas.addEventListener('pointerdown', (e) => {
+      palCanvas.setPointerCapture(e.pointerId);
+      isPaletteMixing = true;
+      handlePalettePointer(e);
+    });
+
+    palCanvas.addEventListener('pointermove', (e) => {
+      if (isPaletteMixing) handlePalettePointer(e);
+    });
+
+    function endPalettePointer(e) {
+      if (!isPaletteMixing) return;
+      isPaletteMixing = false;
+      try { palCanvas.releasePointerCapture(e.pointerId); } catch (_) {}
+      setTimeout(() => palSampleRing.classList.add('hidden'), 600);
+    }
+
+    palCanvas.addEventListener('pointerup', endPalettePointer);
+    palCanvas.addEventListener('pointercancel', endPalettePointer);
+
+    document.getElementById('btnWashPorcelain').addEventListener('click', () => {
+      palCtx.fillStyle = '#fcfcf8';
+      palCtx.fillRect(0, 0, palCanvas.width, palCanvas.height);
+    });
+
+    document.getElementById('btnWetPalette').addEventListener('click', () => {
+      // 注入柔和清水扩散
+      dropPalettePigment(palCanvas.width / 2, palCanvas.height / 2, [255, 255, 255], 65, 0.45);
+    });
+
+    document.getElementById('btnSpongePalette').addEventListener('click', () => {
+      // 海绵淡化
+      palCtx.fillStyle = 'rgba(252, 252, 248, 0.4)';
+      palCtx.fillRect(0, 0, palCanvas.width, palCanvas.height);
+    });
+
+    /********************************************************************
+     * 10. 自由色域选色器 & 笔具拟物图标装配
+     ********************************************************************/
+    function applyBrushColor(rgb) {
+      activeBrushRGB = [...rgb];
+      const circle = document.getElementById('currentSwatchCircle');
+      circle.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+      // 联动更新抽屉内自定预览
+      document.getElementById('customWatercolorPreview').style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+      document.querySelector('#customCrayonPreview div:first-child').style.borderBottomColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+      document.querySelector('#customCrayonPreview div:last-child').style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+      document.querySelector('#customMarkerPreview div:first-child').style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+    }
+
+    // 自由全色域滑块联动
+    function setupColorRangePicker(hueId, lightId) {
+      const hSlider = document.getElementById(hueId);
+      const lSlider = document.getElementById(lightId);
+      function update() {
+        const h = Number(hSlider.value);
+        const l = Number(lSlider.value) / 100;
+        const rgb = hslToRgb(h, 0.88, l);
+        applyBrushColor(rgb);
+      }
+      hSlider.addEventListener('input', update);
+      lSlider.addEventListener('input', update);
+    }
+    setupColorRangePicker('hueSliderWatercolor', 'lightnessSliderWatercolor');
+    setupColorRangePicker('hueSliderCrayon', 'lightnessSliderCrayon');
+    setupColorRangePicker('hueSliderMarker', 'lightnessSliderMarker');
+
+    // 渲染水彩半块固体铁盒
+    function renderWatercolorPans() {
+      const box = document.getElementById('watercolorPansGrid');
+      box.innerHTML = '';
+      WATERCOLOR_COLORS_12.forEach((rgb) => {
+        const btn = document.createElement('button');
+        btn.className = 'pan-item flex flex-col items-center p-1 rounded-lg border border-stone-600 bg-stone-900 active:scale-95 transition';
+        btn.innerHTML = `<div class="w-7 h-5 rounded-sm border border-black/40 shadow-inner" style="background:rgb(${rgb[0]},${rgb[1]},${rgb[2]})"></div>`;
+        btn.addEventListener('click', () => {
+          switchBrushMedium('watercolor');
+          applyBrushColor(rgb);
+        });
+        box.appendChild(btn);
+      });
+    }
+
+    // 渲染带纸套与蜡质尖头的拟物蜡笔盒
+    function renderCrayonBox() {
+      const box = document.getElementById('crayonBoxContainer');
+      box.innerHTML = '';
+      CRAYON_COLORS_12.forEach((rgb, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `crayon-item flex flex-col items-center gap-0.5 cursor-pointer active:scale-95 transition ${idx === 1 ? 'active-swatch-ring rounded' : ''}`;
+        const hex = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+        btn.innerHTML = `
+          <div class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[11px]" style="border-bottom-color:${hex}"></div>
+          <div class="w-4 h-12 rounded-b-sm border border-black/30 shadow-md relative overflow-hidden" style="background:${hex}">
+            <div class="absolute inset-x-0 top-3 h-5 bg-amber-100/90 border-y border-amber-800/30 flex items-center justify-center">
+              <span class="text-[7px] text-amber-900 font-bold font-mono">KAI</span>
+            </div>
+          </div>
+        `;
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.crayon-item').forEach(el => el.classList.remove('active-swatch-ring', 'rounded'));
+          btn.classList.add('active-swatch-ring', 'rounded');
+          switchBrushMedium('crayon');
+          applyBrushColor(rgb);
+        });
+        box.appendChild(btn);
+      });
+    }
+
+    // 渲染双头马克笔笔架
+    function renderMarkerRack() {
+      const rack = document.getElementById('markerRackContainer');
+      rack.innerHTML = '';
+      MARKER_COLORS_12.forEach((rgb, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `marker-item flex flex-col items-center cursor-pointer active:scale-95 transition ${idx === 2 ? 'active-swatch-ring rounded-t-md' : ''}`;
+        const hex = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+        btn.innerHTML = `
+          <div class="w-4 h-7 rounded-t-md border border-black/30 shadow-md" style="background:${hex}"></div>
+          <div class="w-4 h-10 bg-stone-300 border-x border-b border-stone-500 rounded-b-sm relative">
+            <div class="absolute top-1 inset-x-0.5 h-1 rounded-full" style="background:${hex}"></div>
+          </div>
+        `;
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.marker-item').forEach(el => el.classList.remove('active-swatch-ring', 'rounded-t-md'));
+          btn.classList.add('active-swatch-ring', 'rounded-t-md');
+          switchBrushMedium('marker');
+          applyBrushColor(rgb);
+        });
+        rack.appendChild(btn);
+      });
+    }
+
+    // 渲染画纸选项列表
+    function renderPaperOptions() {
+      const list = document.getElementById('paperOptionsList');
+      list.innerHTML = '';
+      PAPER_TYPES.forEach((p) => {
+        const isCur = p.id === currentPaperId;
+        const btn = document.createElement('button');
+        btn.className = `w-full p-2.5 rounded-xl border flex flex-col gap-1 transition text-left ${
+          isCur ? 'border-amber-500 bg-amber-500/20 text-amber-300 font-bold' : 'border-stone-700 bg-stone-800 text-stone-300 hover:bg-stone-700'
+        }`;
+        btn.innerHTML = `
+          <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-2">
+              <div class="w-5 h-5 rounded-md border border-black/40 shadow-sm" style="background:${p.bg}"></div>
+              <span class="text-xs font-bold">${p.name}</span>
+            </div>
+            ${isCur ? '<span class="text-xs text-amber-400">✓ 使用中</span>' : ''}
+          </div>
+          <div class="text-[10px] text-stone-400 pl-7">${p.desc}</div>
+        `;
+        btn.addEventListener('click', () => {
+          currentPaperId = p.id;
+          document.getElementById('currentPaperBadge').textContent = `📜 ${p.name}`;
+          drawPaperTexture(p.id);
+          renderPaperOptions();
+          closeDrawer();
+        });
+        list.appendChild(btn);
+      });
+    }
+
+    /********************************************************************
+     * 11. 抽屉开启与画种模式切换
+     ********************************************************************/
+    let currentDrawerOpen = null;
+    const drawer = document.getElementById('mainDrawer');
+
+    function switchBrushMedium(medium) {
+      currentBrushMedium = medium;
+      const triggers = document.querySelectorAll('.drawer-trigger-btn');
+      triggers.forEach(b => {
+        if (b.dataset.drawer === medium) {
+          b.className = 'drawer-trigger-btn px-4 py-2 rounded-xl border-2 border-amber-500 bg-amber-500/25 ring-2 ring-amber-400/40 text-amber-300 font-bold flex items-center gap-2 active:scale-95 transition shadow-lg shadow-amber-500/20';
+        } else if (b.dataset.drawer !== 'paper') {
+          b.className = 'drawer-trigger-btn px-4 py-2 rounded-xl border border-stone-700 bg-stone-800/80 text-xs font-semibold flex items-center gap-2 active:scale-95 transition opacity-80 hover:opacity-100';
+        }
+      });
+    }
+
+    function openDrawer(type) {
+      currentDrawerOpen = type;
+      drawer.classList.remove('drawer-closed');
+      drawer.classList.add('drawer-open');
+      if (type !== 'paper') switchBrushMedium(type);
+
+      ['drawerWatercolorContent', 'drawerCrayonContent', 'drawerMarkerContent', 'drawerPaperContent'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+
+      const titleMap = {
+        watercolor: '🖌️ 水彩画室',
+        crayon: '🖍️ 儿童蜡笔盒',
+        marker: '🖊️ 双头马克笔架',
+        paper: '📜 画纸材质'
+      };
+      document.getElementById('drawerTitle').innerHTML = titleMap[type] || '画具设置';
+
+      if (type === 'watercolor') document.getElementById('drawerWatercolorContent').classList.remove('hidden');
+      else if (type === 'crayon') document.getElementById('drawerCrayonContent').classList.remove('hidden');
+      else if (type === 'marker') document.getElementById('drawerMarkerContent').classList.remove('hidden');
+      else if (type === 'paper') document.getElementById('drawerPaperContent').classList.remove('hidden');
+    }
+
+    function closeDrawer() {
+      drawer.classList.remove('drawer-open');
+      drawer.classList.add('drawer-closed');
+      currentDrawerOpen = null;
+    }
+
+    document.querySelectorAll('.drawer-trigger-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.drawer;
+        if (currentDrawerOpen === target) {
+          closeDrawer();
+        } else {
+          openDrawer(target);
+        }
+      });
+    });
+
+    document.getElementById('btnCloseDrawer').addEventListener('click', closeDrawer);
+
+    // 水彩水分控制
+    document.getElementById('waterSlider').addEventListener('input', (e) => {
+      waterLevel = parseInt(e.target.value);
+      document.getElementById('waterValueLabel').textContent = `${waterLevel}%`;
+    });
+    document.getElementById('btnSponge').addEventListener('click', () => {
+      waterLevel = Math.max(10, waterLevel - 25);
+      document.getElementById('waterSlider').value = waterLevel;
+      document.getElementById('waterValueLabel').textContent = `${waterLevel}%`;
+    });
+    document.getElementById('btnDryCanvas').addEventListener('click', () => {
+      waterLevel = 15;
+      document.getElementById('waterSlider').value = waterLevel;
+      document.getElementById('waterValueLabel').textContent = `${waterLevel}%`;
+    });
+
+    // 蜡笔笔尖切换
+    document.querySelectorAll('.crayon-tip-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.crayon-tip-btn').forEach(b => {
+          b.classList.remove('border-2', 'border-amber-500', 'bg-amber-500/20', 'font-bold');
+          b.classList.add('border', 'border-stone-700', 'bg-stone-800', 'font-semibold');
+        });
+        btn.classList.add('border-2', 'border-amber-500', 'bg-amber-500/20', 'font-bold');
+        btn.classList.remove('border-stone-700', 'bg-stone-800', 'font-semibold');
+        crayonTipMode = btn.dataset.crayontip;
+      });
+    });
+
+    document.getElementById('crayonTextureSlider').addEventListener('input', (e) => {
+      crayonRoughness = parseInt(e.target.value);
+    });
+
+    // 马克笔笔尖切换
+    document.querySelectorAll('.tip-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tip-btn').forEach(b => {
+          b.classList.remove('border-2', 'border-amber-500', 'bg-amber-500/20', 'font-bold');
+          b.classList.add('border', 'border-stone-700', 'bg-stone-800', 'font-semibold');
+        });
+        btn.classList.add('border-2', 'border-amber-500', 'bg-amber-500/20', 'font-bold');
+        btn.classList.remove('border-stone-700', 'bg-stone-800', 'font-semibold');
+        markerTip = btn.dataset.tip;
+      });
+    });
+
+    // 洗笔水桶稀释
+    document.getElementById('btnWashBucket').addEventListener('click', () => {
+      if (brushDilution > 0.65) brushDilution = 0.5;
+      else if (brushDilution > 0.3) brushDilution = 0.15;
+      else brushDilution = 1.0;
+      document.getElementById('bucketDiluteBadge').textContent = `${Math.round(brushDilution * 100)}%`;
+    });
+
+    /********************************************************************
+     * 12. 照片智能转四大画风 (黑白草稿描摹 + 3大真实非光栅图像处理)
+     ********************************************************************/
+    const sourcePhotoCanvas = document.createElement('canvas');
+    sourcePhotoCanvas.width = W; sourcePhotoCanvas.height = H;
+    const sourcePhotoCtx = sourcePhotoCanvas.getContext('2d');
+
+    function drawPresetPhoto(name) {
+      const ctx = sourcePhotoCtx;
+      ctx.clearRect(0, 0, W, H);
+      if (name === 'shiba') {
+        ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+        const bgGrad = ctx.createRadialGradient(360, 260, 50, 360, 260, 300);
+        bgGrad.addColorStop(0, '#fef08a'); bgGrad.addColorStop(1, '#0284c7');
+        ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, W, H);
+
+        ctx.fillStyle = '#d97706'; ctx.beginPath();
+        ctx.arc(360, 260, 130, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(270, 160); ctx.lineTo(240, 70); ctx.lineTo(310, 130); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(450, 160); ctx.lineTo(480, 70); ctx.lineTo(410, 130); ctx.fill();
+
+        ctx.fillStyle = '#fef3c7'; ctx.beginPath();
+        ctx.ellipse(360, 290, 85, 75, 0, 0, Math.PI * 2); ctx.fill();
+
+        ctx.fillStyle = '#1e293b'; ctx.beginPath();
+        ctx.arc(360, 260, 22, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(310, 220, 14, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(410, 220, 14, 0, Math.PI * 2); ctx.fill();
+      } else if (name === 'sunflower') {
+        const sky = ctx.createLinearGradient(0, 0, 0, H);
+        sky.addColorStop(0, '#38bdf8'); sky.addColorStop(0.65, '#bae6fd'); sky.addColorStop(1, '#86efac');
+        ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+
+        ctx.fillStyle = '#22c55e'; ctx.fillRect(0, 360, W, 160);
+
+        ctx.fillStyle = '#eab308'; ctx.beginPath();
+        ctx.arc(360, 220, 110, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#78350f'; ctx.beginPath();
+        ctx.arc(360, 220, 55, 0, Math.PI * 2); ctx.fill();
+      } else if (name === 'balloon') {
+        const sky = ctx.createLinearGradient(0, 0, 0, H);
+        sky.addColorStop(0, '#1e1b4b'); sky.addColorStop(0.5, '#be185d'); sky.addColorStop(1, '#f97316');
+        ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+
+        ctx.fillStyle = '#fef08a'; ctx.beginPath();
+        ctx.arc(360, 240, 70, 0, Math.PI * 2); ctx.fill();
+
+        ctx.fillStyle = '#312e81'; ctx.beginPath();
+        ctx.moveTo(0, H); ctx.lineTo(0, 320); ctx.lineTo(160, 280); ctx.lineTo(360, 340); ctx.lineTo(540, 290); ctx.lineTo(W, 330); ctx.lineTo(W, H); ctx.fill();
+      }
+      renderAllStylePreviews();
+      renderRefCanvas();
+    }
+
+    // 核心重构：真正基于非光栅图像处理的艺术风格转换与黑白线稿描摹
+    function applyFilterTo(targetCanvas, styleType, strengthVal) {
+      const tw = targetCanvas.width, th = targetCanvas.height;
+      const tCtx = targetCanvas.getContext('2d');
+      tCtx.drawImage(sourcePhotoCanvas, 0, 0, tw, th);
+      const str = Math.max(0.1, strengthVal / 100);
+
+      const imgData = tCtx.getImageData(0, 0, tw, th);
+      const s = new Uint8ClampedArray(imgData.data);
+      const d = imgData.data;
+
+      if (styleType === 'sketch') {
+        /******************************************************************
+         * 1. 【黑白线稿描摹图】(Sobel 边缘梯度提取 + 白纸黑线铅笔描边)
+         ******************************************************************/
+        for (let y = 1; y < th - 1; y++) {
+          for (let x = 1; x < tw - 1; x++) {
+            const idx = (y * tw + x) * 4;
+            // 灰度亮度
+            const lum = (x0, y0) => {
+              const i = (y0 * tw + x0) * 4;
+              return s[i] * 0.299 + s[i+1] * 0.587 + s[i+2] * 0.114;
+            };
+
+            // 3x3 Sobel 算子
+            const gx = (lum(x+1, y-1) + 2*lum(x+1, y) + lum(x+1, y+1)) - (lum(x-1, y-1) + 2*lum(x-1, y) + lum(x-1, y+1));
+            const gy = (lum(x-1, y+1) + 2*lum(x, y+1) + lum(x+1, y+1)) - (lum(x-1, y-1) + 2*lum(x, y-1) + lum(x+1, y-1));
+            const edge = Math.hypot(gx, gy);
+
+            // 线条阈值动态调校：白底深灰/黑线，清晰呈现外轮廓方便描边
+            const edgeVal = Math.min(255, edge * (1.2 + str * 1.5));
+            let v = 255 - edgeVal;
+            if (v < 180) v = Math.max(25, v * 0.7); // 突出描边轮廓线
+            else v = 255; // 白纸留白
+
+            d[idx]     = v;
+            d[idx + 1] = v;
+            d[idx + 2] = v;
+          }
+        }
+      } else if (styleType === 'watercolor') {
+        /******************************************************************
+         * 2. 【真·水彩水渍晕染】(平滑色块 + 咖啡环水痕暗边 + 冷压纸颗粒沉淀)
+         ******************************************************************/
+        const blur = new Uint8ClampedArray(s);
+        for (let y = 1; y < th - 1; y++) {
+          for (let x = 1; x < tw - 1; x++) {
+            const idx = (y * tw + x) * 4;
+            let rSum = 0, gSum = 0, bSum = 0;
+            for (let dy = -1; dy <= 1; dy++) {
+              for (let dx = -1; dx <= 1; dx++) {
+                const qi = ((y + dy) * tw + (x + dx)) * 4;
+                rSum += s[qi]; gSum += s[qi+1]; bSum += s[qi+2];
+              }
+            }
+            blur[idx] = rSum / 9; blur[idx+1] = gSum / 9; blur[idx+2] = bSum / 9;
+          }
+        }
+
+        for (let y = 1; y < th - 1; y++) {
+          for (let x = 1; x < tw - 1; x++) {
+            const idx = (y * tw + x) * 4;
+            const lum  = (blur[idx] * 0.299 + blur[idx+1] * 0.587 + blur[idx+2] * 0.114);
+            const lumR = (blur[idx+4] * 0.299 + blur[idx+5] * 0.587 + blur[idx+6] * 0.114);
+            const lumD = (blur[idx+tw*4] * 0.299 + blur[idx+tw*4+1] * 0.587 + blur[idx+tw*4+2] * 0.114);
+
+            const edgeMag = Math.hypot(lum - lumR, lum - lumD);
+            const darkEdge = Math.min(50, edgeMag * 2.2 * str);
+            const grainNoise = ((Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1);
+            const granulation = (grainNoise - 0.5) * 32 * str * (1.0 - lum / 260);
+
+            let r = blur[idx] - darkEdge + granulation + 6 * str;
+            let g = blur[idx+1] - darkEdge + granulation + 3 * str;
+            let b = blur[idx+2] - darkEdge + granulation;
+
+            d[idx]     = Math.min(255, Math.max(0, r));
+            d[idx + 1] = Math.min(255, Math.max(0, g));
+            d[idx + 2] = Math.min(255, Math.max(0, b));
+          }
+        }
+      } else if (styleType === 'crayon') {
+        /******************************************************************
+         * 3. 【真·儿童蜡笔质感】(色彩聚类成蜡粉原色 + 45°排线起伏 + 凹陷飞白)
+         ******************************************************************/
+        for (let y = 0; y < th; y++) {
+          for (let x = 0; x < tw; x++) {
+            const idx = (y * tw + x) * 4;
+            // 蜡笔色阶量化 (将照片像素归类为蜡笔饱和色素)
+            const step = 36;
+            let r = Math.round(s[idx] / step) * step;
+            let g = Math.round(s[idx+1] / step) * step;
+            let b = Math.round(s[idx+2] / step) * step;
+
+            // 45° 蜡笔手绘排线
+            const strokeLine = Math.sin((x + y) * 0.45) * 0.5 + 0.5;
+            const tooth = ((Math.sin(x * 15.3 + y * 3.7) * 43758.54) % 1 + 1) * 0.5;
+            const waxDeposit = (tooth * 0.6 + strokeLine * 0.4);
+
+            const threshold = 0.32 + (1.0 - str) * 0.3;
+            if (waxDeposit < threshold) {
+              // 凹陷飞白：露出画纸底色
+              d[idx]     = Math.min(255, r * 0.6 + 248 * 0.4);
+              d[idx + 1] = Math.min(255, g * 0.6 + 244 * 0.4);
+              d[idx + 2] = Math.min(255, b * 0.6 + 236 * 0.4);
+            } else {
+              // 凸起蜡粉压实高饱和沉淀
+              d[idx]     = Math.min(255, r * 1.08);
+              d[idx + 1] = Math.min(255, g * 1.08);
+              d[idx + 2] = Math.min(255, b * 1.08);
+            }
+          }
+        }
+      } else if (styleType === 'marker') {
+        /******************************************************************
+         * 4. 【真·专业双头马克笔】(醇墨大色块分阶 + 笔尖叠色深色勾边)
+         ******************************************************************/
+        for (let y = 1; y < th - 1; y++) {
+          for (let x = 1; x < tw - 1; x++) {
+            const idx = (y * tw + x) * 4;
+            const step = 42;
+            let r = Math.round(s[idx] / step) * step;
+            let g = Math.round(s[idx+1] / step) * step;
+            let b = Math.round(s[idx+2] / step) * step;
+
+            // 醇墨交界渗透勾边
+            const diff = Math.abs(s[idx] - s[idx+4]) + Math.abs(s[idx+1] - s[idx+5]) + Math.abs(s[idx+2] - s[idx+6]);
+            if (diff > 48 * (1.1 - str * 0.4)) {
+              r = Math.max(0, r * 0.55);
+              g = Math.max(0, g * 0.55);
+              b = Math.max(0, b * 0.55);
+            } else {
+              r = Math.min(255, r * 1.06);
+              g = Math.min(255, g * 1.06);
+              b = Math.min(255, b * 1.06);
+            }
+
+            d[idx]     = r;
+            d[idx + 1] = g;
+            d[idx + 2] = b;
+          }
+        }
+      }
+
+      tCtx.putImageData(imgData, 0, 0);
+    }
+
+    function renderAllStylePreviews() {
+      const strength = Number(document.getElementById('styleIntensitySlider').value);
+      applyFilterTo(document.getElementById('prevSketch'), 'sketch', strength);
+      applyFilterTo(document.getElementById('prevWatercolor'), 'watercolor', strength);
+      applyFilterTo(document.getElementById('prevCrayon'), 'crayon', strength);
+      applyFilterTo(document.getElementById('prevMarker'), 'marker', strength);
+    }
+
+    const styledBuf = document.createElement('canvas');
+    styledBuf.width = W; styledBuf.height = H;
+
+    function renderRefCanvas() {
+      refCtx.clearRect(0, 0, W, H);
+      if (!refVisible) return;
+      const strength = Number(document.getElementById('styleIntensitySlider').value);
+      applyFilterTo(styledBuf, refStyle, strength);
+      refCtx.save();
+      refCtx.globalAlpha = refOpacity / 100;
+      refCtx.drawImage(styledBuf, 0, 0, W, H);
+      refCtx.restore();
+    }
+
+    // 弹窗与相片导入事件
+    const camModal = document.getElementById('cameraModal');
+    document.getElementById('btnOpenCameraModal').addEventListener('click', () => {
+      camModal.classList.remove('hidden'); camModal.classList.add('flex');
+      renderAllStylePreviews();
+    });
+    document.getElementById('btnCloseCameraModal').addEventListener('click', () => {
+      camModal.classList.add('hidden'); camModal.classList.remove('flex');
+    });
+
+    document.querySelectorAll('.cam-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.cam-preset-btn').forEach(b => {
+          b.className = 'cam-preset-btn px-2.5 py-1 rounded-lg bg-stone-800 text-stone-300 font-semibold active:scale-95 transition';
+        });
+        btn.className = 'cam-preset-btn px-2.5 py-1 rounded-lg bg-amber-500 text-white font-bold active:scale-95 transition';
+        drawPresetPhoto(btn.dataset.camerapreset);
+      });
+    });
+
+    document.getElementById('styleIntensitySlider').addEventListener('input', (e) => {
+      document.getElementById('styleIntensityVal').textContent = `${e.target.value}%`;
+      renderAllStylePreviews();
+      renderRefCanvas();
+    });
+
+    document.querySelectorAll('.pick-style-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        refStyle = btn.dataset.pickstyle;
+        refVisible = true;
+        renderRefCanvas();
+        camModal.classList.add('hidden'); camModal.classList.remove('flex');
+      });
+    });
+
+    // 直接导入为画布线稿 (填色模式)
+    document.getElementById('btnImportSketchToPaint').addEventListener('click', () => {
+      saveUndoState();
+      const strength = Number(document.getElementById('styleIntensitySlider').value);
+      applyFilterTo(styledBuf, 'sketch', strength);
+      paintCtx.drawImage(styledBuf, 0, 0, W, H);
+      camModal.classList.add('hidden'); camModal.classList.remove('flex');
+    });
+
+    document.getElementById('btnToggleRef').addEventListener('click', () => {
+      refVisible = !refVisible;
+      document.getElementById('refEyeIcon').textContent = refVisible ? '👁️' : '✨';
+      renderRefCanvas();
+    });
+
+    document.getElementById('fileUploadInput').addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const img = new Image();
+          img.onload = () => {
+            sourcePhotoCtx.drawImage(img, 0, 0, W, H);
+            renderAllStylePreviews();
+            renderRefCanvas();
+          };
+          img.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    document.getElementById('btnMacHardwareSnap').addEventListener('click', async () => {
+      try {
+        const res = await fetch('http://127.0.0.1:8765/api/mac-snap');
+        const data = await res.json();
+        if (data && data.ok && data.image) {
+          const img = new Image();
+          img.onload = () => {
+            sourcePhotoCtx.drawImage(img, 0, 0, W, H);
+            renderAllStylePreviews();
+            renderRefCanvas();
+          };
+          img.src = data.image;
+        } else {
+          document.getElementById('fileUploadInput').click();
+        }
+      } catch (_) {
+        document.getElementById('fileUploadInput').click();
+      }
+    });
+
+    /********************************************************************
+     * 13. 视口居中与缩放控制
+     ********************************************************************/
+    document.getElementById('btnResetView').addEventListener('click', () => {
+      viewScale = 1.0; viewPanX = 0; viewPanY = 0;
+      applyViewportTransform();
+    });
+    document.getElementById('btnZoomIn').addEventListener('click', () => {
+      viewScale = Math.min(2.5, viewScale + 0.15);
+      applyViewportTransform();
+    });
+    document.getElementById('btnZoomOut').addEventListener('click', () => {
+      viewScale = Math.max(0.6, viewScale - 0.15);
+      applyViewportTransform();
+    });
+
+    // 辅助九宫格线
+    document.getElementById('btnToggleGrid').addEventListener('click', () => {
+      showGrid = !showGrid;
+      overlayCtx.clearRect(0, 0, W, H);
+      if (showGrid) {
+        overlayCtx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+        overlayCtx.lineWidth = 1;
+        overlayCtx.beginPath();
+        overlayCtx.moveTo(W / 3, 0); overlayCtx.lineTo(W / 3, H);
+        overlayCtx.moveTo((W / 3) * 2, 0); overlayCtx.lineTo((W / 3) * 2, H);
+        overlayCtx.moveTo(0, H / 3); overlayCtx.lineTo(W, H / 3);
+        overlayCtx.moveTo(0, (H / 3) * 2); overlayCtx.lineTo(W, (H / 3) * 2);
+        overlayCtx.stroke();
+      }
+    });
+
+    // 高清画作导出
+    document.getElementById('btnExport').addEventListener('click', () => {
+      const expCanvas = document.createElement('canvas');
+      expCanvas.width = W; expCanvas.height = H;
+      const expCtx = expCanvas.getContext('2d');
+      // 1. 纸张底色与纹理
+      expCtx.drawImage(paperCanvas, 0, 0);
+      // 2. 绘画图层
+      expCtx.drawImage(paintCanvas, 0, 0);
+      const url = expCanvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.download = `KaiDraw_${Date.now()}.png`;
+      a.href = url;
+      a.click();
+    });
+
+    // 笔刷大小快捷切换
+    const BRUSH_SIZES = [8, 16, 24, 38, 56];
+    let brushSizeIdx = 2;
+    document.getElementById('btnJogBrushSize').addEventListener('click', () => {
+      brushSizeIdx = (brushSizeIdx + 1) % BRUSH_SIZES.length;
+      brushRadius = BRUSH_SIZES[brushSizeIdx];
+      document.getElementById('brushSizeBadge').textContent = `${brushRadius}px`;
+    });
+
+    /********************************************************************
+     * 14. 初始化装配
+     ********************************************************************/
+    drawPaperTexture('coldpress');
+    renderWatercolorPans();
+    renderCrayonBox();
+    renderMarkerRack();
+    renderPaperOptions();
+    initPorcelainPalette();
+    drawPresetPhoto('shiba');
+    applyBrushColor([20, 85, 210]);
+    switchBrushMedium('watercolor');
+    applyViewportTransform();
+  </script>
+</body>
+</html>
