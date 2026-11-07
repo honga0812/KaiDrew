@@ -1067,35 +1067,84 @@
     });
 
     /********************************************************************
-     * 10. 白瓷流动融合调色盘交互引擎 (独立调色与取色，彻底解决串色)
+     * 10. 白瓷流动融合调色盘交互引擎 (双层物理隔离：瓷底与颜料层)
      ********************************************************************/
     const palCanvas = document.getElementById('watercolorPaletteCanvas');
     const palCtx = palCanvas.getContext('2d');
     const palSampleRing = document.getElementById('paletteSampleRing');
+
+    // 关键修正：建立独立的离屏颜料层 (palPaintCanvas)
+    // 瓷盘底色绝不混入颜料算法，彻底解决「单色绕一绕自己变色」的严重问题！
+    const palPaintCanvas = document.createElement('canvas');
+    palPaintCanvas.width = palCanvas.width;
+    palPaintCanvas.height = palCanvas.height;
+    const palPaintCtx = palPaintCanvas.getContext('2d');
+
     let paletteMode = 'mix'; // 'mix' (研磨混色) 或 'pick' (吸取调色)
     let isPaletteInteracting = false;
 
-    function initPorcelainPalette() {
-      palCtx.fillStyle = '#fcfcf8';
-      palCtx.fillRect(0, 0, palCanvas.width, palCanvas.height);
-      // 预置两摊自然湿融水彩 (蓝色与黄色，相融出翠绿)
-      dropPalettePigment(60, 55, [20, 85, 210], 34, 0.75);
-      dropPalettePigment(220, 55, [255, 210, 0], 34, 0.75);
-      dropPalettePigment(140, 55, [40, 180, 85], 40, 0.65);
-    }
-
-    function dropPalettePigment(cx, cy, rgb, radius, alpha) {
-      const grad = palCtx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-      grad.addColorStop(0, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`);
-      grad.addColorStop(0.8, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha * 0.65})`);
-      grad.addColorStop(1, 'rgba(252, 252, 248, 0)');
+    function renderPorcelainPlate() {
+      const w = palCanvas.width, h = palCanvas.height;
+      // 1. 绘制白瓷底盘 (微带瓷器光泽与温润边缘微阴影)
+      const grad = palCtx.createRadialGradient(w * 0.35, h * 0.3, 10, w * 0.5, h * 0.5, w * 0.6);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.75, '#fafaf6');
+      grad.addColorStop(1, '#ebe8de');
       palCtx.fillStyle = grad;
+      palCtx.fillRect(0, 0, w, h);
+
+      // 绘制浅凹瓷格分隔线 (双格调色凹槽)
+      palCtx.strokeStyle = 'rgba(0, 0, 0, 0.07)';
+      palCtx.lineWidth = 1.5;
       palCtx.beginPath();
-      palCtx.arc(cx, cy, radius, 0, Math.PI * 2);
-      palCtx.fill();
+      palCtx.moveTo(w / 2, 8);
+      palCtx.lineTo(w / 2, h - 8);
+      palCtx.stroke();
+
+      // 2. 将纯颜料层合成至白瓷底盘上
+      palCtx.drawImage(palPaintCanvas, 0, 0);
     }
 
-    // 调色盘操作事件：研磨混色时不污染画笔纯色！
+    function initPorcelainPalette() {
+      palPaintCtx.clearRect(0, 0, palPaintCanvas.width, palPaintCanvas.height);
+      renderPorcelainPlate();
+    }
+
+    // 在颜料层上平滑注色与混合
+    function depositPigment(x, y, rgb, radius, alpha) {
+      // 检查当前位置是否已有颜料
+      const imgData = palPaintCtx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
+      const existingAlpha = imgData[3];
+      let finalRGB = [...rgb];
+
+      if (existingAlpha > 20) {
+        // 已有颜料存在：比较色差
+        const existingRGB = [imgData[0], imgData[1], imgData[2]];
+        const colorDiff = Math.hypot(existingRGB[0] - rgb[0], existingRGB[1] - rgb[1], existingRGB[2] - rgb[2]);
+        if (colorDiff > 32) {
+          // 只有遇到【不同颜料】时，才进行 RYB 物理混色融合！
+          finalRGB = mixPigmentRGB(existingRGB, rgb, 0.32);
+        } else {
+          // 如果是【同一种颜色】或同一色系，保持绝对纯正，绝不允许偏色！
+          finalRGB = [...rgb];
+        }
+      }
+
+      // 在颜料层上绘制柔和水彩水痕
+      const radGrad = palPaintCtx.createRadialGradient(x, y, 0, x, y, radius);
+      radGrad.addColorStop(0, `rgba(${finalRGB[0]}, ${finalRGB[1]}, ${finalRGB[2]}, ${alpha})`);
+      radGrad.addColorStop(0.72, `rgba(${finalRGB[0]}, ${finalRGB[1]}, ${finalRGB[2]}, ${alpha * 0.85})`);
+      radGrad.addColorStop(1, `rgba(${finalRGB[0]}, ${finalRGB[1]}, ${finalRGB[2]}, 0)`);
+
+      palPaintCtx.fillStyle = radGrad;
+      palPaintCtx.beginPath();
+      palPaintCtx.arc(x, y, radius, 0, Math.PI * 2);
+      palPaintCtx.fill();
+
+      // 同步重绘主瓷盘
+      renderPorcelainPlate();
+    }
+
     function handlePalettePointer(e) {
       const rect = palCanvas.getBoundingClientRect();
       const px = (e.clientX - rect.left) * (palCanvas.width / rect.width);
@@ -1104,19 +1153,16 @@
       const y = Math.max(0, Math.min(palCanvas.height - 1, py));
 
       if (paletteMode === 'mix') {
-        // 模式一：研磨混色 —— 仅在瓷盘上混合，绝不修改画笔颜色！
-        const pix = palCtx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
-        const blendRGB = mixPigmentRGB([pix[0], pix[1], pix[2]], activeBrushRGB, 0.35);
-        dropPalettePigment(x, y, blendRGB, 15, 0.45);
+        // 研磨混色模式：在瓷盘颜料层上研磨，同色绝不偏色，异色自然融合！
+        depositPigment(x, y, activeBrushRGB, 16, 0.55);
       } else {
-        // 模式二：吸取调色 —— 明确取色
-        const samplePix = palCtx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
-        if (samplePix[3] > 10 && !(samplePix[0] > 250 && samplePix[1] > 250 && samplePix[2] > 245)) {
-          applyBrushColor([samplePix[0], samplePix[1], samplePix[2]]);
-          // 样本指示环随动反馈
+        // 吸取调色模式：从颜料层精准提取混合色
+        const pix = palPaintCtx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
+        if (pix[3] > 20) {
+          applyBrushColor([pix[0], pix[1], pix[2]]);
           palSampleRing.classList.remove('hidden');
-          palSampleRing.style.left = `${(e.clientX - rect.left)}px`;
-          palSampleRing.style.top = `${(e.clientY - rect.top)}px`;
+          palSampleRing.style.left = `${e.clientX - rect.left}px`;
+          palSampleRing.style.top = `${e.clientY - rect.top}px`;
           palSampleRing.style.backgroundColor = `rgb(${activeBrushRGB[0]}, ${activeBrushRGB[1]}, ${activeBrushRGB[2]})`;
         }
       }
@@ -1162,16 +1208,22 @@
 
     // 滴入当前画笔颜色至调色盘
     document.getElementById('btnDropActiveColor').addEventListener('click', () => {
-      dropPalettePigment(palCanvas.width / 2, palCanvas.height / 2, activeBrushRGB, 30, 0.7);
+      depositPigment(palCanvas.width * 0.35, palCanvas.height * 0.5, activeBrushRGB, 26, 0.85);
     });
 
     document.getElementById('btnWashPorcelain').addEventListener('click', () => {
-      palCtx.fillStyle = '#fcfcf8';
-      palCtx.fillRect(0, 0, palCanvas.width, palCanvas.height);
+      palPaintCtx.clearRect(0, 0, palPaintCanvas.width, palPaintCanvas.height);
+      renderPorcelainPlate();
     });
 
     document.getElementById('btnWetPalette').addEventListener('click', () => {
-      dropPalettePigment(palCanvas.width / 2, palCanvas.height / 2, [255, 255, 255], 65, 0.45);
+      // 注入清水稀释淡化颜料层
+      palPaintCtx.save();
+      palPaintCtx.globalCompositeOperation = 'destination-out';
+      palPaintCtx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+      palPaintCtx.fillRect(0, 0, palPaintCanvas.width, palPaintCanvas.height);
+      palPaintCtx.restore();
+      renderPorcelainPlate();
     });
 
     /********************************************************************
