@@ -1,0 +1,10 @@
+# OS files
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# Local AI generated media caches
+prototype/generated/*.mp4
+!prototype/generated/.gitkeep

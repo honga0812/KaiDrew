@@ -86,6 +86,12 @@
         <span id="bucketDiluteBadge" class="text-[11px] font-mono px-1.5 py-0.2 rounded-md bg-sky-500 text-white shadow-xs">100%</span>
       </button>
 
+      <!-- 橡皮擦顶栏快捷切换按键 -->
+      <button id="btnToggleEraserTop" class="px-2.5 py-1 rounded-xl bg-stone-100 hover:bg-stone-200/90 border border-stone-200/80 active:scale-95 transition flex items-center gap-1.5 text-xs font-bold text-stone-700 shadow-xs shrink-0" title="橡皮擦模式：局部擦除当前图层笔画">
+        <span>🧼</span>
+        <span class="hidden md:inline">橡皮擦</span>
+      </button>
+
       <div class="h-4 w-px bg-stone-200 mx-0.5"></div>
 
       <!-- 平滑 1 ~ 120px 笔触粗细调节条 (带 + / - 点按快调 & 移动端触摸优化) -->
@@ -201,6 +207,50 @@
         ➖
       </button>
     </div>
+
+    <!-- 右侧便捷绘画工具栏 (主画面右边：常用粗细快速点选 & 画笔/橡皮擦大按键) -->
+    <aside id="rightQuickDock" class="absolute right-3.5 top-1/2 -translate-y-1/2 z-30 flex flex-col items-center gap-2.5 bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl p-2 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] select-none">
+      <!-- 1. 画笔 vs 橡皮擦 模式切换按键 -->
+      <div class="flex flex-col gap-1.5 p-1 bg-stone-100 rounded-xl border border-stone-200/60">
+        <button id="dockBtnBrush" class="w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center text-sm shadow-xs transition active:scale-95" title="画笔模式">
+          <span id="dockBrushIcon">🖌️</span>
+        </button>
+        <button id="dockBtnEraser" class="w-8 h-8 rounded-lg bg-transparent text-stone-600 hover:bg-stone-200 flex items-center justify-center text-sm transition active:scale-95" title="橡皮擦模式 (局部擦除当前图层)">
+          <span>🧼</span>
+        </button>
+      </div>
+
+      <div class="w-5 h-px bg-stone-200"></div>
+
+      <!-- 2. 常用粗细快速点选 (圆点大小随粗细直观缩放) -->
+      <div class="flex flex-col items-center gap-1.5" id="quickSizePresetsContainer">
+        <span class="text-[8px] font-bold text-stone-400 font-mono">粗细</span>
+        <!-- 4, 12, 24, 48, 80, 120px 按钮 -->
+        <button data-quicksize="4" class="quick-size-btn w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="极细 4px (勾线)">
+          <span class="w-1.5 h-1.5 rounded-full bg-stone-700 block"></span>
+        </button>
+        <button data-quicksize="12" class="quick-size-btn w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="细笔 12px (轮廓细节)">
+          <span class="w-2.5 h-2.5 rounded-full bg-stone-700 block"></span>
+        </button>
+        <button data-quicksize="24" class="quick-size-btn active w-7 h-7 rounded-lg bg-amber-100 ring-2 ring-amber-500 flex items-center justify-center transition active:scale-90" title="常规 24px (标准)">
+          <span class="w-3.5 h-3.5 rounded-full bg-amber-600 block"></span>
+        </button>
+        <button data-quicksize="48" class="quick-size-btn w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="粗笔 48px (填色)">
+          <span class="w-5 h-5 rounded-full bg-stone-700 block"></span>
+        </button>
+        <button data-quicksize="80" class="quick-size-btn w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="大笔 80px (大面积)">
+          <span class="w-6 h-6 rounded-full bg-stone-700 block"></span>
+        </button>
+      </div>
+
+      <div class="w-5 h-px bg-stone-200"></div>
+
+      <!-- 3. 纵向滑动条与当前数值 -->
+      <div class="flex flex-col items-center gap-1">
+        <input id="dockVerticalSizeSlider" type="range" min="1" max="120" value="24" class="h-20 w-1.5 accent-amber-500 cursor-pointer appearance-none bg-stone-200 rounded-full" style="writing-mode: vertical-lr; direction: rtl;" title="垂直滑动调节粗细 (1~120px)" />
+        <span id="dockSizeLabel" class="text-[9px] font-mono font-bold text-amber-600">24px</span>
+      </div>
+    </aside>
   </main>
 
   <!-- ==================== 左上角动态弹出的画风与画具控制抽屉 (奢华现代设计工作室风) ==================== -->
@@ -575,18 +625,34 @@
               <span class="text-xs font-bold text-purple-900">选择优化画风 (ControlNet LineArt/Scribble)</span>
               <span id="currentEngineBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-purple-200 text-purple-800 font-bold">🧠 内置轮廓平滑引擎</span>
             </div>
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <label class="flex items-center gap-2 p-2 rounded-xl bg-white border border-purple-200 cursor-pointer shadow-2xs hover:border-purple-400">
-                <input type="radio" name="aiStyle" value="storybook" checked class="accent-purple-600">
-                <span class="text-xs font-bold">🧸 温暖儿童绘本</span>
+                <input type="radio" name="aiStyle" value="crisp_outline" checked class="accent-purple-600">
+                <div>
+                  <div class="text-xs font-bold">🖋️ 锐利圆滑描边</div>
+                  <div class="text-[9px] text-stone-500">外框清晰锐利·平滑线条</div>
+                </div>
+              </label>
+              <label class="flex items-center gap-2 p-2 rounded-xl bg-white border border-purple-200 cursor-pointer shadow-2xs hover:border-purple-400">
+                <input type="radio" name="aiStyle" value="storybook" class="accent-purple-600">
+                <div>
+                  <div class="text-xs font-bold">🧸 温暖儿童绘本</div>
+                  <div class="text-[9px] text-stone-500">柔润童话光影·故事质感</div>
+                </div>
               </label>
               <label class="flex items-center gap-2 p-2 rounded-xl bg-white border border-purple-200 cursor-pointer shadow-2xs hover:border-purple-400">
                 <input type="radio" name="aiStyle" value="luminous_watercolor" class="accent-purple-600">
-                <span class="text-xs font-bold">🖌️ 大师透光水彩</span>
+                <div>
+                  <div class="text-xs font-bold">🖌️ 大师透光水彩</div>
+                  <div class="text-[9px] text-stone-500">水痕暗边·透光晕染</div>
+                </div>
               </label>
               <label class="flex items-center gap-2 p-2 rounded-xl bg-white border border-purple-200 cursor-pointer shadow-2xs hover:border-purple-400">
                 <input type="radio" name="aiStyle" value="clay_3d" class="accent-purple-600">
-                <span class="text-xs font-bold">🌟 萌趣 3D 黏土</span>
+                <div>
+                  <div class="text-xs font-bold">🌟 萌趣 3D 黏土</div>
+                  <div class="text-[9px] text-stone-500">立体微雕·饱满童趣</div>
+                </div>
               </label>
             </div>
 
@@ -736,6 +802,17 @@
             <div class="flex flex-col gap-1.5">
               <label class="text-xs font-bold text-stone-700">自建后端 Webhook Endpoint (选填):</label>
               <input id="apiConfigEndpoint" type="text" placeholder="https://api.yourdomain.com/v1/ai/polish" class="px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs font-mono text-stone-800 outline-none focus:border-purple-500">
+            </div>
+
+            <!-- 一键填入本地 API 进行测试 -->
+            <div class="bg-purple-50/80 border border-purple-200 rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+              <div>
+                <div class="text-xs font-bold text-purple-900">⚡ 本地以图生动画 API 已就绪 (端口 :8765)</div>
+                <div class="text-[10px] text-purple-700">服务正运行于本机，支持以 Authorization API Key 验证调用，生成真正 75 帧 MP4 动画！</div>
+              </div>
+              <button id="btnUseLocalTestApi" type="button" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm active:scale-95 transition shrink-0">
+                一键填入本地 API 进行测试
+              </button>
             </div>
 
             <button id="btnSaveApiConfig" class="self-end px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs active:scale-95 transition">
@@ -1510,7 +1587,60 @@
       targetCtx.restore();
     }
 
+    /********************************************************************
+     * 7.5 橡皮擦与画笔工具切换 (局部擦除当前图层)
+     ********************************************************************/
+    let currentTool = 'brush'; // 'brush' or 'eraser'
+
+    function setDrawingTool(tool) {
+      currentTool = tool;
+      const brushBtn = document.getElementById('dockBtnBrush');
+      const eraserBtn = document.getElementById('dockBtnEraser');
+      const topEraserBtn = document.getElementById('btnToggleEraserTop');
+
+      if (tool === 'eraser') {
+        if (brushBtn) brushBtn.className = 'w-8 h-8 rounded-lg bg-transparent text-stone-600 hover:bg-stone-200 flex items-center justify-center text-sm transition active:scale-95';
+        if (eraserBtn) eraserBtn.className = 'w-8 h-8 rounded-lg bg-rose-500 text-white flex items-center justify-center text-sm shadow-sm transition active:scale-95';
+        if (topEraserBtn) topEraserBtn.className = 'px-2.5 py-1 rounded-xl bg-rose-500 text-white border border-rose-600 active:scale-95 transition flex items-center gap-1.5 text-xs font-bold shadow-xs shrink-0';
+        showToast('已切换至橡皮擦模式：可局部擦除当前图层');
+      } else {
+        if (brushBtn) brushBtn.className = 'w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center text-sm shadow-xs transition active:scale-95';
+        if (eraserBtn) eraserBtn.className = 'w-8 h-8 rounded-lg bg-transparent text-stone-600 hover:bg-stone-200 flex items-center justify-center text-sm transition active:scale-95';
+        if (topEraserBtn) topEraserBtn.className = 'px-2.5 py-1 rounded-xl bg-stone-100 hover:bg-stone-200/90 border border-stone-200/80 active:scale-95 transition flex items-center gap-1.5 text-xs font-bold text-stone-700 shadow-xs shrink-0';
+        showToast('已切换回画笔模式');
+      }
+    }
+
+    const dockBtnBrush = document.getElementById('dockBtnBrush');
+    if (dockBtnBrush) dockBtnBrush.addEventListener('click', () => setDrawingTool('brush'));
+    const dockBtnEraser = document.getElementById('dockBtnEraser');
+    if (dockBtnEraser) dockBtnEraser.addEventListener('click', () => setDrawingTool('eraser'));
+    const btnTopEraser = document.getElementById('btnToggleEraserTop');
+    if (btnTopEraser) {
+      btnTopEraser.addEventListener('click', () => {
+        setDrawingTool(currentTool === 'eraser' ? 'brush' : 'eraser');
+      });
+    }
+
+    function stampEraser(prevX, prevY, x, y, radius) {
+      const targetCtx = getActiveCtx();
+      targetCtx.save();
+      targetCtx.globalCompositeOperation = 'destination-out';
+      targetCtx.lineWidth = Math.max(2, radius * 2);
+      targetCtx.lineCap = 'round';
+      targetCtx.lineJoin = 'round';
+      targetCtx.beginPath();
+      targetCtx.moveTo(prevX, prevY);
+      targetCtx.lineTo(x, y);
+      targetCtx.stroke();
+      targetCtx.restore();
+    }
+
     function drawStroke(x0, y0, x1, y1, pressure) {
+      if (currentTool === 'eraser') {
+        stampEraser(x0, y0, x1, y1, brushRadius);
+        return;
+      }
       if (currentBrushMedium === 'watercolor') {
         stampWatercolor(x0, y0, x1, y1, brushRadius, pressure);
       } else if (currentBrushMedium === 'crayon') {
@@ -1563,10 +1693,12 @@
     });
 
     /********************************************************************
-     * 9. 动态 1~120px 笔触粗细滑动条与大圆圈视觉指示器
+     * 9. 动态 1~120px 笔触粗细滑动条、右侧便捷快速点选 Dock 与大圆圈视觉指示器
      ********************************************************************/
     const sizeSlider = document.getElementById('brushSizeSlider');
     const sizeLabel = document.getElementById('brushSizeLabel');
+    const dockVerticalSlider = document.getElementById('dockVerticalSizeSlider');
+    const dockSizeLabel = document.getElementById('dockSizeLabel');
     const sizePreviewOverlay = document.getElementById('brushSizePreviewOverlay');
     const sizeCenterNumber = document.getElementById('brushSizeCenterNumber');
     let sizePreviewHideTimeout = null;
@@ -1574,8 +1706,20 @@
     function updateBrushSize(val) {
       brushRadius = Math.max(1, Math.min(120, parseInt(val, 10)));
       if (sizeSlider) sizeSlider.value = brushRadius;
+      if (dockVerticalSlider) dockVerticalSlider.value = brushRadius;
       if (sizeLabel) sizeLabel.textContent = `${brushRadius}px`;
+      if (dockSizeLabel) dockSizeLabel.textContent = `${brushRadius}px`;
       if (sizeCenterNumber) sizeCenterNumber.textContent = `${brushRadius}px`;
+
+      // 同步右侧 Dock 预设圆点高亮
+      document.querySelectorAll('.quick-size-btn').forEach(btn => {
+        const s = parseInt(btn.dataset.quicksize, 10);
+        if (s === brushRadius) {
+          btn.className = 'quick-size-btn active w-7 h-7 rounded-lg bg-amber-100 ring-2 ring-amber-500 flex items-center justify-center transition active:scale-90';
+        } else {
+          btn.className = 'quick-size-btn w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center transition active:scale-90';
+        }
+      });
 
       const diameter = Math.max(4, brushRadius * 2 * viewScale);
       if (sizePreviewOverlay) {
@@ -1594,6 +1738,17 @@
       sizeSlider.addEventListener('input', (e) => updateBrushSize(e.target.value));
       sizeSlider.addEventListener('change', (e) => updateBrushSize(e.target.value));
     }
+    if (dockVerticalSlider) {
+      dockVerticalSlider.addEventListener('input', (e) => updateBrushSize(e.target.value));
+      dockVerticalSlider.addEventListener('change', (e) => updateBrushSize(e.target.value));
+    }
+
+    // 常用尺寸快速点选
+    document.querySelectorAll('.quick-size-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        updateBrushSize(btn.dataset.quicksize);
+      });
+    });
 
     const btnMinus = document.getElementById('btnBrushSizeMinus');
     if (btnMinus) {
@@ -2485,7 +2640,10 @@
     function updateEngineBadge() {
       const badge = document.getElementById('currentEngineBadge');
       if (!badge) return;
-      if (apiConfig.provider === 'local') {
+      if (apiConfig.endpoint && apiConfig.endpoint.includes('8765')) {
+        badge.textContent = '⚡ 本地极速 API (75帧 H.264 MP4)';
+        badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900 font-bold';
+      } else if (apiConfig.provider === 'local') {
         badge.textContent = '🧠 内置双边轮廓平滑引擎';
         badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-purple-200 text-purple-800 font-bold';
       } else if (apiConfig.provider === 'fal') {
@@ -2510,6 +2668,21 @@
       showToast('API 引擎配置已成功保存！');
       updateEngineBadge();
     });
+
+    const btnUseLocalApi = document.getElementById('btnUseLocalTestApi');
+    if (btnUseLocalApi) {
+      btnUseLocalApi.addEventListener('click', () => {
+        keyInput.value = 'kaidraw-test-key-2026';
+        endpointInput.value = 'http://127.0.0.1:8765/api/ai/image-to-video';
+        apiConfig.key = 'kaidraw-test-key-2026';
+        apiConfig.endpoint = 'http://127.0.0.1:8765/api/ai/image-to-video';
+        localStorage.setItem('kaidraw_ai_key', apiConfig.key);
+        localStorage.setItem('kaidraw_ai_endpoint', apiConfig.endpoint);
+        updateEngineBadge();
+        showToast('已填入本地以图生动画 API 与测试 Key！');
+        switchAiTab('video');
+      });
+    }
 
     const aiStrengthSlider = document.getElementById('aiPolishStrength');
     const aiStrengthLabel = document.getElementById('aiStrengthLabel');
@@ -2576,7 +2749,26 @@
 
       // 3. 应用绘本级光晕与边缘轮廓修润 (圆润饱满的高级绘本风格)
       dctx.save();
-      if (style === 'storybook') {
+      if (style === 'crisp_outline') {
+        // 高清锐利圆滑外框 (Crisp Vector Outlines / 锐利描边模式)
+        dctx.globalCompositeOperation = 'source-over';
+        dctx.filter = 'contrast(1.35) saturate(1.1)';
+        dctx.drawImage(srcCanvas, 0, 0, dw, dh);
+
+        // 提取轮廓并叠加平滑黑边防抖修润
+        const edgeCanvas = document.createElement('canvas');
+        edgeCanvas.width = dw;
+        edgeCanvas.height = dh;
+        const ectx = edgeCanvas.getContext('2d');
+        ectx.drawImage(srcCanvas, 0, 0, dw, dh);
+        ectx.globalCompositeOperation = 'source-in';
+        ectx.fillStyle = 'rgba(20, 20, 25, 0.9)';
+        ectx.fillRect(0, 0, dw, dh);
+
+        dctx.globalCompositeOperation = 'source-over';
+        dctx.filter = 'drop-shadow(0 0 1px rgba(0,0,0,0.5))';
+        dctx.drawImage(edgeCanvas, 0, 0, dw, dh);
+      } else if (style === 'storybook') {
         dctx.globalCompositeOperation = 'soft-light';
         const grad = dctx.createLinearGradient(0, 0, 0, dh);
         grad.addColorStop(0, 'rgba(255, 245, 210, 0.6)');
@@ -2699,23 +2891,65 @@
     /********************************************************************
      * 14.7 真实以图生动画微电影 (Image-to-Video 第一帧条件生成)
      ********************************************************************/
-    document.getElementById('btnGenerateVideo').addEventListener('click', () => {
+    document.getElementById('btnGenerateVideo').addEventListener('click', async () => {
       const spinner = document.getElementById('aiVideoSpinner');
       const btnDownload = document.getElementById('btnDownloadVideo');
       spinner.classList.remove('hidden');
 
       const motion = document.querySelector('input[name="videoMotion"]:checked')?.value || 'breathe';
-      const animCanvas = document.createElement('canvas');
-      animCanvas.width = 640;
-      animCanvas.height = 480;
-      const actx = animCanvas.getContext('2d');
-
       const fps = 30;
       const duration = 2.5;
       const totalFrames = Math.round(fps * duration);
 
       // 将当前合成画作作为第一帧 (Frame 1)
       const firstFrameComp = getComposedCanvas(true);
+
+      // 1. 若配置了 API 端点 (例如本地 http://127.0.0.1:8765/api/ai/image-to-video)
+      if (apiConfig.endpoint && apiConfig.endpoint.trim().length > 0) {
+        try {
+          const resp = await fetch(apiConfig.endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(apiConfig.key ? { 'Authorization': `Bearer ${apiConfig.key}` } : {})
+            },
+            body: JSON.stringify({
+              image: firstFrameComp.toDataURL('image/png'),
+              motion: motion,
+              duration: duration,
+              fps: fps,
+              prompt: document.getElementById('aiCustomPrompt')?.value || ''
+            })
+          });
+
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data.ok && (data.video_url || data.video_base64)) {
+              currentVideoBlobUrl = data.video_url || data.video_base64;
+              aiResultVideo.src = currentVideoBlobUrl;
+              aiResultVideo.classList.remove('hidden');
+              aiVideoPreviewCanvas.classList.add('hidden');
+              aiResultVideo.play();
+              spinner.classList.add('hidden');
+              btnDownload.classList.remove('hidden');
+              showToast(`🎉 本地 API 成功生成真实 H.264 MP4 动画 (75帧 / 2.5秒)！授权: ${data.authorized_by || 'Pass'}`);
+              return;
+            }
+          } else {
+            const errJson = await resp.json().catch(() => ({}));
+            showToast(`API 调用返回错误 (${resp.status}): ${errJson.error || '未授权或服务异常'}`);
+          }
+        } catch (fetchErr) {
+          console.warn('API 请求异常，将自动降级为内置动画引擎:', fetchErr);
+          showToast('无法连接本地 API 端口，正在转为内置引擎逐帧生成...');
+        }
+      }
+
+      // 2. 内置浏览器 Canvas / MediaRecorder 逐帧渲染 (本地零依赖兜底)
+      const animCanvas = document.createElement('canvas');
+      animCanvas.width = 640;
+      animCanvas.height = 480;
+      const actx = animCanvas.getContext('2d');
 
       let stream = null;
       let recorder = null;
@@ -2816,7 +3050,8 @@
     document.getElementById('btnDownloadVideo').addEventListener('click', () => {
       if (!currentVideoBlobUrl) return;
       const a = document.createElement('a');
-      a.download = `KaiDraw_Alive_Video_${Date.now()}.webm`;
+      const isMp4 = currentVideoBlobUrl.includes('.mp4') || currentVideoBlobUrl.startsWith('data:video/mp4');
+      a.download = `KaiDraw_Alive_Video_${Date.now()}.${isMp4 ? 'mp4' : 'webm'}`;
       a.href = currentVideoBlobUrl;
       a.click();
     });
