@@ -50,110 +50,104 @@
     }
   </style>
 </head>
-<body class="text-stone-800 antialiased h-screen flex flex-col p-2.5 select-none relative overflow-hidden bg-[#f8f7f4]">
+<body class="text-stone-800 antialiased h-screen flex flex-col p-2 select-none relative overflow-hidden bg-[#f8f7f4]" style="height: 100dvh; padding-top: max(0.5rem, env(safe-area-inset-top)); padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); padding-left: max(0.5rem, env(safe-area-inset-left)); padding-right: max(0.5rem, env(safe-area-inset-right));">
 
-  <!-- ==================== 顶部超纯净极简导航条 (明亮通透毛玻璃，时尚设计感) ==================== -->
-  <header class="bg-white/85 backdrop-blur-2xl border border-stone-200/90 rounded-2xl px-3.5 py-1.5 flex items-center justify-between gap-2 shadow-[0_4px_20px_rgba(0,0,0,0.03)] shrink-0 z-30">
-    <!-- 左侧：左上角画风选择主按钮 + 撤销/重做/清屏 -->
-    <div class="flex items-center gap-1.5">
-      <!-- 左上角动态画风选择大胶囊按钮 (时尚渐变与柔和投影) -->
-      <button id="btnOpenStyleSelector" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-amber-500/20 active:scale-95 transition" title="点选展开画风与画具选择">
-        <span id="currentMediumIcon" class="text-base drop-shadow-xs">🖌️</span>
+  <!-- ==================== 顶部超纯净极简导航条 (专为 iPad 768px~1366px 完整显示优化，零遮挡自适应编排) ==================== -->
+  <header class="bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl px-2.5 py-1.5 flex flex-wrap items-center justify-between gap-x-1.5 gap-y-1.5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] shrink-0 z-40 relative">
+    <!-- 左侧组：左上角画风选择主按钮 + 撤销/重做/清屏 + 当前颜色/洗笔/橡皮/粗细微调 -->
+    <div class="flex items-center gap-1 flex-wrap">
+      <!-- 左上角动态画风选择大胶囊按钮 -->
+      <button id="btnOpenStyleSelector" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-amber-500/20 active:scale-95 transition shrink-0" title="点选展开画风与画具选择">
+        <span id="currentMediumIcon" class="text-sm drop-shadow-xs">🖌️</span>
         <span id="currentMediumName" class="tracking-wide">水彩画室</span>
-        <span class="text-[10px] opacity-80">▼</span>
+        <span class="text-[9px] opacity-85">▼</span>
       </button>
 
-      <div class="h-4 w-px bg-stone-200 mx-1"></div>
-      <button id="btnUndo" class="p-2 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-stone-700 border border-stone-200/60 active:scale-95 transition opacity-50 cursor-not-allowed shadow-xs" title="撤销 (Command+Z)">
-        <span class="text-base">↩️</span>
+      <div class="h-4 w-px bg-stone-200 mx-0.5"></div>
+      <button id="btnUndo" class="p-1.5 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-stone-700 border border-stone-200/60 active:scale-95 transition opacity-50 cursor-not-allowed shadow-2xs shrink-0" title="撤销 (Command+Z)">
+        <span class="text-sm">↩️</span>
       </button>
-      <button id="btnRedo" class="p-2 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-stone-700 border border-stone-200/60 active:scale-95 transition opacity-50 cursor-not-allowed shadow-xs" title="重做 (Command+Shift+Z)">
-        <span class="text-base">↪️</span>
+      <button id="btnRedo" class="p-1.5 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-stone-700 border border-stone-200/60 active:scale-95 transition opacity-50 cursor-not-allowed shadow-2xs shrink-0" title="重做 (Command+Shift+Z)">
+        <span class="text-sm">↪️</span>
       </button>
-      <button id="btnClear" class="p-2 rounded-xl bg-rose-50 hover:bg-rose-100/90 text-rose-600 border border-rose-200/80 active:scale-95 transition shadow-xs" title="清空画纸">
-        <span class="text-base">🗑️</span>
+      <button id="btnClear" class="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100/90 text-rose-600 border border-rose-200/80 active:scale-95 transition shadow-2xs shrink-0" title="清空当前图层">
+        <span class="text-sm">🗑️</span>
       </button>
-    </div>
 
-    <!-- 中间：当前颜色光圈、洗笔水桶、平滑 1~120px 粗细滑块与加减点按 -->
-    <div class="flex items-center gap-2 flex-1 max-w-lg justify-center">
-      <!-- 带有珠宝光泽的当前画笔颜色大圆环 -->
-      <div id="currentSwatchCircle" class="w-7 h-7 rounded-full border-2 border-white shadow-[0_2px_8px_rgba(0,0,0,0.18)] ring-1 ring-stone-200 transition-transform shrink-0 cursor-pointer" style="background: rgb(20, 85, 210);" title="当前画笔颜色"></div>
+      <div class="h-4 w-px bg-stone-200 mx-0.5"></div>
+
+      <!-- 当前画笔颜色圆环 -->
+      <div id="currentSwatchCircle" class="w-6 h-6 rounded-full border-2 border-white shadow-[0_2px_6px_rgba(0,0,0,0.18)] ring-1 ring-stone-200 transition-transform shrink-0 cursor-pointer" style="background: rgb(20, 85, 210);" title="当前画笔颜色 (点击打开调色抽屉)"></div>
       
-      <!-- 洗笔水桶 (清透马卡龙蓝配色) -->
-      <button id="btnWashBucket" class="px-2.5 py-1 rounded-xl bg-sky-50 border border-sky-200 hover:bg-sky-100 active:scale-95 transition flex items-center gap-1.5 text-xs font-bold text-sky-700 shadow-xs shrink-0" title="点击洗笔桶：稀释画笔颜色">
-        <span id="bucketIcon" class="text-base">🪣</span>
-        <span id="bucketDiluteBadge" class="text-[11px] font-mono px-1.5 py-0.2 rounded-md bg-sky-500 text-white shadow-xs">100%</span>
+      <!-- 洗笔水桶 -->
+      <button id="btnWashBucket" class="px-2 py-1 rounded-xl bg-sky-50 border border-sky-200 hover:bg-sky-100 active:scale-95 transition flex items-center gap-1 text-xs font-bold text-sky-700 shadow-2xs shrink-0" title="点击洗笔桶：稀释画笔颜色">
+        <span id="bucketIcon" class="text-sm">🪣</span>
+        <span id="bucketDiluteBadge" class="text-[10px] font-mono px-1 py-0.2 rounded bg-sky-500 text-white">100%</span>
       </button>
 
       <!-- 橡皮擦顶栏快捷切换按键 -->
-      <button id="btnToggleEraserTop" class="px-2.5 py-1 rounded-xl bg-stone-100 hover:bg-stone-200/90 border border-stone-200/80 active:scale-95 transition flex items-center gap-1.5 text-xs font-bold text-stone-700 shadow-xs shrink-0" title="橡皮擦模式：局部擦除当前图层笔画">
-        <span>🧼</span>
-        <span class="hidden md:inline">橡皮擦</span>
+      <button id="btnToggleEraserTop" class="px-2 py-1 rounded-xl bg-stone-100 hover:bg-stone-200/90 border border-stone-200/80 active:scale-95 transition flex items-center gap-1 text-xs font-bold text-stone-700 shadow-2xs shrink-0" title="橡皮擦模式：局部擦除当前图层笔画">
+        <span class="text-sm">🧼</span>
+        <span class="text-[11px]">橡皮</span>
       </button>
 
-      <div class="h-4 w-px bg-stone-200 mx-0.5"></div>
-
-      <!-- 平滑 1 ~ 120px 笔触粗细调节条 (带 + / - 点按快调 & 移动端触摸优化) -->
-      <div class="flex items-center gap-1.5 flex-1 min-w-[140px] max-w-[240px] bg-stone-100/90 px-2 py-1 rounded-xl border border-stone-200/70 shadow-inner">
-        <button id="btnBrushSizeMinus" class="w-6 h-6 rounded-lg bg-white hover:bg-stone-200 text-stone-700 font-bold text-xs flex items-center justify-center shadow-xs active:scale-90 transition shrink-0" title="减小笔刷 (5px)">−</button>
-        <input id="brushSizeSlider" type="range" min="1" max="120" value="24" class="w-full accent-amber-500 cursor-pointer h-2 bg-stone-200 rounded-lg appearance-none" style="touch-action: pan-x;" title="平滑调节画笔粗细 (1~120px)" />
-        <button id="btnBrushSizePlus" class="w-6 h-6 rounded-lg bg-white hover:bg-stone-200 text-stone-700 font-bold text-xs flex items-center justify-center shadow-xs active:scale-90 transition shrink-0" title="增大笔刷 (5px)">+</button>
-        <span id="brushSizeLabel" class="text-xs font-mono font-bold text-amber-600 w-10 text-right shrink-0">24px</span>
+      <!-- 紧凑型 1 ~ 120px 笔触粗细调节条 (配合右侧快捷栏) -->
+      <div class="flex items-center gap-1 bg-stone-100/90 px-1.5 py-0.5 rounded-xl border border-stone-200/70 shadow-inner shrink-0">
+        <button id="btnBrushSizeMinus" class="w-5 h-5 rounded-md bg-white hover:bg-stone-200 text-stone-700 font-bold text-xs flex items-center justify-center shadow-2xs active:scale-90 transition shrink-0" title="减小笔刷 (5px)">−</button>
+        <input id="brushSizeSlider" type="range" min="1" max="120" value="24" class="w-16 xl:w-28 accent-amber-500 cursor-pointer h-1.5 bg-stone-200 rounded-lg appearance-none" style="touch-action: pan-x;" title="平滑调节画笔粗细 (1~120px)" />
+        <button id="btnBrushSizePlus" class="w-5 h-5 rounded-md bg-white hover:bg-stone-200 text-stone-700 font-bold text-xs flex items-center justify-center shadow-2xs active:scale-90 transition shrink-0" title="增大笔刷 (5px)">+</button>
+        <span id="brushSizeLabel" class="text-[11px] font-mono font-bold text-amber-600 w-8 text-right shrink-0">24px</span>
       </div>
     </div>
 
-    <!-- 右侧：画纸独立选纸、多图层管理、九宫格、防误触、视野居中、相片转换、AI 魔法、导出 -->
-    <div class="flex items-center gap-1.5">
-      <!-- 0. 画纸独立选纸按键 (5款高档纸张：含一般平滑印刷白纸) -->
-      <button id="btnOpenPaperModal" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100/90 border border-amber-200/80 text-amber-800 active:scale-95 transition flex items-center gap-1 text-xs font-bold shadow-xs shrink-0" title="选纸：包含一般平滑印刷纸、水彩纸、宣纸、云彩纸、卡纸">
-        <span>📜</span>
-        <span class="hidden sm:inline">选纸</span>
+    <!-- 右侧组：画纸选纸、多图层、辅助工具、相片转换、AI 魔法、拍照存相簿 (iPad 100% 完整可见可点选) -->
+    <div class="flex items-center gap-1 flex-wrap justify-end ml-auto">
+      <!-- 0. 画纸独立选纸按键 (默认白纸) -->
+      <button id="btnOpenPaperModal" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100/90 border border-amber-200/80 text-amber-800 active:scale-95 transition flex items-center gap-1 text-xs font-bold shadow-2xs shrink-0" title="选纸：默认白纸，含水彩纸、宣纸、云彩纸、卡纸">
+        <span class="text-sm">📄</span>
+        <span>选纸</span>
       </button>
 
-      <!-- 0.5 多图层管理按键 (分层创作、AI 优化分层叠加、隐藏、透明度) -->
-      <button id="btnToggleLayersPanel" class="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100/90 border border-indigo-200/80 text-indigo-800 active:scale-95 transition flex items-center gap-1.5 text-xs font-bold shadow-xs shrink-0" title="多图层面板：支持手绘分层、AI优化逐层递进修改">
-        <span>📑</span>
-        <span class="hidden sm:inline">图层</span>
+      <!-- 0.5 多图层管理按键 -->
+      <button id="btnToggleLayersPanel" class="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100/90 border border-indigo-200/80 text-indigo-800 active:scale-95 transition flex items-center gap-1 text-xs font-bold shadow-2xs shrink-0" title="多图层面板：支持手绘分层、AI优化逐层递进修改">
+        <span class="text-sm">📑</span>
+        <span>图层</span>
         <span id="layerCountBadge" class="text-[10px] font-mono px-1 rounded-full bg-indigo-600 text-white font-bold">1</span>
       </button>
 
-      <!-- 1. 九宫格辅助线 -->
-      <button id="btnToggleGrid" class="p-2 rounded-xl bg-stone-100 hover:bg-stone-200/80 border border-stone-200/60 text-stone-700 active:scale-95 transition shadow-xs" title="开启/关闭九宫格黄金分割辅助线">
-        <span class="text-base">#️⃣</span>
+      <!-- 1~4. 紧凑画布辅助按钮组 (九宫格、防误触、居中、底图开关) -->
+      <div class="flex items-center gap-0.5 bg-stone-100/80 p-0.5 rounded-xl border border-stone-200/60 shrink-0">
+        <button id="btnToggleGrid" class="p-1.5 rounded-lg hover:bg-white text-stone-700 active:scale-95 transition" title="开启/关闭九宫格黄金分割辅助线">
+          <span class="text-xs">#️⃣</span>
+        </button>
+        <button id="btnTogglePalmRejection" class="px-1.5 py-1 rounded-lg hover:bg-white text-stone-700 active:scale-95 transition flex items-center gap-0.5 text-[11px] font-semibold" title="手掌防误触：点击开启 Apple Pencil 专用作画 (屏蔽单指)">
+          <span id="palmIcon" class="text-xs">✍️</span>
+          <span id="palmText" class="hidden xl:inline font-semibold">手指/笔</span>
+        </button>
+        <button id="btnResetView" class="p-1.5 rounded-lg hover:bg-white text-stone-700 active:scale-95 transition" title="视野居中复位 (100%)">
+          <span class="text-xs">🔄</span>
+        </button>
+        <button id="btnToggleRef" class="p-1.5 rounded-lg hover:bg-white text-stone-700 active:scale-95 transition" title="显示/隐藏描摹底图">
+          <span id="refEyeIcon" class="text-xs">👁️</span>
+        </button>
+      </div>
+
+      <!-- 5. 拍照与相片转换实验室 (高亮常驻显示) -->
+      <button id="btnOpenCameraModal" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white font-bold text-xs flex items-center gap-1 shadow-sm shadow-emerald-500/20 active:scale-95 transition shrink-0" title="拍照/相片转画风与黑白描摹草稿">
+        <span class="text-sm">📸</span>
+        <span>相片转换</span>
       </button>
 
-      <!-- 2. 手掌防误触与输入模式切换 (默认手指与笔均可作画，点击后开启Apple Pencil专用) -->
-      <button id="btnTogglePalmRejection" class="px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200/80 border border-stone-200/60 text-stone-700 active:scale-95 transition flex items-center gap-1.5 text-xs font-semibold shadow-xs" title="手掌防误触：点击开启 Apple Pencil 专用作画 (屏蔽单指)">
-        <span id="palmIcon">✍️</span>
-        <span id="palmText" class="hidden md:inline font-semibold">手指/笔</span>
+      <!-- 5.5 AI 魔法工坊 (高亮常驻显示) -->
+      <button id="btnOpenAiModal" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 text-white font-bold text-xs flex items-center gap-1 shadow-sm shadow-purple-500/20 active:scale-95 transition shrink-0" title="AI 魔法工坊：4维以图生图优化 & 2~3秒以图生动画微电影">
+        <span class="text-sm">✨</span>
+        <span>AI 魔法</span>
       </button>
 
-      <!-- 3. 视野居中复位 (100%) -->
-      <button id="btnResetView" class="p-2 rounded-xl bg-stone-100 hover:bg-stone-200/80 border border-stone-200/60 text-stone-700 active:scale-95 transition shadow-xs" title="视野居中复位 (100%)">
-        <span class="text-base">🔄</span>
-      </button>
-
-      <!-- 4. 显示/隐藏描摹底图 -->
-      <button id="btnToggleRef" class="p-2 rounded-xl bg-stone-100 hover:bg-stone-200/80 border border-stone-200/60 text-stone-700 active:scale-95 transition shadow-xs" title="显示/隐藏描摹底图">
-        <span id="refEyeIcon" class="text-base">👁️</span>
-      </button>
-
-      <div class="h-4 w-px bg-stone-200 mx-0.5"></div>
-
-      <!-- 5. 拍照与相片转换实验室 (渐变明亮按键) -->
-      <button id="btnOpenCameraModal" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-500/20 active:scale-95 transition" title="拍照/相片转画风与黑白描摹草稿">
-        <span>📸</span> <span class="hidden sm:inline">相片转换</span>
-      </button>
-
-      <!-- 5.5 AI 魔法工坊 (全新功能：画作优化 & 2~3秒动态微电影) -->
-      <button id="btnOpenAiModal" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-purple-500/20 active:scale-95 transition" title="AI 魔法工坊：4维以图生图优化 & 2~3秒以图生动画微电影">
-        <span>✨</span> <span class="hidden sm:inline">AI 魔法</span>
-      </button>
-
-      <!-- 6. 拍照储存到相簿 (支持 iPad 原生相簿 Web Share 与高清相纸长按存图) -->
-      <button id="btnExport" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300/90 active:scale-95 transition shadow-xs flex items-center gap-1 text-xs font-bold shrink-0" title="拍照储存高清画作到系统相簿 (Photos)">
-        <span>📷</span> <span class="hidden sm:inline">拍照存相簿</span>
+      <!-- 6. 拍照储存到相簿 (高亮常驻显示) -->
+      <button id="btnExport" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/90 active:scale-95 transition shadow-2xs flex items-center gap-1 text-xs font-bold shrink-0" title="拍照储存高清画作到系统相簿 (Photos)">
+        <span class="text-sm">📷</span>
+        <span>拍照存相簿</span>
       </button>
     </div>
   </header>
@@ -193,7 +187,7 @@
     <!-- 视口左上角状态：当前画纸材质 & 缩放比例 & 实时触控笔压感侦测仪表 -->
     <div class="absolute left-3 top-3 flex items-center gap-2 pointer-events-none z-20 flex-wrap">
       <span id="currentPaperBadge" class="text-xs px-3 py-1.5 rounded-xl bg-white/85 backdrop-blur-md border border-stone-200/80 text-stone-700 font-semibold shadow-xs">
-        📜 粗纹冷压水彩纸
+        📄 平滑白印刷纸 (80g)
       </span>
       <span id="zoomPercentBadge" class="text-xs px-2.5 py-1.5 rounded-xl bg-white/85 backdrop-blur-md border border-stone-200/80 text-amber-600 font-mono font-bold shadow-xs">
         100%
@@ -279,7 +273,7 @@
   </main>
 
   <!-- ==================== 左上角动态弹出的画风与画具控制抽屉 (奢华现代设计工作室风) ==================== -->
-  <aside id="mainDrawer" class="drawer-panel drawer-closed fixed left-2.5 top-16 bottom-4 w-90 max-w-[90vw] bg-white/95 backdrop-blur-3xl border border-stone-200/90 rounded-3xl p-4 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.15)] z-40 flex flex-col gap-3.5 overflow-y-auto text-stone-800">
+  <aside id="mainDrawer" class="drawer-panel drawer-closed fixed left-2.5 top-24 lg:top-16 bottom-4 w-90 max-w-[90vw] bg-white/95 backdrop-blur-3xl border border-stone-200/90 rounded-3xl p-4 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.15)] z-35 flex flex-col gap-3.5 overflow-y-auto text-stone-800">
     <!-- 抽屉顶部：标题与关闭按钮 -->
     <div class="flex items-center justify-between border-b border-stone-100 pb-2.5">
       <div class="text-xs font-bold text-stone-400 tracking-wider uppercase">画具与画风工坊</div>
@@ -567,7 +561,7 @@
   </div>
 
   <!-- ==================== 浮动抽屉：多图层系统 (分层创作、AI 优化生成新图层) ==================== -->
-  <aside id="layersPanel" class="hidden fixed right-3 top-16 w-84 max-w-[92vw] bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-3xl p-4 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18)] z-40 flex flex-col gap-3 text-stone-800">
+  <aside id="layersPanel" class="hidden fixed right-3 top-24 lg:top-16 w-84 max-w-[92vw] bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-3xl p-4 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18)] z-35 flex flex-col gap-3 text-stone-800">
     <div class="flex items-center justify-between border-b border-stone-100 pb-2.5">
       <div class="flex items-center gap-2">
         <span class="text-lg">📑</span>
@@ -980,7 +974,7 @@
       { id: 'cloud', name: '棉絮云彩纸', icon: '☁️', bg: '#f5f2e8', desc: '柔和棉絮云雾肌理，粉彩蜡笔附着柔顺' },
       { id: 'toned', name: '细纹暖灰卡纸', icon: '🎨', bg: '#ded5c4', desc: '法国暖灰高密度卡纸，马克笔边缘极度锐利不渗墨' }
     ];
-    let currentPaperId = 'coldpress';
+    let currentPaperId = 'plain';
 
     /********************************************************************
      * 3. RYB 美术三原色混色引擎
@@ -2563,6 +2557,14 @@
       else openDrawer();
     });
 
+    const currentSwatchEl = document.getElementById('currentSwatchCircle');
+    if (currentSwatchEl) {
+      currentSwatchEl.addEventListener('click', () => {
+        if (isDrawerOpen) closeDrawer();
+        else openDrawer();
+      });
+    }
+
     document.getElementById('btnCloseDrawer').addEventListener('click', closeDrawer);
 
     document.querySelectorAll('.medium-tab-btn').forEach(btn => {
@@ -3775,7 +3777,7 @@
     // 初始化默认图层 1 (手绘原作)
     createLayer('图层 1 (手绘原作)');
 
-    drawPaperTexture('coldpress');
+    drawPaperTexture('plain');
     renderWatercolorPans();
     renderCrayonBox();
     renderMarkerRack();
