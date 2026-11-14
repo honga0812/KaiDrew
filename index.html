@@ -1643,151 +1643,230 @@
     }
 
     /********************************************************************
-     * 7. 3 大画种真实笔触渲染算法 (高灵敏度 + 零断触 + 实时动态压感)
+     * 7. 3 大画种真实笔触渲染算法 (等距微步插值 + 压感色素浓度平滑渐变 + 零深色圆圈伪影)
      ********************************************************************/
-    function stampWatercolor(prevX, prevY, x, y, radius, pressure) {
-      const p = (pressure && pressure > 0) ? pressure : 0.7;
-      const effRadius = Math.max(2.0, radius * (0.45 + p * 0.75));
-      const dist = Math.hypot(x - prevX, y - prevY);
-      const steps = Math.max(1, Math.ceil(dist / Math.max(1.5, effRadius * 0.22)));
-      const [r, g, b] = activeBrushRGB;
+    function getPaperBaseRGB(paperId) {
+      if (paperId === 'plain') return [255, 255, 255];
+      if (paperId === 'coldpress') return [250, 247, 238];
+      if (paperId === 'xuan') return [248, 244, 230];
+      if (paperId === 'cloud') return [245, 242, 232];
+      if (paperId === 'toned') return [222, 213, 196];
+      return [255, 255, 255];
+    }
+
+    // 根据实时压力 p 与洗笔桶稀释度，计算平滑过渡的颜料浓度 RGB（速度快/压力轻时整体变淡，速度慢/压力重时慢慢变深，绝不产生深色圆圈叠加）
+    function getPressurePigmentRGB(rgb, pressure, dilution, minStrength = 0.22) {
+      const p = Math.max(0.12, Math.min(1.0, pressure));
+      const paperRGB = getPaperBaseRGB(currentPaperId);
+      const strength = Math.min(1.0, (minStrength + (1.0 - minStrength) * Math.pow(p, 0.95)) * (0.25 + 0.75 * dilution));
+      return [
+        Math.round(paperRGB[0] + (rgb[0] - paperRGB[0]) * strength),
+        Math.round(paperRGB[1] + (rgb[1] - paperRGB[1]) * strength),
+        Math.round(paperRGB[2] + (rgb[2] - paperRGB[2]) * strength)
+      ];
+    }
+
+    function dabWatercolorAt(targetCtx, cx, cy, radius, pressure, stepIndex) {
+      const p = Math.max(0.15, Math.min(1.0, pressure));
+      const effRadius = Math.max(2.0, radius * (0.52 + p * 0.62));
       const wetness = waterLevel / 100;
-      const baseAlpha = Math.min(0.65, 0.22 * brushDilution * (0.6 + p * 0.75) * (0.75 + wetness * 0.35));
-      const targetCtx = getActiveCtx();
+      // 湿度越高颜色越清透，压力越轻整体越淡，压力越重越深邃
+      const minStr = Math.max(0.14, 0.26 - wetness * 0.10);
+      const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, p * (1.08 - wetness * 0.22), brushDilution, minStr);
 
-      targetCtx.save();
-      for (let s = 0; s < steps; s++) {
-        const t = steps === 1 ? 1 : s / steps;
-        const cx = prevX + (x - prevX) * t;
-        const cy = prevY + (y - prevY) * t;
+      // 采用高密度微步柔和径向融合，相邻微步无缝汇合为均匀水彩带，彻底消除圆圈纹
+      const dabAlpha = 0.54;
+      const radGrad = targetCtx.createRadialGradient(cx, cy, 0, cx, cy, effRadius);
+      radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${dabAlpha})`);
+      radGrad.addColorStop(0.72, `rgba(${r}, ${g}, ${b}, ${dabAlpha * 0.85})`);
+      radGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
 
+      targetCtx.fillStyle = radGrad;
+      targetCtx.beginPath();
+      targetCtx.arc(cx, cy, effRadius, 0, Math.PI * 2);
+      targetCtx.fill();
+
+      if (currentPaperId === 'coldpress' && wetness > 0.4 && stepIndex % 2 === 0) {
+        const gCount = Math.max(1, Math.floor(effRadius * 0.28));
+        for (let gi = 0; gi < gCount; gi++) {
+          const grAngle = Math.random() * Math.PI * 2;
+          const grDist = Math.sqrt(Math.random()) * effRadius * 0.85;
+          const gx = cx + Math.cos(grAngle) * grDist;
+          const gy = cy + Math.sin(grAngle) * grDist;
+          const toothNoise = (Math.sin(gx * 0.42 + gy * 0.28) * 0.5 + 0.5);
+          if (toothNoise > 0.58) {
+            targetCtx.fillStyle = `rgba(${Math.max(0, r - 18)}, ${Math.max(0, g - 18)}, ${Math.max(0, b - 18)}, ${0.22 * toothNoise})`;
+            targetCtx.fillRect(gx, gy, 1.5, 1.5);
+          }
+        }
+      } else if (currentPaperId === 'xuan' && wetness > 0.4 && stepIndex % 4 === 0) {
+        const bAngle = Math.random() * Math.PI * 2;
+        const bDist = effRadius * (0.82 + Math.random() * 0.25 * wetness);
+        const bx = cx + Math.cos(bAngle) * bDist;
+        const by = cy + Math.sin(bAngle) * bDist;
+        const bR = effRadius * (0.14 + Math.random() * 0.20);
+        const bGrad = targetCtx.createRadialGradient(bx, by, 0, bx, by, bR);
+        bGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.24)`);
+        bGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+        targetCtx.fillStyle = bGrad;
+        targetCtx.beginPath();
+        targetCtx.arc(bx, by, bR, 0, Math.PI * 2);
+        targetCtx.fill();
+      }
+    }
+
+    function dabCrayonAt(targetCtx, cx, cy, radius, pressure) {
+      const p = Math.max(0.15, Math.min(1.0, pressure));
+      const isSide = crayonTipMode === 'side';
+      const effRadius = (isSide ? radius * 1.35 : Math.max(2.0, radius)) * (0.58 + p * 0.56);
+      const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, p, brushDilution, 0.28);
+      const density = Math.max(4, Math.floor(effRadius * effRadius * (isSide ? 0.28 : 0.48) * (0.45 + p * 0.70)));
+
+      for (let i = 0; i < density; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const rad = Math.sqrt(Math.random()) * effRadius;
+        const px = cx + Math.cos(angle) * rad, py = cy + Math.sin(angle) * rad;
+
+        let toothThreshold = (crayonRoughness / 100) * (0.62 + p * 0.36);
+        if (currentPaperId === 'plain') {
+          toothThreshold = 0.82 + p * 0.16;
+        } else if (currentPaperId === 'coldpress') {
+          toothThreshold = 0.52 + p * 0.32;
+        } else if (currentPaperId === 'toned') {
+          toothThreshold = 0.74 + p * 0.22;
+        }
+
+        const noise = ((Math.floor(px * 17) + Math.floor(py * 31)) % 19) / 19;
+        if (noise > toothThreshold) continue;
+
+        targetCtx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.88)`;
+        targetCtx.fillRect(px, py, 2.2, 2.2);
+      }
+    }
+
+    function dabMarkerAt(targetCtx, cx, cy, radius, pressure) {
+      const p = Math.max(0.15, Math.min(1.0, pressure));
+      // 马克笔墨水色深完全随压力平滑渐变（快移时整体清透变淡，慢移时醇厚变深，绝无半透明圆头叠加产生的深色圆圈）
+      const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, p, brushDilution, 0.22);
+
+      if (markerTip === 'chisel') {
+        const angle = -Math.PI / 4;
+        const hw = Math.max(2.0, radius * (0.62 + p * 0.55));
+        const ht = Math.max(1.2, hw * 0.36);
+        targetCtx.save();
+        targetCtx.translate(cx, cy);
+        targetCtx.rotate(angle);
+        targetCtx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.92)`;
+        targetCtx.beginPath();
+        targetCtx.roundRect(-hw, -ht, hw * 2, ht * 2, ht);
+        targetCtx.fill();
+        targetCtx.restore();
+      } else {
+        const widthFactor = markerTip === 'brush' ? (0.42 + p * 0.88) : (0.62 + p * 0.52);
+        const effRadius = Math.max(1.5, radius * 0.55 * widthFactor);
+        // 内部饱满不叠加变深、边缘 1.5px 抗锯齿羽化，彻底杜绝深色圆圈
+        const innerRatio = Math.max(0.55, (effRadius - 1.4) / effRadius);
         const radGrad = targetCtx.createRadialGradient(cx, cy, 0, cx, cy, effRadius);
-        radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${baseAlpha * 1.2})`);
-        radGrad.addColorStop(0.75, `rgba(${r}, ${g}, ${b}, ${baseAlpha * 0.88})`);
+        radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.94)`);
+        radGrad.addColorStop(innerRatio, `rgba(${r}, ${g}, ${b}, 0.92)`);
         radGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
 
         targetCtx.fillStyle = radGrad;
         targetCtx.beginPath();
         targetCtx.arc(cx, cy, effRadius, 0, Math.PI * 2);
         targetCtx.fill();
-
-        if (currentPaperId === 'coldpress' && wetness > 0.4) {
-          const gCount = Math.floor(effRadius * 0.45);
-          for (let gi = 0; gi < gCount; gi++) {
-            const grAngle = Math.random() * Math.PI * 2;
-            const grDist = Math.sqrt(Math.random()) * effRadius * 0.88;
-            const gx = cx + Math.cos(grAngle) * grDist;
-            const gy = cy + Math.sin(grAngle) * grDist;
-            const toothNoise = (Math.sin(gx * 0.42 + gy * 0.28) * 0.5 + 0.5);
-            if (toothNoise > 0.55) {
-              targetCtx.fillStyle = `rgba(${Math.max(0, r - 30)}, ${Math.max(0, g - 30)}, ${Math.max(0, b - 30)}, ${baseAlpha * 0.7 * toothNoise})`;
-              targetCtx.fillRect(gx, gy, 1.5, 1.5);
-            }
-          }
-        } else if (currentPaperId === 'xuan' && wetness > 0.4 && s % 2 === 0) {
-          const bAngle = Math.random() * Math.PI * 2;
-          const bDist = effRadius * (0.85 + Math.random() * 0.3 * wetness);
-          const bx = cx + Math.cos(bAngle) * bDist;
-          const by = cy + Math.sin(bAngle) * bDist;
-          const bR = effRadius * (0.15 + Math.random() * 0.25);
-          const bGrad = targetCtx.createRadialGradient(bx, by, 0, bx, by, bR);
-          bGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${baseAlpha * 0.6})`);
-          bGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
-          targetCtx.fillStyle = bGrad;
-          targetCtx.beginPath();
-          targetCtx.arc(bx, by, bR, 0, Math.PI * 2);
-          targetCtx.fill();
-        }
       }
+    }
+
+    function dabEraserAt(targetCtx, cx, cy, radius, pressure) {
+      const p = Math.max(0.2, Math.min(1.0, pressure));
+      const effRadius = Math.max(2.0, radius * (0.55 + p * 0.60));
+      targetCtx.save();
+      targetCtx.globalCompositeOperation = 'destination-out';
+      const radGrad = targetCtx.createRadialGradient(cx, cy, 0, cx, cy, effRadius);
+      const eraseStrength = Math.min(1.0, 0.55 + p * 0.45);
+      radGrad.addColorStop(0, `rgba(0,0,0,${eraseStrength})`);
+      radGrad.addColorStop(0.8, `rgba(0,0,0,${eraseStrength * 0.9})`);
+      radGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      targetCtx.fillStyle = radGrad;
+      targetCtx.beginPath();
+      targetCtx.arc(cx, cy, effRadius, 0, Math.PI * 2);
+      targetCtx.fill();
       targetCtx.restore();
     }
 
-    function stampCrayon(prevX, prevY, x, y, radius, pressure) {
-      const p = (pressure && pressure > 0) ? pressure : 0.7;
-      const isSide = crayonTipMode === 'side';
-      const effRadius = (isSide ? radius * 1.45 : Math.max(2.0, radius)) * (0.52 + p * 0.68);
-      const dist = Math.hypot(x - prevX, y - prevY);
-      const steps = Math.max(1, Math.ceil(dist / 2.2));
-      const [r, g, b] = activeBrushRGB;
-      const targetCtx = getActiveCtx();
-
-      targetCtx.save();
-      for (let s = 0; s < steps; s++) {
-        const t = steps === 1 ? 1 : s / steps;
-        const cx = prevX + (x - prevX) * t, cy = prevY + (y - prevY) * t;
-        const density = Math.max(5, Math.floor(effRadius * effRadius * (isSide ? 0.38 : 0.65) * (0.55 + p * 0.75)));
-
-        for (let i = 0; i < density; i++) {
-          const angle = Math.random() * Math.PI * 2;
-          const rad = Math.sqrt(Math.random()) * effRadius;
-          const px = cx + Math.cos(angle) * rad, py = cy + Math.sin(angle) * rad;
-
-          let toothThreshold = (crayonRoughness / 100) * (0.7 + p * 0.3);
-          if (currentPaperId === 'plain') {
-            toothThreshold = 0.98;
-          } else if (currentPaperId === 'coldpress') {
-            toothThreshold = 0.55 + p * 0.3;
-          } else if (currentPaperId === 'toned') {
-            toothThreshold = 0.78 + p * 0.2;
-          }
-
-          const noise = ((Math.floor(px * 17) + Math.floor(py * 31)) % 19) / 19;
-          if (noise > toothThreshold) continue;
-
-          targetCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${Math.min(1.0, (0.65 + p * 0.35) * brushDilution)})`;
-          targetCtx.fillRect(px, py, 2.3, 2.3);
-        }
+    function emitBrushDab(targetCtx, cx, cy, pressure, stepIndex = 0) {
+      if (currentTool === 'eraser') {
+        dabEraserAt(targetCtx, cx, cy, brushRadius, pressure);
+        return;
       }
-      targetCtx.restore();
+      if (currentBrushMedium === 'watercolor') {
+        dabWatercolorAt(targetCtx, cx, cy, brushRadius, pressure, stepIndex);
+      } else if (currentBrushMedium === 'crayon') {
+        dabCrayonAt(targetCtx, cx, cy, brushRadius, pressure);
+      } else if (currentBrushMedium === 'marker') {
+        dabMarkerAt(targetCtx, cx, cy, brushRadius, pressure);
+      }
     }
 
-    function stampMarker(prevX, prevY, x, y, radius, pressure) {
-      const p = (pressure && pressure > 0) ? pressure : 0.7;
-      const [r, g, b] = activeBrushRGB;
-      const alpha = Math.min(1.0, brushDilution * (0.72 + p * 0.28));
-      const col = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    // 沿二阶贝塞尔曲线按恒定微步距离（约 1px~2px）等距步进并线性插值压力 p，彻底消除跳点与圆圈伪影
+    let strokeRemainDist = 0;
+    let strokeStepCounter = 0;
+
+    function getStepInterval(radius, pressure) {
+      const p = Math.max(0.15, Math.min(1.0, pressure));
+      if (currentBrushMedium === 'crayon') {
+        return Math.max(1.2, radius * 0.18);
+      }
+      if (currentBrushMedium === 'watercolor') {
+        const effR = Math.max(2.0, radius * (0.52 + p * 0.62));
+        return Math.max(0.9, effR * 0.15);
+      }
+      // marker / eraser: 紧密步进确保色彩丝滑连贯无圆圈
+      const effR = Math.max(1.5, radius * 0.55 * (0.55 + p * 0.60));
+      return Math.max(0.65, effR * 0.14);
+    }
+
+    function walkQuadraticCurveWithPressure(x0, y0, cxCtrl, cyCtrl, x1, y1, p0, p1) {
+      const chordLen = Math.hypot(cxCtrl - x0, cyCtrl - y0) + Math.hypot(x1 - cxCtrl, y1 - cyCtrl);
+      if (chordLen < 0.05) return;
+
       const targetCtx = getActiveCtx();
-
-      // 防止点按时起点与终点完全重合导致 Canvas stroke() 不渲染
-      let tx = x, ty = y;
-      if (Math.hypot(tx - prevX, ty - prevY) < 0.2) {
-        tx = prevX + 0.15;
-        ty = prevY + 0.15;
-      }
-
       targetCtx.save();
-      targetCtx.fillStyle = col;
-      targetCtx.strokeStyle = col;
 
-      if (markerTip === 'round') {
-        targetCtx.lineWidth = Math.max(1.5, radius * (0.5 + p * 0.85));
-        targetCtx.lineCap = 'round';
-        targetCtx.lineJoin = 'round';
-        targetCtx.beginPath();
-        targetCtx.moveTo(prevX, prevY);
-        targetCtx.lineTo(tx, ty);
-        targetCtx.stroke();
-      } else if (markerTip === 'brush') {
-        targetCtx.lineWidth = Math.max(1.5, radius * (0.3 + p * 1.4));
-        targetCtx.lineCap = 'round';
-        targetCtx.lineJoin = 'round';
-        targetCtx.beginPath();
-        targetCtx.moveTo(prevX, prevY);
-        targetCtx.lineTo(tx, ty);
-        targetCtx.stroke();
-      } else if (markerTip === 'chisel') {
-        const angle = -Math.PI / 4;
-        const hw = Math.max(2.0, radius * (0.65 + p * 0.65));
-        const dx = Math.cos(angle) * hw;
-        const dy = Math.sin(angle) * hw;
-        targetCtx.beginPath();
-        targetCtx.moveTo(prevX - dx, prevY - dy);
-        targetCtx.lineTo(prevX + dx, prevY + dy);
-        targetCtx.lineTo(tx + dx, ty + dy);
-        targetCtx.lineTo(tx - dx, ty - dy);
-        targetCtx.closePath();
-        targetCtx.fill();
+      // 将贝塞尔曲线细分为紧密微线段，严格按照物理弧长步进
+      const subSegments = Math.max(4, Math.ceil(chordLen / 1.5));
+      let prevBx = x0, prevBy = y0, prevBp = p0;
+
+      for (let i = 1; i <= subSegments; i++) {
+        const u = i / subSegments;
+        const invU = 1 - u;
+        const bx = invU * invU * x0 + 2 * invU * u * cxCtrl + u * u * x1;
+        const by = invU * invU * y0 + 2 * invU * u * cyCtrl + u * u * y1;
+        const bp = p0 + (p1 - p0) * u;
+
+        const segLen = Math.hypot(bx - prevBx, by - prevBy);
+        let walked = strokeRemainDist;
+
+        while (walked <= segLen) {
+          const t = segLen > 0.0001 ? (walked / segLen) : 0;
+          const sx = prevBx + (bx - prevBx) * t;
+          const sy = prevBy + (by - prevBy) * t;
+          const sp = prevBp + (bp - prevBp) * t;
+
+          strokeStepCounter++;
+          emitBrushDab(targetCtx, sx, sy, sp, strokeStepCounter);
+
+          const stepInterval = getStepInterval(brushRadius, sp);
+          walked += stepInterval;
+        }
+
+        strokeRemainDist = walked - segLen;
+        prevBx = bx;
+        prevBy = by;
+        prevBp = bp;
       }
+
       targetCtx.restore();
     }
 
@@ -1805,12 +1884,12 @@
       if (tool === 'eraser') {
         if (brushBtn) brushBtn.className = 'w-8 h-8 rounded-lg bg-transparent text-stone-600 hover:bg-stone-200 flex items-center justify-center text-sm transition active:scale-95';
         if (eraserBtn) eraserBtn.className = 'w-8 h-8 rounded-lg bg-rose-500 text-white flex items-center justify-center text-sm shadow-sm transition active:scale-95';
-        if (topEraserBtn) topEraserBtn.className = 'px-2.5 py-1 rounded-xl bg-rose-500 text-white border border-rose-600 active:scale-95 transition flex items-center gap-1.5 text-xs font-bold shadow-xs shrink-0';
+        if (topEraserBtn) topEraserBtn.className = 'px-2 py-1 rounded-xl bg-rose-500 text-white border border-rose-600 active:scale-95 transition flex items-center gap-1 text-xs font-bold shadow-2xs shrink-0';
         showToast('已切换至橡皮擦模式：可按压感轻重局部擦除当前图层');
       } else {
         if (brushBtn) brushBtn.className = 'w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center text-sm shadow-xs transition active:scale-95';
         if (eraserBtn) eraserBtn.className = 'w-8 h-8 rounded-lg bg-transparent text-stone-600 hover:bg-stone-200 flex items-center justify-center text-sm transition active:scale-95';
-        if (topEraserBtn) topEraserBtn.className = 'px-2.5 py-1 rounded-xl bg-stone-100 hover:bg-stone-200/90 border border-stone-200/80 active:scale-95 transition flex items-center gap-1.5 text-xs font-bold text-stone-700 shadow-xs shrink-0';
+        if (topEraserBtn) topEraserBtn.className = 'px-2 py-1 rounded-xl bg-stone-100 hover:bg-stone-200/90 border border-stone-200/80 active:scale-95 transition flex items-center gap-1 text-xs font-bold text-stone-700 shadow-2xs shrink-0';
         showToast('已切换回画笔模式');
       }
     }
@@ -1826,37 +1905,18 @@
       });
     }
 
-    function stampEraser(prevX, prevY, x, y, radius, pressure) {
-      const p = (pressure && pressure > 0) ? pressure : 0.75;
-      let tx = x, ty = y;
-      if (Math.hypot(tx - prevX, ty - prevY) < 0.2) {
-        tx = prevX + 0.15;
-        ty = prevY + 0.15;
-      }
-      const targetCtx = getActiveCtx();
-      targetCtx.save();
-      targetCtx.globalCompositeOperation = 'destination-out';
-      targetCtx.strokeStyle = `rgba(0,0,0,${Math.min(1, 0.45 + p * 0.55)})`;
-      targetCtx.lineWidth = Math.max(2.5, radius * 2 * (0.5 + p * 0.65));
-      targetCtx.lineCap = 'round';
-      targetCtx.lineJoin = 'round';
-      targetCtx.beginPath();
-      targetCtx.moveTo(prevX, prevY);
-      targetCtx.lineTo(tx, ty);
-      targetCtx.stroke();
-      targetCtx.restore();
-    }
-
     /********************************************************************
-     * 7.8 智能混合压感侦测引擎 (解决部分触控笔恒定回传 0.12 / 12% 的硬件限制)
+     * 7.8 智能混合压感侦测引擎 (双级速度+压力平滑滤波：快移整体变淡、慢移渐渐变深)
      ********************************************************************/
     let strokeRawPressures = [];
-    let smoothedPressure = 0.68;
+    let smoothedVelocity = 0.4;
+    let smoothedPressure = 0.55;
+    let lastStrokePressure = 0.55;
     let lastStrokeTime = 0;
     let strokeStartTime = 0;
 
-    function computeDynamicPressure(e, dist, nowTime) {
-      const dt = Math.max(4, nowTime - (lastStrokeTime || nowTime));
+    function computeDynamicPressure(e, dist, nowTime, isFirstSegment = false) {
+      const dt = Math.max(6, nowTime - (lastStrokeTime || (nowTime - 12)));
       lastStrokeTime = nowTime;
 
       const rawP = typeof e.pressure === 'number' ? e.pressure : 0;
@@ -1865,68 +1925,66 @@
         if (strokeRawPressures.length > 25) strokeRawPressures.shift();
       }
 
-      // 判断该触控笔是否具备真实变化的硬件压感 (还是恒定回传 0.12 / 0.5 的电容/USB-C触控笔)
+      // 判断该设备是否具备真实变化的硬件压感 (滑鼠及部分电容笔恒定为 0.5 / 0.12 / 0)
       let minRaw = 1, maxRaw = 0;
       for (let i = 0; i < strokeRawPressures.length; i++) {
         if (strokeRawPressures[i] < minRaw) minRaw = strokeRawPressures[i];
         if (strokeRawPressures[i] > maxRaw) maxRaw = strokeRawPressures[i];
       }
       const rawVariance = maxRaw - minRaw;
-      const isFixedLowStylus = (rawP > 0 && rawP <= 0.16 && rawVariance < 0.03) || rawP === 0.5 || rawP === 0;
+      const isFixedPressureDevice = (e.pointerType === 'mouse') || (rawP > 0 && rawP <= 0.16 && rawVariance < 0.03) || rawP === 0.5 || rawP === 0;
 
-      // 1. 计算运笔速度、落笔蓄力与倾角动态分量 (Velocity + Dwell + Tilt)
-      const velocity = dist / dt; // px / ms
-      const strokeDuration = nowTime - strokeStartTime;
-      // 慢速顿笔/驻留时蓄力饱满 (0.78~0.95)，中速流畅 (0.56~0.76)，快速甩笔自然收锋 (0.30~0.50)
-      const speedNorm = Math.max(0, Math.min(1, velocity / 1.65));
-      const dwellBoost = Math.min(0.14, (strokeDuration / 600) * 0.12);
+      // 1. 计算平滑后的运笔速度 (px / ms)，避免浏览器帧间隔抖动造成忽深忽浅
+      const instantVelocity = dist / dt;
+      if (isFirstSegment) {
+        smoothedVelocity = instantVelocity;
+      } else {
+        smoothedVelocity = smoothedVelocity * 0.72 + instantVelocity * 0.28;
+      }
+
+      // 速度归一化：0.05 px/ms 以下为极慢重按 (pressure ~ 0.95)，1.45 px/ms 以上为快速轻掠 (pressure ~ 0.18)
+      const speedNorm = Math.max(0, Math.min(1, (smoothedVelocity - 0.06) / 1.38));
       let tiltBoost = 0;
       if (e.tiltX || e.tiltY) {
-        const tiltMag = Math.hypot(e.tiltX || 0, e.tiltY || 0); // 0 ~ 90 deg
-        tiltBoost = Math.min(0.18, (tiltMag / 75) * 0.18);
+        const tiltMag = Math.hypot(e.tiltX || 0, e.tiltY || 0);
+        tiltBoost = Math.min(0.15, (tiltMag / 75) * 0.15);
       }
 
-      let dynP = 0.84 - speedNorm * 0.48 + dwellBoost + tiltBoost;
+      // 快速移动时压力低 (0.18~0.32，整体变淡)，慢慢减速时压力平滑升高 (0.75~0.96，慢慢变深)
+      let dynP = 0.94 - Math.pow(speedNorm, 0.82) * 0.76 + tiltBoost;
 
-      // 2. 如果触控笔汇报了高于 0.16 的真实重按压感，应用非线性伽马放大曲线并融合
+      // 2. 如果触控笔汇报了变化的真实硬件压感，融合硬件压感与运笔速度
       let targetP = dynP;
-      if (!isFixedLowStylus && rawP > 0.02) {
-        // 将 iPad 触控笔常见的 0.12~0.60 映射到饱满的 0.42~0.98 区间
+      if (!isFixedPressureDevice && rawP > 0.02) {
         const calibratedHw = Math.min(1.0, Math.pow(Math.max(0.05, rawP) / 0.55, 0.58));
-        targetP = calibratedHw * 0.68 + dynP * 0.32;
+        targetP = calibratedHw * 0.65 + dynP * 0.35;
       }
 
-      // 3. 根据用户选择的压感曲线模式微调
+      // 3. 根据压感曲线模式微调
       if (pressureCurveMode === 'soft') {
-        targetP = 0.68 + targetP * 0.30;
+        targetP = 0.45 + targetP * 0.52;
       } else if (pressureCurveMode === 'calligraphy') {
-        targetP = 0.94 - speedNorm * 0.68 + tiltBoost;
+        targetP = 0.96 - Math.pow(speedNorm, 0.75) * 0.82 + tiltBoost;
       }
 
-      targetP = Math.max(0.24, Math.min(0.98, targetP));
-      // 指数移动平均平滑 (EMA)，让力度仪表与笔触粗细丝滑过渡
-      smoothedPressure = smoothedPressure * 0.52 + targetP * 0.48;
+      targetP = Math.max(0.16, Math.min(0.98, targetP));
+
+      if (isFirstSegment) {
+        smoothedPressure = targetP;
+      } else {
+        // 渐进式 EMA 滤波，确保从快到慢时颜色深度细腻渐深，绝不突变
+        smoothedPressure = smoothedPressure * 0.76 + targetP * 0.24;
+      }
       return smoothedPressure;
     }
 
     function drawStroke(x0, y0, x1, y1, pressure) {
-      if (currentTool === 'eraser') {
-        stampEraser(x0, y0, x1, y1, brushRadius, pressure);
-        return;
-      }
-      if (currentBrushMedium === 'watercolor') {
-        stampWatercolor(x0, y0, x1, y1, brushRadius, pressure);
-      } else if (currentBrushMedium === 'crayon') {
-        stampCrayon(x0, y0, x1, y1, brushRadius, pressure);
-      } else if (currentBrushMedium === 'marker') {
-        stampMarker(x0, y0, x1, y1, brushRadius, pressure);
-      }
+      walkQuadraticCurveWithPressure(x0, y0, (x0 + x1) * 0.5, (y0 + y1) * 0.5, x1, y1, pressure, pressure);
     }
 
     /********************************************************************
-     * 8. 画布绘画事件 (拦截 iOS 随手写延迟 + 120Hz Coalesced 采样 + 贝塞尔平滑)
+     * 8. 画布绘画事件 (拦截 iOS 随手写延迟 + 首段真实测速防起笔黑球 + 贝塞尔平滑渐深)
      ********************************************************************/
-    // 关键修复：拦截 iPadOS Safari 默认的 Scribble (随手写) 与单指滚动手势，确保落笔 0 延迟
     paintCanvas.addEventListener('touchstart', (e) => {
       if (e.touches.length <= 1) {
         e.preventDefault();
@@ -1940,9 +1998,12 @@
     }, { passive: false });
 
     let activeDrawingPointerId = null;
+    let prevMidX = 0, prevMidY = 0;
+    let hasMovedInStroke = false;
+    let totalStrokeDist = 0;
+    let strokeInitBuffer = [];
 
     paintCanvas.addEventListener('pointerdown', (e) => {
-      // 触控笔 (pen) 永远拥有最高优先权，无视任何手掌/双指状态直接作画
       if (e.pointerType === 'pen') {
         activeStylusId = e.pointerId;
         lastStylusTimestamp = performance.now();
@@ -1965,18 +2026,22 @@
       strokeRawPressures = [];
       strokeStartTime = performance.now();
       lastStrokeTime = strokeStartTime;
-      smoothedPressure = 0.65;
+      strokeRemainDist = 0;
+      strokeStepCounter = 0;
+      hasMovedInStroke = false;
+      totalStrokeDist = 0;
 
       saveUndoState();
 
       const pt = screenToCanvas(e.clientX, e.clientY);
       lastX = pt.x;
       lastY = pt.y;
-      const p = computeDynamicPressure(e, 0.5, strokeStartTime);
-      updateStylusPressureUI(p, e.pointerType, true);
-      // 落笔瞬间立即绘制饱满起始点，确保轻点或短促笔画 100% 出墨
-      drawStroke(lastX, lastY, pt.x + 0.15, pt.y + 0.15, p);
-      updateCursorRing(e.clientX, e.clientY, p, true);
+      prevMidX = pt.x;
+      prevMidY = pt.y;
+      strokeInitBuffer = [{ x: pt.x, y: pt.y, t: strokeStartTime }];
+
+      // 起笔瞬间先收集前 6px 位移测出真实初速度，避免快速挥笔时因起笔瞬间速度为0而在起点留下深色大圆点
+      updateCursorRing(e.clientX, e.clientY, 0.5, true);
     }, { passive: false });
 
     paintCanvas.addEventListener('pointermove', (e) => {
@@ -1995,30 +2060,117 @@
 
       e.preventDefault();
 
-      // 获取 Apple Pencil 120Hz/240Hz 合并子事件，杜绝快速书写断线或折角
       const coalesced = (e.getCoalescedEvents && e.getCoalescedEvents().length > 0)
         ? e.getCoalescedEvents()
         : [e];
 
-      let latestP = smoothedPressure;
+      const now = performance.now();
+
+      // 阶段 1：尚未完成起笔测速（累计位移 < 5.5px 且时间 < 55ms）时，先缓冲坐标点以准确测量起笔初速度
+      if (!hasMovedInStroke) {
+        for (let i = 0; i < coalesced.length; i++) {
+          const ce = coalesced[i];
+          const pt = screenToCanvas(ce.clientX, ce.clientY);
+          const prevPt = strokeInitBuffer[strokeInitBuffer.length - 1];
+          const d = Math.hypot(pt.x - prevPt.x, pt.y - prevPt.y);
+          if (d >= 0.2) {
+            totalStrokeDist += d;
+            strokeInitBuffer.push({ x: pt.x, y: pt.y, t: now, d });
+          }
+        }
+
+        const elapsed = now - strokeStartTime;
+        if (totalStrokeDist < 5.5 && elapsed < 55) {
+          return;
+        }
+
+        // 已达到测速阈值：根据起笔真实总位移与时间计算初始压力（快速挥笔则起笔即为浅色，慢速起笔则为深色）
+        lastStrokeTime = strokeStartTime;
+        const initP = computeDynamicPressure(e, totalStrokeDist, now, true);
+        hasMovedInStroke = true;
+        lastStrokePressure = initP;
+
+        const firstPt = strokeInitBuffer[0];
+        lastX = firstPt.x;
+        lastY = firstPt.y;
+        prevMidX = firstPt.x;
+        prevMidY = firstPt.y;
+
+        const targetCtx = getActiveCtx();
+        targetCtx.save();
+        emitBrushDab(targetCtx, firstPt.x, firstPt.y, initP, 0);
+        targetCtx.restore();
+        strokeRemainDist = getStepInterval(brushRadius, initP);
+
+        for (let i = 1; i < strokeInitBuffer.length; i++) {
+          const bPt = strokeInitBuffer[i];
+          const currMidX = (lastX + bPt.x) * 0.5;
+          const currMidY = (lastY + bPt.y) * 0.5;
+          walkQuadraticCurveWithPressure(
+            prevMidX, prevMidY,
+            lastX, lastY,
+            currMidX, currMidY,
+            initP, initP
+          );
+          prevMidX = currMidX;
+          prevMidY = currMidY;
+          lastX = bPt.x;
+          lastY = bPt.y;
+        }
+        strokeInitBuffer = [];
+        updateStylusPressureUI(initP, e.pointerType, true);
+        updateCursorRing(e.clientX, e.clientY, initP, true);
+        return;
+      }
+
+      // 阶段 2：正常连续运笔，平滑计算当前帧速度与目标压力，并沿贝塞尔曲线逐微步线性插值色深
+      let totalMoveDist = 0;
+      const pts = [];
+      let tempX = lastX, tempY = lastY;
+
       for (let i = 0; i < coalesced.length; i++) {
         const ce = coalesced[i];
         const pt = screenToCanvas(ce.clientX, ce.clientY);
-        const dist = Math.hypot(pt.x - lastX, pt.y - lastY);
-        if (dist < 0.15 && coalesced.length > 1) continue;
-
-        latestP = computeDynamicPressure(ce, dist, performance.now());
-        // 采用中点插值平滑过渡，消除快速运笔时的多边形折线感
-        const midX = (lastX + pt.x) * 0.5;
-        const midY = (lastY + pt.y) * 0.5;
-        drawStroke(lastX, lastY, midX, midY, latestP);
-        drawStroke(midX, midY, pt.x, pt.y, latestP);
-        lastX = pt.x;
-        lastY = pt.y;
+        const d = Math.hypot(pt.x - tempX, pt.y - tempY);
+        if (d < 0.25 && coalesced.length > 1) continue;
+        totalMoveDist += d;
+        pts.push({ pt, d, ce });
+        tempX = pt.x;
+        tempY = pt.y;
       }
 
-      updateStylusPressureUI(latestP, e.pointerType, true);
-      updateCursorRing(e.clientX, e.clientY, latestP, true);
+      if (pts.length === 0 || totalMoveDist < 0.2) return;
+
+      const frameTargetP = computeDynamicPressure(e, totalMoveDist, now, false);
+      let accDist = 0;
+      const startP = lastStrokePressure;
+
+      for (let i = 0; i < pts.length; i++) {
+        const { pt, d } = pts[i];
+        accDist += d;
+        totalStrokeDist += d;
+        const segRatio = totalMoveDist > 0 ? (accDist / totalMoveDist) : 1;
+        const segEndP = startP + (frameTargetP - startP) * segRatio;
+
+        const currMidX = (lastX + pt.x) * 0.5;
+        const currMidY = (lastY + pt.y) * 0.5;
+
+        walkQuadraticCurveWithPressure(
+          prevMidX, prevMidY,
+          lastX, lastY,
+          currMidX, currMidY,
+          lastStrokePressure, segEndP
+        );
+
+        prevMidX = currMidX;
+        prevMidY = currMidY;
+        lastX = pt.x;
+        lastY = pt.y;
+        lastStrokePressure = segEndP;
+      }
+
+      updateStylusPressureUI(frameTargetP, e.pointerType, true);
+      updateCursorRing(e.clientX, e.clientY, frameTargetP, true);
     }, { passive: false });
 
     function endDrawing(e) {
@@ -2030,6 +2182,53 @@
       if (activeDrawingPointerId !== null && e.pointerId !== activeDrawingPointerId && e.pointerType !== 'pen') {
         return;
       }
+
+      if (!hasMovedInStroke) {
+        if (totalStrokeDist < 1.2 || strokeInitBuffer.length <= 1) {
+          // 原地轻点一下画布：绘制一个干净饱满的单点
+          const tapP = 0.72;
+          const targetCtx = getActiveCtx();
+          targetCtx.save();
+          emitBrushDab(targetCtx, lastX, lastY, tapP, 0);
+          targetCtx.restore();
+        } else {
+          // 短促微划（< 5.5px）：按实际速度补齐短笔画
+          const now = performance.now();
+          lastStrokeTime = strokeStartTime;
+          const shortP = computeDynamicPressure(e, totalStrokeDist, now, true);
+          const firstPt = strokeInitBuffer[0];
+          lastX = firstPt.x;
+          lastY = firstPt.y;
+          prevMidX = firstPt.x;
+          prevMidY = firstPt.y;
+          const targetCtx = getActiveCtx();
+          targetCtx.save();
+          emitBrushDab(targetCtx, firstPt.x, firstPt.y, shortP, 0);
+          targetCtx.restore();
+          strokeRemainDist = getStepInterval(brushRadius, shortP);
+          for (let i = 1; i < strokeInitBuffer.length; i++) {
+            const bPt = strokeInitBuffer[i];
+            const currMidX = (lastX + bPt.x) * 0.5;
+            const currMidY = (lastY + bPt.y) * 0.5;
+            walkQuadraticCurveWithPressure(prevMidX, prevMidY, lastX, lastY, currMidX, currMidY, shortP, shortP);
+            prevMidX = currMidX;
+            prevMidY = currMidY;
+            lastX = bPt.x;
+            lastY = bPt.y;
+          }
+          walkQuadraticCurveWithPressure(prevMidX, prevMidY, lastX, lastY, lastX, lastY, shortP, shortP);
+        }
+        strokeInitBuffer = [];
+      } else {
+        // 补齐收笔最后半段中点到终点的路径
+        walkQuadraticCurveWithPressure(
+          prevMidX, prevMidY,
+          lastX, lastY,
+          lastX, lastY,
+          lastStrokePressure, lastStrokePressure
+        );
+      }
+
       isDrawing = false;
       activeDrawingPointerId = null;
       updateStylusPressureUI(0, e.pointerType, false);
