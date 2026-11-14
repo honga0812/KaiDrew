@@ -159,9 +159,9 @@
   </header>
 
   <!-- ==================== 主画布视口区 (如阳光洒在设计师浅橡木工作台，重磅画纸悬浮) ==================== -->
-  <main id="viewportContainer" class="flex-1 relative overflow-hidden rounded-2xl border border-stone-300/60 shadow-[inset_0_2px_12px_rgba(0,0,0,0.06)] bg-[#ece8df] flex items-center justify-center min-h-0 touch-none my-1">
+  <main id="viewportContainer" class="flex-1 relative overflow-hidden rounded-2xl border border-stone-300/60 shadow-[inset_0_2px_12px_rgba(0,0,0,0.06)] bg-[#ece8df] flex items-center justify-center min-h-0 touch-none my-1" style="touch-action: none; -webkit-user-select: none; -webkit-touch-callout: none;">
     <!-- 硬件加速视口变形包裹层 (Transform Wrapper - 重磅 300g 艺术画纸悬浮光影) -->
-    <div id="transformCanvasWrapper" class="relative rounded-xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18),0_0_1px_rgba(0,0,0,0.2)] border border-stone-300/40 origin-center transition-none shrink-0" style="width: 720px; height: 520px; transform: translate(0px, 0px) scale(1);">
+    <div id="transformCanvasWrapper" class="relative rounded-xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18),0_0_1px_rgba(0,0,0,0.2)] border border-stone-300/40 origin-center transition-none shrink-0" style="width: 720px; height: 520px; transform: translate(0px, 0px) scale(1); touch-action: none; -webkit-user-select: none; -webkit-touch-callout: none;">
       <!-- 0. 真实物理纸张材质底层 -->
       <canvas id="paperCanvas" width="720" height="520" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
       <!-- 1. 参考底图层 -->
@@ -169,7 +169,7 @@
       <!-- 2. 多图层渲染容器 (存放 Layer 1, Layer 2, Layer 3... 等各图层独立画布) -->
       <div id="layersCanvasContainer" class="absolute inset-0 w-full h-full pointer-events-none"></div>
       <!-- 3. 真实绘画交互主图层 (捕获 Apple Pencil / 触摸事件并分发到活动图层) -->
-      <canvas id="paintCanvas" width="720" height="520" class="absolute inset-0 w-full h-full cursor-none"></canvas>
+      <canvas id="paintCanvas" width="720" height="520" class="absolute inset-0 w-full h-full cursor-none touch-none" style="touch-action: none; -webkit-user-select: none; -webkit-touch-callout: none;"></canvas>
       <!-- 4. 九宫格辅助线层 -->
       <canvas id="overlayCanvas" width="720" height="520" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
     </div>
@@ -198,15 +198,15 @@
       <span id="zoomPercentBadge" class="text-xs px-2.5 py-1.5 rounded-xl bg-white/85 backdrop-blur-md border border-stone-200/80 text-amber-600 font-mono font-bold shadow-xs">
         100%
       </span>
-      <!-- 触控笔实时力度侦测 HUD -->
-      <div id="stylusPressureHud" class="px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur-md border border-stone-200/90 shadow-xs flex items-center gap-2">
-        <span id="stylusDeviceIcon" class="text-xs">✍️</span>
-        <span id="stylusDeviceType" class="text-[11px] font-bold text-stone-700">笔压侦测</span>
+      <!-- 触控笔实时力度侦测 HUD (可点击切换压感灵敏度曲线) -->
+      <button id="stylusPressureHud" type="button" class="pointer-events-auto cursor-pointer px-3 py-1.5 rounded-xl bg-white/95 hover:bg-white backdrop-blur-md border border-purple-200/90 shadow-xs flex items-center gap-2 active:scale-95 transition" title="点击切换触控笔压感曲线模式 (智能混合压感 / 轻柔饱满 / 抑扬笔锋)">
+        <span id="stylusDeviceIcon" class="text-xs">✒️</span>
+        <span id="stylusDeviceType" class="text-[11px] font-bold text-stone-700">智能压感</span>
         <div class="w-20 h-2.5 bg-stone-200 rounded-full overflow-hidden border border-stone-300/60 p-0.2">
           <div id="pressureMeterBar" class="h-full bg-gradient-to-r from-sky-400 via-emerald-500 to-purple-600 rounded-full transition-all duration-75" style="width: 0%;"></div>
         </div>
         <span id="pressurePercentText" class="text-[11px] font-mono font-extrabold text-purple-700 w-9 text-right">0%</span>
-      </div>
+      </button>
     </div>
 
     <!-- 视口左下角：双指操作提示与微调缩放 -->
@@ -1276,11 +1276,20 @@
       return comp;
     }
 
+    function cloneCanvasSnapshot(srcCanvas) {
+      const snap = document.createElement('canvas');
+      snap.width = W;
+      snap.height = H;
+      snap.getContext('2d').drawImage(srcCanvas, 0, 0);
+      return snap;
+    }
+
     function saveUndoState() {
       const active = getActiveLayer();
       if (!active) return;
       if (active.undoStack.length >= 20) active.undoStack.shift();
-      active.undoStack.push(active.ctx.getImageData(0, 0, W, H));
+      // 采用纯 GPU 纹理拷贝 (drawImage)，避免 getImageData 造成落笔瞬间 30ms 主线程卡顿
+      active.undoStack.push(cloneCanvasSnapshot(active.canvas));
       active.redoStack.length = 0;
       updateUndoRedoUI();
     }
@@ -1305,9 +1314,14 @@
     document.getElementById('btnUndo').addEventListener('click', () => {
       const active = getActiveLayer();
       if (active && active.undoStack && active.undoStack.length > 0) {
-        active.redoStack.push(active.ctx.getImageData(0, 0, W, H));
+        active.redoStack.push(cloneCanvasSnapshot(active.canvas));
         const prev = active.undoStack.pop();
-        active.ctx.putImageData(prev, 0, 0);
+        active.ctx.clearRect(0, 0, W, H);
+        if (prev instanceof HTMLCanvasElement) {
+          active.ctx.drawImage(prev, 0, 0);
+        } else {
+          active.ctx.putImageData(prev, 0, 0);
+        }
         updateUndoRedoUI();
         renderLayersUI();
       }
@@ -1316,9 +1330,14 @@
     document.getElementById('btnRedo').addEventListener('click', () => {
       const active = getActiveLayer();
       if (active && active.redoStack && active.redoStack.length > 0) {
-        active.undoStack.push(active.ctx.getImageData(0, 0, W, H));
+        active.undoStack.push(cloneCanvasSnapshot(active.canvas));
         const next = active.redoStack.pop();
-        active.ctx.putImageData(next, 0, 0);
+        active.ctx.clearRect(0, 0, W, H);
+        if (next instanceof HTMLCanvasElement) {
+          active.ctx.drawImage(next, 0, 0);
+        } else {
+          active.ctx.putImageData(next, 0, 0);
+        }
         updateUndoRedoUI();
         renderLayersUI();
       }
@@ -1463,10 +1482,33 @@
     let pinchStartScale = 1.0;
     let pinchStartMid = { x: 0, y: 0 };
     let pinchStartPan = { x: 0, y: 0 };
+    let activeStylusId = null;
+    let lastStylusTimestamp = 0;
+
+    function pruneStaleTouches() {
+      const now = performance.now();
+      for (const [id, t] of activeTouches.entries()) {
+        if (now - t.time > 2500) activeTouches.delete(id);
+      }
+      if (activeTouches.size < 2) isPinching = false;
+    }
 
     viewportContainer.addEventListener('pointerdown', (e) => {
+      // 触控笔绝对优先：一旦检测到 pen，立即解除任何双指缩放锁定，清空手掌误触
+      if (e.pointerType === 'pen') {
+        activeStylusId = e.pointerId;
+        lastStylusTimestamp = performance.now();
+        isPinching = false;
+        activeTouches.clear();
+        return;
+      }
       if (e.pointerType === 'touch') {
-        activeTouches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        // 若触控笔正在作画或刚离开不到 450ms，忽略手掌/手指触摸，防止锁死画笔
+        if (activeStylusId !== null || (performance.now() - lastStylusTimestamp < 450)) {
+          return;
+        }
+        pruneStaleTouches();
+        activeTouches.set(e.pointerId, { x: e.clientX, y: e.clientY, time: performance.now() });
         if (activeTouches.size === 2) {
           isPinching = true;
           isDrawing = false;
@@ -1481,8 +1523,18 @@
     }, { passive: true });
 
     viewportContainer.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'pen') {
+        lastStylusTimestamp = performance.now();
+        isPinching = false;
+        return;
+      }
       if (e.pointerType === 'touch' && activeTouches.has(e.pointerId)) {
-        activeTouches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (activeStylusId !== null) {
+          activeTouches.clear();
+          isPinching = false;
+          return;
+        }
+        activeTouches.set(e.pointerId, { x: e.clientX, y: e.clientY, time: performance.now() });
         if (isPinching && activeTouches.size >= 2) {
           const pts = Array.from(activeTouches.values());
           const curDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
@@ -1501,6 +1553,10 @@
     }, { passive: true });
 
     function removeTouch(e) {
+      if (e.pointerType === 'pen' && e.pointerId === activeStylusId) {
+        activeStylusId = null;
+        lastStylusTimestamp = performance.now();
+      }
       if (activeTouches.has(e.pointerId)) {
         activeTouches.delete(e.pointerId);
       }
@@ -1508,8 +1564,8 @@
         isPinching = false;
       }
     }
-    viewportContainer.addEventListener('pointerup', removeTouch, { passive: true });
-    viewportContainer.addEventListener('pointercancel', removeTouch, { passive: true });
+    window.addEventListener('pointerup', removeTouch, { passive: true });
+    window.addEventListener('pointercancel', removeTouch, { passive: true });
 
     viewportContainer.addEventListener('wheel', (e) => {
       e.preventDefault();
@@ -1528,6 +1584,21 @@
     const stylusDeviceType = document.getElementById('stylusDeviceType');
 
     let currentLivePressure = 0;
+    // 压感曲线模式：'hybrid' (智能混合压感), 'soft' (轻柔饱满), 'calligraphy' (抑扬笔锋)
+    let pressureCurveMode = 'hybrid';
+    const PRESSURE_MODES = [
+      { id: 'hybrid', label: '智能压感', desc: '⚡ 智能混合压感：自动融合笔压、运笔速度与倾角 (28%~98%)' },
+      { id: 'soft', label: '轻柔饱满', desc: '🪶 轻柔省力模式：轻触即出饱满浓郁线条 (65%~98%)' },
+      { id: 'calligraphy', label: '抑扬笔锋', desc: '🖋️ 书法笔锋模式：慢按粗重、快划飞白收锋 (22%~98%)' }
+    ];
+
+    document.getElementById('stylusPressureHud')?.addEventListener('click', () => {
+      const idx = PRESSURE_MODES.findIndex(m => m.id === pressureCurveMode);
+      const next = PRESSURE_MODES[(idx + 1) % PRESSURE_MODES.length];
+      pressureCurveMode = next.id;
+      if (stylusDeviceType) stylusDeviceType.textContent = next.label;
+      showToast(next.desc);
+    });
 
     function updateStylusPressureUI(pressureVal, pointerType, isActiveDrawing) {
       const p = isActiveDrawing ? Math.max(0.05, Math.min(1.0, pressureVal)) : 0;
@@ -1539,25 +1610,28 @@
       if (dockPressureFill) dockPressureFill.style.height = `${pct}%`;
       if (dockPressureLabel) dockPressureLabel.textContent = `${pct}%`;
 
+      const modeObj = PRESSURE_MODES.find(m => m.id === pressureCurveMode);
+      const modeShort = modeObj ? modeObj.label : '智能压感';
+
       if (pointerType === 'pen') {
         if (stylusDeviceIcon) stylusDeviceIcon.textContent = '✒️';
-        if (stylusDeviceType) stylusDeviceType.textContent = 'Apple Pencil';
+        if (stylusDeviceType) stylusDeviceType.textContent = `触控笔·${modeShort}`;
       } else if (pointerType === 'touch') {
         if (stylusDeviceIcon) stylusDeviceIcon.textContent = '👆';
-        if (stylusDeviceType) stylusDeviceType.textContent = '手指触控';
+        if (stylusDeviceType) stylusDeviceType.textContent = `手指·${modeShort}`;
       } else if (pointerType === 'mouse') {
         if (stylusDeviceIcon) stylusDeviceIcon.textContent = '🖱️';
-        if (stylusDeviceType) stylusDeviceType.textContent = '滑鼠动态';
+        if (stylusDeviceType) stylusDeviceType.textContent = `滑鼠·${modeShort}`;
       }
     }
 
-    function updateCursorRing(clientX, clientY, pressure = 0.6, isActiveDrawing = false) {
-      if (isPinching) {
+    function updateCursorRing(clientX, clientY, pressure = 0.65, isActiveDrawing = false) {
+      if (isPinching && activeStylusId === null) {
         cursorRing.classList.add('hidden');
         return;
       }
       cursorRing.classList.remove('hidden');
-      const pScale = isActiveDrawing ? (0.45 + pressure * 0.75) : 1.0;
+      const pScale = isActiveDrawing ? (0.5 + pressure * 0.7) : 1.0;
       const screenDiameter = Math.max(6, brushRadius * 2 * viewScale * pScale);
       const screenRadius = screenDiameter / 2;
       cursorRing.style.width = `${screenDiameter}px`;
@@ -1575,16 +1649,16 @@
     }
 
     /********************************************************************
-     * 7. 3 大画种真实笔触渲染算法 (全部支援 Apple Pencil 实时力度压感)
+     * 7. 3 大画种真实笔触渲染算法 (高灵敏度 + 零断触 + 实时动态压感)
      ********************************************************************/
     function stampWatercolor(prevX, prevY, x, y, radius, pressure) {
-      const p = (pressure && pressure > 0) ? pressure : 0.65;
-      const effRadius = Math.max(1.5, radius * (0.35 + p * 0.85));
+      const p = (pressure && pressure > 0) ? pressure : 0.7;
+      const effRadius = Math.max(2.0, radius * (0.45 + p * 0.75));
       const dist = Math.hypot(x - prevX, y - prevY);
-      const steps = Math.max(1, Math.ceil(dist / 3.0));
+      const steps = Math.max(1, Math.ceil(dist / Math.max(1.5, effRadius * 0.22)));
       const [r, g, b] = activeBrushRGB;
       const wetness = waterLevel / 100;
-      const baseAlpha = 0.16 * brushDilution * (0.5 + p * 0.75) * (0.7 + wetness * 0.4);
+      const baseAlpha = Math.min(0.65, 0.22 * brushDilution * (0.6 + p * 0.75) * (0.75 + wetness * 0.35));
       const targetCtx = getActiveCtx();
 
       targetCtx.save();
@@ -1594,8 +1668,8 @@
         const cy = prevY + (y - prevY) * t;
 
         const radGrad = targetCtx.createRadialGradient(cx, cy, 0, cx, cy, effRadius);
-        radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${baseAlpha * 1.15})`);
-        radGrad.addColorStop(0.75, `rgba(${r}, ${g}, ${b}, ${baseAlpha * 0.85})`);
+        radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${baseAlpha * 1.2})`);
+        radGrad.addColorStop(0.75, `rgba(${r}, ${g}, ${b}, ${baseAlpha * 0.88})`);
         radGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
 
         targetCtx.fillStyle = radGrad;
@@ -1604,7 +1678,7 @@
         targetCtx.fill();
 
         if (currentPaperId === 'coldpress' && wetness > 0.4) {
-          const gCount = Math.floor(effRadius * 0.5);
+          const gCount = Math.floor(effRadius * 0.45);
           for (let gi = 0; gi < gCount; gi++) {
             const grAngle = Math.random() * Math.PI * 2;
             const grDist = Math.sqrt(Math.random()) * effRadius * 0.88;
@@ -1635,11 +1709,11 @@
     }
 
     function stampCrayon(prevX, prevY, x, y, radius, pressure) {
-      const p = (pressure && pressure > 0) ? pressure : 0.65;
+      const p = (pressure && pressure > 0) ? pressure : 0.7;
       const isSide = crayonTipMode === 'side';
-      const effRadius = (isSide ? radius * 1.45 : Math.max(1.5, radius)) * (0.45 + p * 0.75);
+      const effRadius = (isSide ? radius * 1.45 : Math.max(2.0, radius)) * (0.52 + p * 0.68);
       const dist = Math.hypot(x - prevX, y - prevY);
-      const steps = Math.max(1, Math.ceil(dist / 2.5));
+      const steps = Math.max(1, Math.ceil(dist / 2.2));
       const [r, g, b] = activeBrushRGB;
       const targetCtx = getActiveCtx();
 
@@ -1647,69 +1721,76 @@
       for (let s = 0; s < steps; s++) {
         const t = steps === 1 ? 1 : s / steps;
         const cx = prevX + (x - prevX) * t, cy = prevY + (y - prevY) * t;
-        const density = Math.max(3, Math.floor(effRadius * effRadius * (isSide ? 0.35 : 0.6) * (0.5 + p * 0.8)));
+        const density = Math.max(5, Math.floor(effRadius * effRadius * (isSide ? 0.38 : 0.65) * (0.55 + p * 0.75)));
 
         for (let i = 0; i < density; i++) {
           const angle = Math.random() * Math.PI * 2;
           const rad = Math.sqrt(Math.random()) * effRadius;
           const px = cx + Math.cos(angle) * rad, py = cy + Math.sin(angle) * rad;
 
-          let toothThreshold = (crayonRoughness / 100) * (0.65 + p * 0.35);
+          let toothThreshold = (crayonRoughness / 100) * (0.7 + p * 0.3);
           if (currentPaperId === 'plain') {
             toothThreshold = 0.98;
           } else if (currentPaperId === 'coldpress') {
-            toothThreshold = 0.45 + p * 0.3;
+            toothThreshold = 0.55 + p * 0.3;
           } else if (currentPaperId === 'toned') {
-            toothThreshold = 0.75 + p * 0.2;
+            toothThreshold = 0.78 + p * 0.2;
           }
 
           const noise = ((Math.floor(px * 17) + Math.floor(py * 31)) % 19) / 19;
           if (noise > toothThreshold) continue;
 
-          targetCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${Math.min(1.0, (0.55 + p * 0.45) * brushDilution)})`;
-          targetCtx.fillRect(px, py, 2.2, 2.2);
+          targetCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${Math.min(1.0, (0.65 + p * 0.35) * brushDilution)})`;
+          targetCtx.fillRect(px, py, 2.3, 2.3);
         }
       }
       targetCtx.restore();
     }
 
     function stampMarker(prevX, prevY, x, y, radius, pressure) {
-      const p = (pressure && pressure > 0) ? pressure : 0.65;
+      const p = (pressure && pressure > 0) ? pressure : 0.7;
       const [r, g, b] = activeBrushRGB;
-      const alpha = Math.min(1.0, brushDilution * (0.65 + p * 0.35));
+      const alpha = Math.min(1.0, brushDilution * (0.72 + p * 0.28));
       const col = `rgba(${r}, ${g}, ${b}, ${alpha})`;
       const targetCtx = getActiveCtx();
+
+      // 防止点按时起点与终点完全重合导致 Canvas stroke() 不渲染
+      let tx = x, ty = y;
+      if (Math.hypot(tx - prevX, ty - prevY) < 0.2) {
+        tx = prevX + 0.15;
+        ty = prevY + 0.15;
+      }
 
       targetCtx.save();
       targetCtx.fillStyle = col;
       targetCtx.strokeStyle = col;
 
       if (markerTip === 'round') {
-        targetCtx.lineWidth = Math.max(1.0, radius * (0.45 + p * 0.9));
+        targetCtx.lineWidth = Math.max(1.5, radius * (0.5 + p * 0.85));
         targetCtx.lineCap = 'round';
         targetCtx.lineJoin = 'round';
         targetCtx.beginPath();
         targetCtx.moveTo(prevX, prevY);
-        targetCtx.lineTo(x, y);
+        targetCtx.lineTo(tx, ty);
         targetCtx.stroke();
       } else if (markerTip === 'brush') {
-        targetCtx.lineWidth = Math.max(1.0, radius * (0.25 + p * 1.45));
+        targetCtx.lineWidth = Math.max(1.5, radius * (0.3 + p * 1.4));
         targetCtx.lineCap = 'round';
         targetCtx.lineJoin = 'round';
         targetCtx.beginPath();
         targetCtx.moveTo(prevX, prevY);
-        targetCtx.lineTo(x, y);
+        targetCtx.lineTo(tx, ty);
         targetCtx.stroke();
       } else if (markerTip === 'chisel') {
         const angle = -Math.PI / 4;
-        const hw = Math.max(1.5, radius * (0.6 + p * 0.7));
+        const hw = Math.max(2.0, radius * (0.65 + p * 0.65));
         const dx = Math.cos(angle) * hw;
         const dy = Math.sin(angle) * hw;
         targetCtx.beginPath();
         targetCtx.moveTo(prevX - dx, prevY - dy);
         targetCtx.lineTo(prevX + dx, prevY + dy);
-        targetCtx.lineTo(x + dx, y + dy);
-        targetCtx.lineTo(x - dx, y - dy);
+        targetCtx.lineTo(tx + dx, ty + dy);
+        targetCtx.lineTo(tx - dx, ty - dy);
         targetCtx.closePath();
         targetCtx.fill();
       }
@@ -1752,32 +1833,86 @@
     }
 
     function stampEraser(prevX, prevY, x, y, radius, pressure) {
-      const p = (pressure && pressure > 0) ? pressure : 0.7;
+      const p = (pressure && pressure > 0) ? pressure : 0.75;
+      let tx = x, ty = y;
+      if (Math.hypot(tx - prevX, ty - prevY) < 0.2) {
+        tx = prevX + 0.15;
+        ty = prevY + 0.15;
+      }
       const targetCtx = getActiveCtx();
       targetCtx.save();
       targetCtx.globalCompositeOperation = 'destination-out';
-      targetCtx.strokeStyle = `rgba(0,0,0,${Math.min(1, 0.35 + p * 0.65)})`;
-      targetCtx.lineWidth = Math.max(2, radius * 2 * (0.45 + p * 0.7));
+      targetCtx.strokeStyle = `rgba(0,0,0,${Math.min(1, 0.45 + p * 0.55)})`;
+      targetCtx.lineWidth = Math.max(2.5, radius * 2 * (0.5 + p * 0.65));
       targetCtx.lineCap = 'round';
       targetCtx.lineJoin = 'round';
       targetCtx.beginPath();
       targetCtx.moveTo(prevX, prevY);
-      targetCtx.lineTo(x, y);
+      targetCtx.lineTo(tx, ty);
       targetCtx.stroke();
       targetCtx.restore();
     }
 
-    function computeDynamicPressure(e, dist) {
-      // 若是 Apple Pencil 或硬件压感笔 (pressure 不等于默认固定 0.5)
-      if (e.pointerType === 'pen' && e.pressure > 0) {
-        return Math.max(0.05, Math.min(1.0, e.pressure));
+    /********************************************************************
+     * 7.8 智能混合压感侦测引擎 (解决部分触控笔恒定回传 0.12 / 12% 的硬件限制)
+     ********************************************************************/
+    let strokeRawPressures = [];
+    let smoothedPressure = 0.68;
+    let lastStrokeTime = 0;
+    let strokeStartTime = 0;
+
+    function computeDynamicPressure(e, dist, nowTime) {
+      const dt = Math.max(4, nowTime - (lastStrokeTime || nowTime));
+      lastStrokeTime = nowTime;
+
+      const rawP = typeof e.pressure === 'number' ? e.pressure : 0;
+      if (rawP > 0) {
+        strokeRawPressures.push(rawP);
+        if (strokeRawPressures.length > 25) strokeRawPressures.shift();
       }
-      if (e.pressure && e.pressure !== 0.5 && e.pressure > 0) {
-        return Math.max(0.05, Math.min(1.0, e.pressure));
+
+      // 判断该触控笔是否具备真实变化的硬件压感 (还是恒定回传 0.12 / 0.5 的电容/USB-C触控笔)
+      let minRaw = 1, maxRaw = 0;
+      for (let i = 0; i < strokeRawPressures.length; i++) {
+        if (strokeRawPressures[i] < minRaw) minRaw = strokeRawPressures[i];
+        if (strokeRawPressures[i] > maxRaw) maxRaw = strokeRawPressures[i];
       }
-      // 针对普通触控或鼠标：结合运笔速度模拟真实运笔轻重反馈 (慢速重按=高力度，快速飞白=轻力度)
-      const speedFactor = Math.max(0, Math.min(1, dist / 28));
-      return Math.max(0.22, Math.min(0.96, 0.82 - speedFactor * 0.45));
+      const rawVariance = maxRaw - minRaw;
+      const isFixedLowStylus = (rawP > 0 && rawP <= 0.16 && rawVariance < 0.03) || rawP === 0.5 || rawP === 0;
+
+      // 1. 计算运笔速度、落笔蓄力与倾角动态分量 (Velocity + Dwell + Tilt)
+      const velocity = dist / dt; // px / ms
+      const strokeDuration = nowTime - strokeStartTime;
+      // 慢速顿笔/驻留时蓄力饱满 (0.78~0.95)，中速流畅 (0.56~0.76)，快速甩笔自然收锋 (0.30~0.50)
+      const speedNorm = Math.max(0, Math.min(1, velocity / 1.65));
+      const dwellBoost = Math.min(0.14, (strokeDuration / 600) * 0.12);
+      let tiltBoost = 0;
+      if (e.tiltX || e.tiltY) {
+        const tiltMag = Math.hypot(e.tiltX || 0, e.tiltY || 0); // 0 ~ 90 deg
+        tiltBoost = Math.min(0.18, (tiltMag / 75) * 0.18);
+      }
+
+      let dynP = 0.84 - speedNorm * 0.48 + dwellBoost + tiltBoost;
+
+      // 2. 如果触控笔汇报了高于 0.16 的真实重按压感，应用非线性伽马放大曲线并融合
+      let targetP = dynP;
+      if (!isFixedLowStylus && rawP > 0.02) {
+        // 将 iPad 触控笔常见的 0.12~0.60 映射到饱满的 0.42~0.98 区间
+        const calibratedHw = Math.min(1.0, Math.pow(Math.max(0.05, rawP) / 0.55, 0.58));
+        targetP = calibratedHw * 0.68 + dynP * 0.32;
+      }
+
+      // 3. 根据用户选择的压感曲线模式微调
+      if (pressureCurveMode === 'soft') {
+        targetP = 0.68 + targetP * 0.30;
+      } else if (pressureCurveMode === 'calligraphy') {
+        targetP = 0.94 - speedNorm * 0.68 + tiltBoost;
+      }
+
+      targetP = Math.max(0.24, Math.min(0.98, targetP));
+      // 指数移动平均平滑 (EMA)，让力度仪表与笔触粗细丝滑过渡
+      smoothedPressure = smoothedPressure * 0.52 + targetP * 0.48;
+      return smoothedPressure;
     }
 
     function drawStroke(x0, y0, x1, y1, pressure) {
@@ -1795,44 +1930,114 @@
     }
 
     /********************************************************************
-     * 8. 画布绘画事件 (Apple Pencil 压感侦测、防误触与单指控制)
+     * 8. 画布绘画事件 (拦截 iOS 随手写延迟 + 120Hz Coalesced 采样 + 贝塞尔平滑)
      ********************************************************************/
-    paintCanvas.addEventListener('pointerdown', (e) => {
-      if (palmRejectionEnabled && e.pointerType === 'touch' && activeTouches.size >= 2) {
-        return;
+    // 关键修复：拦截 iPadOS Safari 默认的 Scribble (随手写) 与单指滚动手势，确保落笔 0 延迟
+    paintCanvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length <= 1) {
+        e.preventDefault();
       }
-      if (palmRejectionEnabled && e.pointerType === 'touch' && e.pointerType !== 'pen') {
-        return;
+    }, { passive: false });
+
+    paintCanvas.addEventListener('touchmove', (e) => {
+      if (e.touches.length <= 1) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    let activeDrawingPointerId = null;
+
+    paintCanvas.addEventListener('pointerdown', (e) => {
+      // 触控笔 (pen) 永远拥有最高优先权，无视任何手掌/双指状态直接作画
+      if (e.pointerType === 'pen') {
+        activeStylusId = e.pointerId;
+        lastStylusTimestamp = performance.now();
+        isPinching = false;
+        activeTouches.clear();
+      } else {
+        if (palmRejectionEnabled && e.pointerType === 'touch') {
+          return;
+        }
+        if (e.pointerType === 'touch' && (activeTouches.size >= 2 || activeStylusId !== null)) {
+          return;
+        }
       }
 
-      paintCanvas.setPointerCapture(e.pointerId);
+      e.preventDefault();
+      try { paintCanvas.setPointerCapture(e.pointerId); } catch (_) {}
+
       isDrawing = true;
+      activeDrawingPointerId = e.pointerId;
+      strokeRawPressures = [];
+      strokeStartTime = performance.now();
+      lastStrokeTime = strokeStartTime;
+      smoothedPressure = 0.65;
+
       saveUndoState();
+
       const pt = screenToCanvas(e.clientX, e.clientY);
-      lastX = pt.x; lastY = pt.y;
-      const p = computeDynamicPressure(e, 2);
+      lastX = pt.x;
+      lastY = pt.y;
+      const p = computeDynamicPressure(e, 0.5, strokeStartTime);
       updateStylusPressureUI(p, e.pointerType, true);
-      drawStroke(lastX, lastY, pt.x, pt.y, p);
+      // 落笔瞬间立即绘制饱满起始点，确保轻点或短促笔画 100% 出墨
+      drawStroke(lastX, lastY, pt.x + 0.15, pt.y + 0.15, p);
       updateCursorRing(e.clientX, e.clientY, p, true);
-    });
+    }, { passive: false });
 
     paintCanvas.addEventListener('pointermove', (e) => {
-      if (!isDrawing || isPinching) {
+      if (e.pointerType === 'pen') {
+        lastStylusTimestamp = performance.now();
+        isPinching = false;
+      }
+
+      if (!isDrawing || (isPinching && e.pointerType !== 'pen')) {
         updateCursorRing(e.clientX, e.clientY, 0.5, false);
         return;
       }
-      const pt = screenToCanvas(e.clientX, e.clientY);
-      const dist = Math.hypot(pt.x - lastX, pt.y - lastY);
-      const p = computeDynamicPressure(e, dist);
-      updateStylusPressureUI(p, e.pointerType, true);
-      drawStroke(lastX, lastY, pt.x, pt.y, p);
-      lastX = pt.x; lastY = pt.y;
-      updateCursorRing(e.clientX, e.clientY, p, true);
-    });
+      if (activeDrawingPointerId !== null && e.pointerId !== activeDrawingPointerId && e.pointerType !== 'pen') {
+        return;
+      }
+
+      e.preventDefault();
+
+      // 获取 Apple Pencil 120Hz/240Hz 合并子事件，杜绝快速书写断线或折角
+      const coalesced = (e.getCoalescedEvents && e.getCoalescedEvents().length > 0)
+        ? e.getCoalescedEvents()
+        : [e];
+
+      let latestP = smoothedPressure;
+      for (let i = 0; i < coalesced.length; i++) {
+        const ce = coalesced[i];
+        const pt = screenToCanvas(ce.clientX, ce.clientY);
+        const dist = Math.hypot(pt.x - lastX, pt.y - lastY);
+        if (dist < 0.15 && coalesced.length > 1) continue;
+
+        latestP = computeDynamicPressure(ce, dist, performance.now());
+        // 采用中点插值平滑过渡，消除快速运笔时的多边形折线感
+        const midX = (lastX + pt.x) * 0.5;
+        const midY = (lastY + pt.y) * 0.5;
+        drawStroke(lastX, lastY, midX, midY, latestP);
+        drawStroke(midX, midY, pt.x, pt.y, latestP);
+        lastX = pt.x;
+        lastY = pt.y;
+      }
+
+      updateStylusPressureUI(latestP, e.pointerType, true);
+      updateCursorRing(e.clientX, e.clientY, latestP, true);
+    }, { passive: false });
 
     function endDrawing(e) {
+      if (e.pointerType === 'pen' && e.pointerId === activeStylusId) {
+        activeStylusId = null;
+        lastStylusTimestamp = performance.now();
+      }
       if (!isDrawing) return;
+      if (activeDrawingPointerId !== null && e.pointerId !== activeDrawingPointerId && e.pointerType !== 'pen') {
+        return;
+      }
       isDrawing = false;
+      activeDrawingPointerId = null;
       updateStylusPressureUI(0, e.pointerType, false);
       try { paintCanvas.releasePointerCapture(e.pointerId); } catch (_) {}
       updateCursorRing(e.clientX, e.clientY, 0.5, false);
