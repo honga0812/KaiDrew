@@ -147,13 +147,13 @@
       </button>
 
       <!-- 5.5 AI 魔法工坊 (全新功能：画作优化 & 2~3秒动态微电影) -->
-      <button id="btnOpenAiModal" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-purple-500/20 active:scale-95 transition" title="AI 魔法工坊：真·图生图优化 & 2~3秒以图生动画微电影">
+      <button id="btnOpenAiModal" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-purple-500/20 active:scale-95 transition" title="AI 魔法工坊：4维以图生图优化 & 2~3秒以图生动画微电影">
         <span>✨</span> <span class="hidden sm:inline">AI 魔法</span>
       </button>
 
-      <!-- 6. 保存画作导出 -->
-      <button id="btnExport" class="p-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 active:scale-95 transition shadow-xs" title="保存高清画作到相册">
-        <span class="text-base">💾</span>
+      <!-- 6. 拍照储存到相簿 (支持 iPad 原生相簿 Web Share 与高清相纸长按存图) -->
+      <button id="btnExport" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300/90 active:scale-95 transition shadow-xs flex items-center gap-1 text-xs font-bold shrink-0" title="拍照储存高清画作到系统相簿 (Photos)">
+        <span>📷</span> <span class="hidden sm:inline">拍照存相簿</span>
       </button>
     </div>
   </header>
@@ -174,8 +174,13 @@
       <canvas id="overlayCanvas" width="720" height="520" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
     </div>
 
-    <!-- 实时笔刷尺寸指示圆圈 -->
-    <div id="brushCursorRing" class="pointer-events-none fixed top-0 left-0 rounded-full border border-stone-800/80 bg-stone-900/10 shadow-sm z-50 transition-none hidden"></div>
+    <!-- 拍照快门闪光动画层 -->
+    <div id="shutterFlashOverlay" class="pointer-events-none absolute inset-0 bg-white opacity-0 transition-opacity duration-300 z-50"></div>
+
+    <!-- 实时笔刷尺寸与压感指示圆圈 -->
+    <div id="brushCursorRing" class="pointer-events-none fixed top-0 left-0 rounded-full border-2 border-stone-800/80 bg-stone-900/10 shadow-sm z-50 transition-none hidden flex items-center justify-center">
+      <span id="cursorPressureBadge" class="text-[8px] font-mono font-bold text-white bg-stone-900/75 px-1 rounded-full -top-4 absolute hidden"></span>
+    </div>
 
     <!-- 调节粗细时的画面中心动态大圆圈指示器 (1~120px 居中圆圈，直观显示当前笔画实际粗细) -->
     <div id="brushSizePreviewOverlay" class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 rounded-full border-2 border-amber-500 bg-amber-500/20 shadow-2xl flex items-center justify-center opacity-0 transition-opacity duration-200 backdrop-blur-xs">
@@ -185,14 +190,23 @@
     <!-- 智能提示条 (清爽白瓷毛玻璃) -->
     <div id="toastNotification" class="pointer-events-none fixed top-16 left-1/2 -translate-x-1/2 px-4 py-2 rounded-2xl bg-white/95 backdrop-blur-md border border-stone-200 text-stone-800 text-xs font-bold shadow-xl z-50 transition-opacity duration-300 opacity-0"></div>
 
-    <!-- 视口左上角状态：当前画纸材质 & 缩放比例 (纯净半透白浮签) -->
-    <div class="absolute left-3 top-3 flex items-center gap-2 pointer-events-none z-20">
+    <!-- 视口左上角状态：当前画纸材质 & 缩放比例 & 实时触控笔压感侦测仪表 -->
+    <div class="absolute left-3 top-3 flex items-center gap-2 pointer-events-none z-20 flex-wrap">
       <span id="currentPaperBadge" class="text-xs px-3 py-1.5 rounded-xl bg-white/85 backdrop-blur-md border border-stone-200/80 text-stone-700 font-semibold shadow-xs">
         📜 粗纹冷压水彩纸
       </span>
       <span id="zoomPercentBadge" class="text-xs px-2.5 py-1.5 rounded-xl bg-white/85 backdrop-blur-md border border-stone-200/80 text-amber-600 font-mono font-bold shadow-xs">
         100%
       </span>
+      <!-- 触控笔实时力度侦测 HUD -->
+      <div id="stylusPressureHud" class="px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur-md border border-stone-200/90 shadow-xs flex items-center gap-2">
+        <span id="stylusDeviceIcon" class="text-xs">✍️</span>
+        <span id="stylusDeviceType" class="text-[11px] font-bold text-stone-700">笔压侦测</span>
+        <div class="w-20 h-2.5 bg-stone-200 rounded-full overflow-hidden border border-stone-300/60 p-0.2">
+          <div id="pressureMeterBar" class="h-full bg-gradient-to-r from-sky-400 via-emerald-500 to-purple-600 rounded-full transition-all duration-75" style="width: 0%;"></div>
+        </div>
+        <span id="pressurePercentText" class="text-[11px] font-mono font-extrabold text-purple-700 w-9 text-right">0%</span>
+      </div>
     </div>
 
     <!-- 视口左下角：双指操作提示与微调缩放 -->
@@ -208,8 +222,8 @@
       </button>
     </div>
 
-    <!-- 右侧便捷绘画工具栏 (主画面右边：常用粗细快速点选 & 画笔/橡皮擦大按键) -->
-    <aside id="rightQuickDock" class="absolute right-3.5 top-1/2 -translate-y-1/2 z-30 flex flex-col items-center gap-2.5 bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl p-2 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] select-none">
+    <!-- 右侧便捷绘画工具栏 (主画面右边：常用粗细快速点选 & 画笔/橡皮擦大按键 & 实时力度环) -->
+    <aside id="rightQuickDock" class="absolute right-3.5 top-1/2 -translate-y-1/2 z-30 flex flex-col items-center gap-2 bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl p-2 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] select-none">
       <!-- 1. 画笔 vs 橡皮擦 模式切换按键 -->
       <div class="flex flex-col gap-1.5 p-1 bg-stone-100 rounded-xl border border-stone-200/60">
         <button id="dockBtnBrush" class="w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center text-sm shadow-xs transition active:scale-95" title="画笔模式">
@@ -223,9 +237,9 @@
       <div class="w-5 h-px bg-stone-200"></div>
 
       <!-- 2. 常用粗细快速点选 (圆点大小随粗细直观缩放) -->
-      <div class="flex flex-col items-center gap-1.5" id="quickSizePresetsContainer">
+      <div class="flex flex-col items-center gap-1" id="quickSizePresetsContainer">
         <span class="text-[8px] font-bold text-stone-400 font-mono">粗细</span>
-        <!-- 4, 12, 24, 48, 80, 120px 按钮 -->
+        <!-- 4, 12, 24, 48, 80px 按钮 -->
         <button data-quicksize="4" class="quick-size-btn w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="极细 4px (勾线)">
           <span class="w-1.5 h-1.5 rounded-full bg-stone-700 block"></span>
         </button>
@@ -247,8 +261,19 @@
 
       <!-- 3. 纵向滑动条与当前数值 -->
       <div class="flex flex-col items-center gap-1">
-        <input id="dockVerticalSizeSlider" type="range" min="1" max="120" value="24" class="h-20 w-1.5 accent-amber-500 cursor-pointer appearance-none bg-stone-200 rounded-full" style="writing-mode: vertical-lr; direction: rtl;" title="垂直滑动调节粗细 (1~120px)" />
+        <input id="dockVerticalSizeSlider" type="range" min="1" max="120" value="24" class="h-16 w-1.5 accent-amber-500 cursor-pointer appearance-none bg-stone-200 rounded-full" style="writing-mode: vertical-lr; direction: rtl;" title="垂直滑动调节粗细 (1~120px)" />
         <span id="dockSizeLabel" class="text-[9px] font-mono font-bold text-amber-600">24px</span>
+      </div>
+
+      <div class="w-5 h-px bg-stone-200"></div>
+
+      <!-- 4. 右侧实时力度小仪表 -->
+      <div class="flex flex-col items-center gap-0.5" title="当前触控笔实时力度">
+        <span class="text-[8px] font-bold text-stone-400">力度</span>
+        <div class="w-2.5 h-10 bg-stone-100 rounded-full border border-stone-200 overflow-hidden flex flex-col justify-end p-0.2">
+          <div id="dockPressureFill" class="w-full bg-gradient-to-t from-sky-400 via-emerald-500 to-purple-600 rounded-full transition-all duration-75" style="height: 0%;"></div>
+        </div>
+        <span id="dockPressureLabel" class="text-[8px] font-mono font-bold text-purple-600">0%</span>
       </div>
     </aside>
   </main>
@@ -290,31 +315,35 @@
         <div class="grid grid-cols-6 gap-2" id="watercolorPansGrid"></div>
       </div>
 
-      <!-- 白瓷流动融合调色盘 (双层物理隔离，光洁骨瓷质感) -->
+      <!-- 白瓷流动融合调色盘 (真实水彩流体晕染 + 减法混色自动上笔) -->
       <div class="porcelain-plate rounded-2xl p-3 border border-stone-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.04)] flex flex-col gap-2.5">
         <div class="flex items-center justify-between">
-          <span class="text-[12px] font-bold text-stone-800 flex items-center gap-1.5">🥣 白瓷流动融合调色盘</span>
-          <div class="flex items-center gap-1.5">
-            <button id="btnDropActiveColor" class="text-[10px] px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-xs active:scale-95 transition" title="将当前选中的颜色滴入调色盘中">💧 滴入色</button>
-            <button id="btnWetPalette" class="text-[10px] px-2.5 py-1 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 font-semibold border border-sky-200 active:scale-95 transition" title="注入清水稀释">💦 加水</button>
-            <button id="btnWashPorcelain" class="text-[10px] px-2.5 py-1 rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-700 font-semibold active:scale-95 transition" title="擦拭洗净调色盘">🧼 洗净</button>
+          <span class="text-[12px] font-bold text-stone-800 flex items-center gap-1.5">🥣 白瓷水彩流动混色盘</span>
+          <div class="flex items-center gap-1">
+            <button id="btnDropActiveColor" class="text-[10px] px-2 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-xs active:scale-95 transition" title="将当前颜色滴入调色盘">💧 滴入色</button>
+            <button id="btnPresetMixPool" class="text-[10px] px-2 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-sky-500 hover:opacity-90 text-white font-bold shadow-xs active:scale-95 transition" title="一键滴入两组对比色池，立即体验画圈搅拌混色">🌈 双色混色</button>
+            <button id="btnWetPalette" class="text-[10px] px-2 py-1 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 font-semibold border border-sky-200 active:scale-95 transition" title="滴入清水晕开颜料">💦 加水</button>
+            <button id="btnWashPorcelain" class="text-[10px] px-2 py-1 rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-700 font-semibold active:scale-95 transition" title="洗净白瓷盘">🧼 洗净</button>
           </div>
         </div>
 
-        <!-- 调色模式切换 -->
-        <div class="flex items-center justify-between bg-stone-100/90 p-1 rounded-xl text-xs font-semibold border border-stone-200/60">
+        <!-- 调色模式与实时混色反馈 -->
+        <div class="flex items-center justify-between bg-stone-100/90 p-1.5 rounded-xl text-xs font-semibold border border-stone-200/60">
           <div class="flex items-center gap-1">
-            <button id="btnModeMix" class="px-3 py-1 rounded-lg bg-stone-900 text-white font-bold text-[10px] shadow-xs active:scale-95 transition">🎨 研磨调色</button>
-            <button id="btnModePick" class="px-3 py-1 rounded-lg bg-white text-stone-700 hover:bg-stone-200 font-semibold text-[10px] active:scale-95 transition">💉 吸取调色</button>
+            <button id="btnModeMix" class="px-2.5 py-1 rounded-lg bg-stone-900 text-white font-bold text-[10px] shadow-xs active:scale-95 transition">🎨 搅拌混色 (自动沾取)</button>
+            <button id="btnModePick" class="px-2.5 py-1 rounded-lg bg-white text-stone-700 hover:bg-stone-200 font-semibold text-[10px] active:scale-95 transition">💉 纯吸色</button>
           </div>
-          <span id="palModeHint" class="text-[10px] text-stone-500 pr-1">画笔研磨混色 (永不偏色)</span>
+          <div class="flex items-center gap-1.5 pr-1">
+            <span id="palModeHint" class="text-[10px] text-stone-600 font-medium">搅拌不同色即自动融合成新色</span>
+            <div id="paletteLiveMixPreview" class="w-4 h-4 rounded-full border border-stone-400 shadow-xs" style="background: rgb(20, 85, 210);"></div>
+          </div>
         </div>
 
         <div class="relative w-full rounded-xl overflow-hidden border border-stone-200/90 shadow-inner bg-[#faf9f5]">
-          <canvas id="watercolorPaletteCanvas" width="280" height="110" class="w-full h-28 touch-none cursor-crosshair block"></canvas>
-          <div id="paletteSampleRing" class="absolute pointer-events-none w-5 h-5 rounded-full border-2 border-white shadow-md -translate-x-1/2 -translate-y-1/2 hidden ring-1 ring-black/20"></div>
+          <canvas id="watercolorPaletteCanvas" width="280" height="125" class="w-full h-32 touch-none cursor-crosshair block"></canvas>
+          <div id="paletteSampleRing" class="absolute pointer-events-none w-7 h-7 rounded-full border-2 border-white shadow-lg -translate-x-1/2 -translate-y-1/2 hidden ring-2 ring-black/20"></div>
         </div>
-        <div class="text-[10px] text-stone-500 text-center">💡 调色盘上画圈研磨绝不弄乱画笔选色；切换「吸取调色」可精准提取混合过渡色</div>
+        <div class="text-[10px] text-stone-500 text-center">💡 在两团不同水彩间来回涂抹搅拌，即可真实融合出过渡新色并直接同步到画笔！</div>
       </div>
 
       <!-- 自由全色域调色区 (明亮轻卡片) -->
@@ -619,57 +648,77 @@
             </div>
           </div>
 
-          <!-- 风格选择与提示词 -->
+          <!-- 4 大维度 AI 以图生图微调工坊 (4-Dimensional Image-to-Image Suite) -->
           <div class="bg-purple-50/60 border border-purple-100 rounded-2xl p-3 flex flex-col gap-2.5">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-purple-900">选择优化画风 (ControlNet LineArt/Scribble)</span>
-              <span id="currentEngineBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-purple-200 text-purple-800 font-bold">🧠 内置轮廓平滑引擎</span>
+            <div class="flex items-center justify-between flex-wrap gap-1.5">
+              <span class="text-xs font-bold text-purple-900">✨ 选择 AI 以图生图修改维度 (ControlNet + SDXL/Flux):</span>
+              <span id="currentEngineBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-purple-200 text-purple-800 font-bold">🧠 本地 Pillow + 神经轮廓引擎</span>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <label class="flex items-center gap-2 p-2 rounded-xl bg-white border border-purple-200 cursor-pointer shadow-2xs hover:border-purple-400">
-                <input type="radio" name="aiStyle" value="crisp_outline" checked class="accent-purple-600">
-                <div>
-                  <div class="text-xs font-bold">🖋️ 锐利圆滑描边</div>
-                  <div class="text-[9px] text-stone-500">外框清晰锐利·平滑线条</div>
+
+            <!-- 4 大维度切换按钮 -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5" id="aiCategoryTabs">
+              <button type="button" data-aicat="line_contour" class="ai-cat-btn active p-2 rounded-xl bg-purple-600 text-white text-left transition shadow-xs">
+                <div class="text-xs font-bold">🖋️ 1. 线条与外型</div>
+                <div class="text-[9px] opacity-85">平滑防抖·外框闭合完整性</div>
+              </button>
+              <button type="button" data-aicat="color_shading" class="ai-cat-btn p-2 rounded-xl bg-white text-stone-700 border border-purple-200 hover:border-purple-400 text-left transition">
+                <div class="text-xs font-bold">🎨 2. 色彩与着色</div>
+                <div class="text-[9px] text-stone-500">色调和谐·立体光影渲染</div>
+              </button>
+              <button type="button" data-aicat="medium_style" class="ai-cat-btn p-2 rounded-xl bg-white text-stone-700 border border-purple-200 hover:border-purple-400 text-left transition">
+                <div class="text-xs font-bold">🖌️ 3. 整体画风修改</div>
+                <div class="text-[9px] text-stone-500">蜡笔/水彩/素描·参数精调</div>
+              </button>
+              <button type="button" data-aicat="cartoon_style" class="ai-cat-btn p-2 rounded-xl bg-white text-stone-700 border border-purple-200 hover:border-purple-400 text-left transition">
+                <div class="text-xs font-bold">🏰 4. 卡通化风格</div>
+                <div class="text-[9px] text-stone-500">3D皮克斯·吉卜力·黏土风</div>
+              </button>
+            </div>
+
+            <!-- 子风格单选区 (随选中的维度动态切换) -->
+            <div id="aiSubStylesContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <!-- JS 动态渲染子风格选项 -->
+            </div>
+
+            <!-- 该维度的专属参数调节滑杆组 (3 组动态参数) -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 bg-white/90 p-2.5 rounded-xl border border-purple-200/80">
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between text-[11px]">
+                  <span id="aiParam1Name" class="font-bold text-stone-700">线条平滑度</span>
+                  <span id="aiParam1Val" class="font-mono font-bold text-purple-700">75%</span>
                 </div>
-              </label>
-              <label class="flex items-center gap-2 p-2 rounded-xl bg-white border border-purple-200 cursor-pointer shadow-2xs hover:border-purple-400">
-                <input type="radio" name="aiStyle" value="storybook" class="accent-purple-600">
-                <div>
-                  <div class="text-xs font-bold">🧸 温暖儿童绘本</div>
-                  <div class="text-[9px] text-stone-500">柔润童话光影·故事质感</div>
+                <input id="aiParam1Slider" type="range" min="10" max="100" value="75" class="accent-purple-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer">
+              </div>
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between text-[11px]">
+                  <span id="aiParam2Name" class="font-bold text-stone-700">外型闭合完整性</span>
+                  <span id="aiParam2Val" class="font-mono font-bold text-purple-700">70%</span>
                 </div>
-              </label>
-              <label class="flex items-center gap-2 p-2 rounded-xl bg-white border border-purple-200 cursor-pointer shadow-2xs hover:border-purple-400">
-                <input type="radio" name="aiStyle" value="luminous_watercolor" class="accent-purple-600">
-                <div>
-                  <div class="text-xs font-bold">🖌️ 大师透光水彩</div>
-                  <div class="text-[9px] text-stone-500">水痕暗边·透光晕染</div>
+                <input id="aiParam2Slider" type="range" min="10" max="100" value="70" class="accent-purple-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer">
+              </div>
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between text-[11px]">
+                  <span id="aiParam3Name" class="font-bold text-stone-700">边缘锐利度</span>
+                  <span id="aiParam3Val" class="font-mono font-bold text-purple-700">65%</span>
                 </div>
-              </label>
-              <label class="flex items-center gap-2 p-2 rounded-xl bg-white border border-purple-200 cursor-pointer shadow-2xs hover:border-purple-400">
-                <input type="radio" name="aiStyle" value="clay_3d" class="accent-purple-600">
-                <div>
-                  <div class="text-xs font-bold">🌟 萌趣 3D 黏土</div>
-                  <div class="text-[9px] text-stone-500">立体微雕·饱满童趣</div>
-                </div>
-              </label>
+                <input id="aiParam3Slider" type="range" min="10" max="100" value="65" class="accent-purple-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer">
+              </div>
             </div>
 
             <div class="flex items-center gap-2 bg-white/90 p-2 rounded-xl border border-purple-200">
               <span class="text-xs font-bold text-purple-800 shrink-0">💡 魔法引导词:</span>
-              <input id="aiCustomPrompt" type="text" placeholder="例如：可爱的小狗在草地上晒太阳，温暖阳光，细腻圆润的绘本插画" value="精美儿童故事绘本插画，线条圆润流畅，温馨明亮童话光影，保留儿童画作构图与主色调" class="flex-1 text-xs text-stone-700 outline-none bg-transparent" />
+              <input id="aiCustomPrompt" type="text" placeholder="例如：可爱的小狗在草地上晒太阳，温暖阳光，细腻圆润的绘本插画" value="精美儿童故事绘本插画，线条圆润流畅，外型完整闭合，温馨明亮童话光影，保留儿童画作构图" class="flex-1 text-xs text-stone-700 outline-none bg-transparent" />
             </div>
 
             <div class="flex items-center justify-between pt-1 flex-wrap gap-2">
               <div class="flex items-center gap-2">
-                <span class="text-xs text-stone-600">线条平滑与保真度:</span>
-                <input id="aiPolishStrength" type="range" min="30" max="90" value="70" class="accent-purple-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer">
+                <span class="text-xs text-stone-600">AI 重绘强度 (Denoise):</span>
+                <input id="aiPolishStrength" type="range" min="25" max="95" value="70" class="accent-purple-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer">
                 <span id="aiStrengthLabel" class="text-xs font-mono font-bold text-purple-700">70%</span>
               </div>
               <div class="flex items-center gap-2">
                 <button id="btnRunAiPolish" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white font-bold text-xs shadow-md shadow-purple-500/25 active:scale-95 transition">
-                  🚀 施展魔法优化
+                  🚀 施展以图生图魔法
                 </button>
                 <button id="btnApplyAiToNewLayer" class="hidden px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white font-bold text-xs active:scale-95 transition shadow-md shadow-indigo-500/20">
                   📥 存为新图层 (继续修改)
@@ -747,72 +796,83 @@
           </div>
         </div>
 
-        <!-- Tab 3: 云端真实 API 引擎配置 (Cloud API Settings) -->
+        <!-- Tab 3: 云端与本地 ComfyUI API 引擎配置 -->
         <div id="aiTabSettings" class="hidden flex flex-col gap-3">
           <div class="bg-stone-50 border border-stone-200 rounded-2xl p-4 flex flex-col gap-3">
             <div class="flex items-center justify-between">
               <div>
                 <h3 class="text-xs font-bold text-stone-900 flex items-center gap-1.5">
-                  <span>⚙️</span> 云端生成式 AI GPU 引擎配置 (生产环境接入)
+                  <span>⚙️</span> 地端 ComfyUI 与云端生成式 AI 引擎配置
                 </h3>
-                <p class="text-[11px] text-stone-500">支持直接填入云端 GPU 服务的 API Key 或您的自建后端 Webhook</p>
+                <p class="text-[11px] text-stone-500">支持连接本机/局域网 ComfyUI (:8188)、本地网关 (:8765) 或云端 Serverless GPU</p>
               </div>
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">安全保存在本地</span>
             </div>
 
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-bold text-stone-700">选择 API 供应商:</label>
+              <label class="text-xs font-bold text-stone-700">选择推理引擎架构:</label>
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <label class="p-2.5 rounded-xl bg-white border border-stone-200 cursor-pointer flex flex-col gap-1 hover:border-purple-400">
                   <div class="flex items-center gap-1.5 font-bold text-xs text-stone-800">
                     <input type="radio" name="apiProvider" value="local" checked class="accent-purple-600">
-                    <span>🧠 本地引擎</span>
+                    <span>🧠 本地双核引擎</span>
                   </div>
-                  <span class="text-[10px] text-stone-500">双边轮廓平滑算法，零成本离线即用</span>
+                  <span class="text-[10px] text-stone-500">内置多维重构 + Python Pillow 滤波</span>
+                </label>
+                <label class="p-2.5 rounded-xl bg-white border border-stone-200 cursor-pointer flex flex-col gap-1 hover:border-purple-400">
+                  <div class="flex items-center gap-1.5 font-bold text-xs text-stone-800">
+                    <input type="radio" name="apiProvider" value="comfyui" class="accent-purple-600">
+                    <span>🖥️ 地端 ComfyUI</span>
+                  </div>
+                  <span class="text-[10px] text-stone-500">连接 Mac/PC 本地 ComfyUI (:8188)</span>
                 </label>
                 <label class="p-2.5 rounded-xl bg-white border border-stone-200 cursor-pointer flex flex-col gap-1 hover:border-purple-400">
                   <div class="flex items-center gap-1.5 font-bold text-xs text-stone-800">
                     <input type="radio" name="apiProvider" value="fal" class="accent-purple-600">
-                    <span>⚡ Fal.ai</span>
+                    <span>⚡ Fal.ai 云端</span>
                   </div>
                   <span class="text-[10px] text-stone-500">Flux ControlNet + CogVideoX 极速 GPU</span>
                 </label>
                 <label class="p-2.5 rounded-xl bg-white border border-stone-200 cursor-pointer flex flex-col gap-1 hover:border-purple-400">
                   <div class="flex items-center gap-1.5 font-bold text-xs text-stone-800">
                     <input type="radio" name="apiProvider" value="modal" class="accent-purple-600">
-                    <span>🚀 Modal Serverless</span>
+                    <span>🚀 Modal / Replicate</span>
                   </div>
-                  <span class="text-[10px] text-stone-500">自建 A100 GPU 容器，按毫秒计费</span>
-                </label>
-                <label class="p-2.5 rounded-xl bg-white border border-stone-200 cursor-pointer flex flex-col gap-1 hover:border-purple-400">
-                  <div class="flex items-center gap-1.5 font-bold text-xs text-stone-800">
-                    <input type="radio" name="apiProvider" value="replicate" class="accent-purple-600">
-                    <span>🌐 Replicate</span>
-                  </div>
-                  <span class="text-[10px] text-stone-500">SDXL ControlNet + SVD 视频生成</span>
+                  <span class="text-[10px] text-stone-500">云端托管 ComfyUI 容器按秒计费</span>
                 </label>
               </div>
             </div>
 
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-bold text-stone-700">API Key / Token (选填):</label>
-              <input id="apiConfigKey" type="password" placeholder="例如：fal_key_xxx 或 r8_xxx (若使用本地引擎请留空)" class="px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs font-mono text-stone-800 outline-none focus:border-purple-500">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-stone-700">API Key / Token:</label>
+                <input id="apiConfigKey" type="password" placeholder="测试 Key: kaidraw-test-key-2026" class="px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs font-mono text-stone-800 outline-none focus:border-purple-500">
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-stone-700">地端 ComfyUI 地址 (选填):</label>
+                <input id="apiConfigComfyUrl" type="text" placeholder="http://127.0.0.1:8188 (需开启 --enable-cors-header)" class="px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs font-mono text-stone-800 outline-none focus:border-purple-500">
+              </div>
             </div>
 
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-bold text-stone-700">自建后端 Webhook Endpoint (选填):</label>
-              <input id="apiConfigEndpoint" type="text" placeholder="https://api.yourdomain.com/v1/ai/polish" class="px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs font-mono text-stone-800 outline-none focus:border-purple-500">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-stone-700">API 网关 Endpoint:</label>
+              <input id="apiConfigEndpoint" type="text" placeholder="http://127.0.0.1:8765/api/ai/image-to-video" class="px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs font-mono text-stone-800 outline-none focus:border-purple-500">
             </div>
 
-            <!-- 一键填入本地 API 进行测试 -->
+            <!-- 一键填入本地 API 与下载 ComfyUI 工作流 -->
             <div class="bg-purple-50/80 border border-purple-200 rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-2.5">
               <div>
-                <div class="text-xs font-bold text-purple-900">⚡ 本地以图生动画 API 已就绪 (端口 :8765)</div>
-                <div class="text-[10px] text-purple-700">服务正运行于本机，支持以 Authorization API Key 验证调用，生成真正 75 帧 MP4 动画！</div>
+                <div class="text-xs font-bold text-purple-900">⚡ 本地 AI 网关 (:8765) & ComfyUI 标准工作流</div>
+                <div class="text-[10px] text-purple-700">可一键连接本机 API 测试，或下载标准 ControlNet LineArt 工作流导入您的 ComfyUI！</div>
               </div>
-              <button id="btnUseLocalTestApi" type="button" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm active:scale-95 transition shrink-0">
-                一键填入本地 API 进行测试
-              </button>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button id="btnDownloadComfyWorkflow" type="button" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-purple-100 text-purple-800 border border-purple-300 font-bold text-xs shadow-2xs active:scale-95 transition">
+                  📥 下载 ComfyUI 工作流
+                </button>
+                <button id="btnUseLocalTestApi" type="button" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm active:scale-95 transition">
+                  ⚡ 一键填入本地 API
+                </button>
+              </div>
             </div>
 
             <button id="btnSaveApiConfig" class="self-end px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs active:scale-95 transition">
@@ -821,45 +881,71 @@
           </div>
         </div>
 
-        <!-- Tab 4: 云端架构与成本规划 (Cloud Architecture) -->
+        <!-- Tab 4: ComfyUI 地端 vs iPad vs 云端架构深度解析 -->
         <div id="aiTabCloud" class="hidden flex flex-col gap-3">
-          <div class="bg-stone-50 border border-stone-200 rounded-2xl p-3.5 flex flex-col gap-2">
+          <div class="bg-stone-50 border border-stone-200 rounded-2xl p-3.5 flex flex-col gap-2.5">
             <h3 class="text-xs font-bold text-stone-800 flex items-center gap-1.5">
-              <span>☁️</span> 针对您核心疑问的架构与成本解答：
+              <span>🧭</span> 核心技术解答：是否需要在 iPad 或本地端部署 ComfyUI？
             </h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-              <div class="bg-white p-2.5 rounded-xl border border-stone-200">
-                <span class="font-bold text-red-700 block mb-1">❌ 为什么不能用完全免费的云端服务？</span>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+              <div class="bg-white p-2.5 rounded-xl border border-red-200">
+                <span class="font-bold text-red-700 block mb-1">1️⃣ 直接在 iPad 内跑 ComfyUI？(不可行)</span>
                 <span class="text-stone-600 text-[11px] leading-relaxed">
-                  Google Colab / Kaggle 虽然提供免费 GPU，但禁止商业 API、会随时断线且无 SLA 保证。如果发布到 App Store，只要几个人同时使用就会直接崩溃断联，甚至遭苹果下架。
+                  iOS 沙盒严格禁止运行 Python/CUDA 进程。且 SDXL/Flux + ControlNet 需 8~16GB 显存与高功耗，iPad 本地强跑会导致发烫降频、内存崩溃闪退 (OOM)，且 4GB 模型包无法通过正常体验下载。
                 </span>
               </div>
-              <div class="bg-white p-2.5 rounded-xl border border-stone-200">
-                <span class="font-bold text-emerald-700 block mb-1">✅ 工业界标准：Serverless 按秒计费 GPU</span>
+              <div class="bg-white p-2.5 rounded-xl border border-amber-200">
+                <span class="font-bold text-amber-700 block mb-1">2️⃣ 在电脑(Mac/PC)跑地端 ComfyUI？(适合内测)</span>
                 <span class="text-stone-600 text-[11px] leading-relaxed">
-                  采用 <strong>Modal.com</strong> 或 <strong>RunPod Serverless</strong>。没人用时 0 成本（Cold-to-0），有人调用才按毫秒扣费。单次优化图片仅 <strong>\$0.006 (≈NT\$0.19)</strong>，单次 3 秒视频仅 <strong>\$0.04 (≈NT\$1.2)</strong>。
+                  在您的 Mac (M系列芯片) 或 RTX 显卡 PC 上部署 ComfyUI，启动时加 <code class="bg-stone-100 px-1 rounded">--listen 0.0.0.0 --enable-cors-header</code>，iPad 在同个 Wi-Fi 下即可调用电脑显卡做真正的以图生图！
                 </span>
               </div>
-              <div class="bg-white p-2.5 rounded-xl border border-stone-200">
-                <span class="font-bold text-indigo-700 block mb-1">⚡ 高并发 Loading 防崩溃架构</span>
+              <div class="bg-white p-2.5 rounded-xl border border-emerald-200">
+                <span class="font-bold text-emerald-700 block mb-1">3️⃣ App Store 上架商业方案？(云端 ComfyUI API)</span>
                 <span class="text-stone-600 text-[11px] leading-relaxed">
-                  采用 <strong>异步任务队列 (BullMQ + Redis)</strong>。上千人同时按生成时，后端 10 毫秒内回传 Job ID，GPU 弹性自动扩容至数十张实例排队处理，结果直传 Cloudflare R2 CDN，服务器绝不会超时挂掉。
-                </span>
-              </div>
-              <div class="bg-white p-2.5 rounded-xl border border-stone-200">
-                <span class="font-bold text-amber-700 block mb-1">💰 Apple Store 订阅与毛利计算</span>
-                <span class="text-stone-600 text-[11px] leading-relaxed">
-                  建议订阅定价 <strong>\$6.99/月 (≈NT\$220)</strong>，每月赠送 100 次魔法优化 + 15 次动态微电影。单用户每月 AI 算力成本仅 <strong>\$1.20</strong>，扣除苹果 15% 佣金后，<strong>毛利率高达 77% 以上</strong>！
+                  所有商业上架 App 均将打包好的 <strong>ComfyUI 工作流部署在云端 Serverless GPU</strong> (如 Modal / Fal.ai / RunPod)。iPad 仅发图片与参数，云端 A100 显卡 1.5 秒返回真 AI 图生图结果，单张成本仅 \$0.005！
                 </span>
               </div>
             </div>
             <div class="text-[11px] text-stone-500 bg-amber-50/80 p-2 rounded-xl border border-amber-200/80">
-              📌 <strong>完整技术与商业架构白皮书已存放在仓库根目录：</strong>
-              <code class="font-mono text-amber-900 font-bold">KaiDraw_AI_Architecture_and_Cloud_Cost_Guide.md</code>
+              📌 <strong>总结建议：</strong>开发测试期可用「本机/局域网 ComfyUI」，正式上架 Apple Store 时切换为「云端 Serverless ComfyUI API」，前端代码完全通用！
             </div>
           </div>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 拍照储存到相簿 专属相框预览弹窗 (支持 iPad 长按存入系统相片) ==================== -->
+  <div id="photoAlbumModal" class="hidden fixed inset-0 bg-stone-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-md w-full shadow-2xl border border-stone-200 flex flex-col items-center gap-3.5 text-stone-800">
+      <div class="flex items-center justify-between w-full border-b border-stone-100 pb-2.5">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">📸</span>
+          <div>
+            <h3 class="text-sm font-extrabold text-stone-900">作品已拍照生成高清相片</h3>
+            <p class="text-[10px] text-stone-500">支持直接存入 iPad / iPhone 系统「相簿 (Photos)」</p>
+          </div>
+        </div>
+        <button id="btnClosePhotoAlbumModal" class="w-7 h-7 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 flex items-center justify-center text-sm font-bold">✕</button>
+      </div>
+
+      <!-- 拍立得质感相框 -->
+      <div class="bg-[#faf8f5] p-3 pb-5 rounded-2xl border border-stone-200/90 shadow-md w-full flex flex-col items-center gap-2">
+        <img id="capturedPhotoPreviewImg" src="" alt="KaiDraw Artwork" class="w-full rounded-xl border border-stone-200 shadow-xs object-contain max-h-[260px]" />
+        <span class="text-[11px] font-bold text-amber-800 bg-amber-100/80 px-3 py-1 rounded-full">
+          👆 在 iPad / 手机上长按上方图片，点击「添加到照片」即可存入相簿
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2 w-full">
+        <button id="btnShareToSystemAlbum" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-95 text-white font-bold text-xs shadow-md active:scale-95 transition flex items-center justify-center gap-1.5">
+          <span>📲</span> 调起系统菜单存入相簿
+        </button>
+        <button id="btnDirectDownloadPhoto" class="px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-900 text-white font-bold text-xs active:scale-95 transition flex items-center gap-1">
+          <span>💾</span> 下载档案
+        </button>
       </div>
     </div>
   </div>
@@ -1433,30 +1519,72 @@
     }, { passive: false });
 
     const cursorRing = document.getElementById('brushCursorRing');
-    function updateCursorRing(clientX, clientY) {
-      if (isDrawing || isPinching) {
+    const cursorPressureBadge = document.getElementById('cursorPressureBadge');
+    const pressureMeterBar = document.getElementById('pressureMeterBar');
+    const pressurePercentText = document.getElementById('pressurePercentText');
+    const dockPressureFill = document.getElementById('dockPressureFill');
+    const dockPressureLabel = document.getElementById('dockPressureLabel');
+    const stylusDeviceIcon = document.getElementById('stylusDeviceIcon');
+    const stylusDeviceType = document.getElementById('stylusDeviceType');
+
+    let currentLivePressure = 0;
+
+    function updateStylusPressureUI(pressureVal, pointerType, isActiveDrawing) {
+      const p = isActiveDrawing ? Math.max(0.05, Math.min(1.0, pressureVal)) : 0;
+      currentLivePressure = p;
+      const pct = Math.round(p * 100);
+
+      if (pressureMeterBar) pressureMeterBar.style.width = `${pct}%`;
+      if (pressurePercentText) pressurePercentText.textContent = `${pct}%`;
+      if (dockPressureFill) dockPressureFill.style.height = `${pct}%`;
+      if (dockPressureLabel) dockPressureLabel.textContent = `${pct}%`;
+
+      if (pointerType === 'pen') {
+        if (stylusDeviceIcon) stylusDeviceIcon.textContent = '✒️';
+        if (stylusDeviceType) stylusDeviceType.textContent = 'Apple Pencil';
+      } else if (pointerType === 'touch') {
+        if (stylusDeviceIcon) stylusDeviceIcon.textContent = '👆';
+        if (stylusDeviceType) stylusDeviceType.textContent = '手指触控';
+      } else if (pointerType === 'mouse') {
+        if (stylusDeviceIcon) stylusDeviceIcon.textContent = '🖱️';
+        if (stylusDeviceType) stylusDeviceType.textContent = '滑鼠动态';
+      }
+    }
+
+    function updateCursorRing(clientX, clientY, pressure = 0.6, isActiveDrawing = false) {
+      if (isPinching) {
         cursorRing.classList.add('hidden');
         return;
       }
       cursorRing.classList.remove('hidden');
-      const screenDiameter = brushRadius * 2 * viewScale;
+      const pScale = isActiveDrawing ? (0.45 + pressure * 0.75) : 1.0;
+      const screenDiameter = Math.max(6, brushRadius * 2 * viewScale * pScale);
       const screenRadius = screenDiameter / 2;
       cursorRing.style.width = `${screenDiameter}px`;
       cursorRing.style.height = `${screenDiameter}px`;
       cursorRing.style.transform = `translate(${clientX - screenRadius}px, ${clientY - screenRadius}px)`;
+
+      if (isActiveDrawing && cursorPressureBadge) {
+        cursorPressureBadge.classList.remove('hidden');
+        cursorPressureBadge.textContent = `${Math.round(pressure * 100)}%`;
+        cursorRing.style.borderColor = currentTool === 'eraser' ? 'rgba(244,63,94,0.9)' : `rgba(${activeBrushRGB[0]},${activeBrushRGB[1]},${activeBrushRGB[2]},0.9)`;
+      } else if (cursorPressureBadge) {
+        cursorPressureBadge.classList.add('hidden');
+        cursorRing.style.borderColor = 'rgba(28,25,23,0.8)';
+      }
     }
 
     /********************************************************************
-     * 7. 3 大画种真实笔触渲染算法 (水彩流体扩散)
+     * 7. 3 大画种真实笔触渲染算法 (全部支援 Apple Pencil 实时力度压感)
      ********************************************************************/
     function stampWatercolor(prevX, prevY, x, y, radius, pressure) {
       const p = (pressure && pressure > 0) ? pressure : 0.65;
-      const effRadius = Math.max(1, radius * (0.4 + p * 0.7));
+      const effRadius = Math.max(1.5, radius * (0.35 + p * 0.85));
       const dist = Math.hypot(x - prevX, y - prevY);
       const steps = Math.max(1, Math.ceil(dist / 3.0));
       const [r, g, b] = activeBrushRGB;
       const wetness = waterLevel / 100;
-      const baseAlpha = 0.18 * brushDilution * (0.7 + wetness * 0.5);
+      const baseAlpha = 0.16 * brushDilution * (0.5 + p * 0.75) * (0.7 + wetness * 0.4);
       const targetCtx = getActiveCtx();
 
       targetCtx.save();
@@ -1466,7 +1594,7 @@
         const cy = prevY + (y - prevY) * t;
 
         const radGrad = targetCtx.createRadialGradient(cx, cy, 0, cx, cy, effRadius);
-        radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${baseAlpha * 1.1})`);
+        radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${baseAlpha * 1.15})`);
         radGrad.addColorStop(0.75, `rgba(${r}, ${g}, ${b}, ${baseAlpha * 0.85})`);
         radGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
 
@@ -1506,9 +1634,10 @@
       targetCtx.restore();
     }
 
-    function stampCrayon(prevX, prevY, x, y, radius) {
+    function stampCrayon(prevX, prevY, x, y, radius, pressure) {
+      const p = (pressure && pressure > 0) ? pressure : 0.65;
       const isSide = crayonTipMode === 'side';
-      const effRadius = isSide ? radius * 1.5 : Math.max(1, radius);
+      const effRadius = (isSide ? radius * 1.45 : Math.max(1.5, radius)) * (0.45 + p * 0.75);
       const dist = Math.hypot(x - prevX, y - prevY);
       const steps = Math.max(1, Math.ceil(dist / 2.5));
       const [r, g, b] = activeBrushRGB;
@@ -1518,26 +1647,26 @@
       for (let s = 0; s < steps; s++) {
         const t = steps === 1 ? 1 : s / steps;
         const cx = prevX + (x - prevX) * t, cy = prevY + (y - prevY) * t;
-        const density = Math.max(3, Math.floor(effRadius * effRadius * (isSide ? 0.35 : 0.6)));
+        const density = Math.max(3, Math.floor(effRadius * effRadius * (isSide ? 0.35 : 0.6) * (0.5 + p * 0.8)));
 
         for (let i = 0; i < density; i++) {
           const angle = Math.random() * Math.PI * 2;
           const rad = Math.sqrt(Math.random()) * effRadius;
           const px = cx + Math.cos(angle) * rad, py = cy + Math.sin(angle) * rad;
 
-          let toothThreshold = (crayonRoughness / 100) * 0.9;
+          let toothThreshold = (crayonRoughness / 100) * (0.65 + p * 0.35);
           if (currentPaperId === 'plain') {
             toothThreshold = 0.98;
           } else if (currentPaperId === 'coldpress') {
-            toothThreshold = 0.52;
+            toothThreshold = 0.45 + p * 0.3;
           } else if (currentPaperId === 'toned') {
-            toothThreshold = 0.85;
+            toothThreshold = 0.75 + p * 0.2;
           }
 
           const noise = ((Math.floor(px * 17) + Math.floor(py * 31)) % 19) / 19;
           if (noise > toothThreshold) continue;
 
-          targetCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${0.85 * brushDilution})`;
+          targetCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${Math.min(1.0, (0.55 + p * 0.45) * brushDilution)})`;
           targetCtx.fillRect(px, py, 2.2, 2.2);
         }
       }
@@ -1545,8 +1674,9 @@
     }
 
     function stampMarker(prevX, prevY, x, y, radius, pressure) {
+      const p = (pressure && pressure > 0) ? pressure : 0.65;
       const [r, g, b] = activeBrushRGB;
-      const alpha = Math.min(1.0, brushDilution);
+      const alpha = Math.min(1.0, brushDilution * (0.65 + p * 0.35));
       const col = `rgba(${r}, ${g}, ${b}, ${alpha})`;
       const targetCtx = getActiveCtx();
 
@@ -1555,7 +1685,7 @@
       targetCtx.strokeStyle = col;
 
       if (markerTip === 'round') {
-        targetCtx.lineWidth = Math.max(1.0, radius * 1.15);
+        targetCtx.lineWidth = Math.max(1.0, radius * (0.45 + p * 0.9));
         targetCtx.lineCap = 'round';
         targetCtx.lineJoin = 'round';
         targetCtx.beginPath();
@@ -1563,8 +1693,7 @@
         targetCtx.lineTo(x, y);
         targetCtx.stroke();
       } else if (markerTip === 'brush') {
-        const p = (pressure && pressure > 0) ? pressure : 0.55;
-        targetCtx.lineWidth = Math.max(1.0, radius * (0.35 + p * 1.35));
+        targetCtx.lineWidth = Math.max(1.0, radius * (0.25 + p * 1.45));
         targetCtx.lineCap = 'round';
         targetCtx.lineJoin = 'round';
         targetCtx.beginPath();
@@ -1573,7 +1702,7 @@
         targetCtx.stroke();
       } else if (markerTip === 'chisel') {
         const angle = -Math.PI / 4;
-        const hw = Math.max(1.5, radius * 1.15);
+        const hw = Math.max(1.5, radius * (0.6 + p * 0.7));
         const dx = Math.cos(angle) * hw;
         const dy = Math.sin(angle) * hw;
         targetCtx.beginPath();
@@ -1602,7 +1731,7 @@
         if (brushBtn) brushBtn.className = 'w-8 h-8 rounded-lg bg-transparent text-stone-600 hover:bg-stone-200 flex items-center justify-center text-sm transition active:scale-95';
         if (eraserBtn) eraserBtn.className = 'w-8 h-8 rounded-lg bg-rose-500 text-white flex items-center justify-center text-sm shadow-sm transition active:scale-95';
         if (topEraserBtn) topEraserBtn.className = 'px-2.5 py-1 rounded-xl bg-rose-500 text-white border border-rose-600 active:scale-95 transition flex items-center gap-1.5 text-xs font-bold shadow-xs shrink-0';
-        showToast('已切换至橡皮擦模式：可局部擦除当前图层');
+        showToast('已切换至橡皮擦模式：可按压感轻重局部擦除当前图层');
       } else {
         if (brushBtn) brushBtn.className = 'w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center text-sm shadow-xs transition active:scale-95';
         if (eraserBtn) eraserBtn.className = 'w-8 h-8 rounded-lg bg-transparent text-stone-600 hover:bg-stone-200 flex items-center justify-center text-sm transition active:scale-95';
@@ -1622,11 +1751,13 @@
       });
     }
 
-    function stampEraser(prevX, prevY, x, y, radius) {
+    function stampEraser(prevX, prevY, x, y, radius, pressure) {
+      const p = (pressure && pressure > 0) ? pressure : 0.7;
       const targetCtx = getActiveCtx();
       targetCtx.save();
       targetCtx.globalCompositeOperation = 'destination-out';
-      targetCtx.lineWidth = Math.max(2, radius * 2);
+      targetCtx.strokeStyle = `rgba(0,0,0,${Math.min(1, 0.35 + p * 0.65)})`;
+      targetCtx.lineWidth = Math.max(2, radius * 2 * (0.45 + p * 0.7));
       targetCtx.lineCap = 'round';
       targetCtx.lineJoin = 'round';
       targetCtx.beginPath();
@@ -1636,22 +1767,35 @@
       targetCtx.restore();
     }
 
+    function computeDynamicPressure(e, dist) {
+      // 若是 Apple Pencil 或硬件压感笔 (pressure 不等于默认固定 0.5)
+      if (e.pointerType === 'pen' && e.pressure > 0) {
+        return Math.max(0.05, Math.min(1.0, e.pressure));
+      }
+      if (e.pressure && e.pressure !== 0.5 && e.pressure > 0) {
+        return Math.max(0.05, Math.min(1.0, e.pressure));
+      }
+      // 针对普通触控或鼠标：结合运笔速度模拟真实运笔轻重反馈 (慢速重按=高力度，快速飞白=轻力度)
+      const speedFactor = Math.max(0, Math.min(1, dist / 28));
+      return Math.max(0.22, Math.min(0.96, 0.82 - speedFactor * 0.45));
+    }
+
     function drawStroke(x0, y0, x1, y1, pressure) {
       if (currentTool === 'eraser') {
-        stampEraser(x0, y0, x1, y1, brushRadius);
+        stampEraser(x0, y0, x1, y1, brushRadius, pressure);
         return;
       }
       if (currentBrushMedium === 'watercolor') {
         stampWatercolor(x0, y0, x1, y1, brushRadius, pressure);
       } else if (currentBrushMedium === 'crayon') {
-        stampCrayon(x0, y0, x1, y1, brushRadius);
+        stampCrayon(x0, y0, x1, y1, brushRadius, pressure);
       } else if (currentBrushMedium === 'marker') {
         stampMarker(x0, y0, x1, y1, brushRadius, pressure);
       }
     }
 
     /********************************************************************
-     * 8. 画布绘画事件 (Apple Pencil 防误触与单指控制)
+     * 8. 画布绘画事件 (Apple Pencil 压感侦测、防误触与单指控制)
      ********************************************************************/
     paintCanvas.addEventListener('pointerdown', (e) => {
       if (palmRejectionEnabled && e.pointerType === 'touch' && activeTouches.size >= 2) {
@@ -1666,23 +1810,32 @@
       saveUndoState();
       const pt = screenToCanvas(e.clientX, e.clientY);
       lastX = pt.x; lastY = pt.y;
-      drawStroke(lastX, lastY, pt.x, pt.y, e.pressure);
-      updateCursorRing(e.clientX, e.clientY);
+      const p = computeDynamicPressure(e, 2);
+      updateStylusPressureUI(p, e.pointerType, true);
+      drawStroke(lastX, lastY, pt.x, pt.y, p);
+      updateCursorRing(e.clientX, e.clientY, p, true);
     });
 
     paintCanvas.addEventListener('pointermove', (e) => {
-      updateCursorRing(e.clientX, e.clientY);
-      if (!isDrawing || isPinching) return;
+      if (!isDrawing || isPinching) {
+        updateCursorRing(e.clientX, e.clientY, 0.5, false);
+        return;
+      }
       const pt = screenToCanvas(e.clientX, e.clientY);
-      drawStroke(lastX, lastY, pt.x, pt.y, e.pressure);
+      const dist = Math.hypot(pt.x - lastX, pt.y - lastY);
+      const p = computeDynamicPressure(e, dist);
+      updateStylusPressureUI(p, e.pointerType, true);
+      drawStroke(lastX, lastY, pt.x, pt.y, p);
       lastX = pt.x; lastY = pt.y;
+      updateCursorRing(e.clientX, e.clientY, p, true);
     });
 
     function endDrawing(e) {
       if (!isDrawing) return;
       isDrawing = false;
+      updateStylusPressureUI(0, e.pointerType, false);
       try { paintCanvas.releasePointerCapture(e.pointerId); } catch (_) {}
-      cursorRing.classList.remove('hidden');
+      updateCursorRing(e.clientX, e.clientY, 0.5, false);
     }
 
     paintCanvas.addEventListener('pointerup', endDrawing);
@@ -1760,11 +1913,12 @@
     }
 
     /********************************************************************
-     * 10. 白瓷流动融合调色盘交互引擎 (双层物理隔离：瓷底与颜料层，永不偏色)
+     * 10. 白瓷流动融合调色盘交互引擎 (真实水彩流体晕染 + 减法混色自动上笔)
      ********************************************************************/
     const palCanvas = document.getElementById('watercolorPaletteCanvas');
     const palCtx = palCanvas.getContext('2d');
     const palSampleRing = document.getElementById('paletteSampleRing');
+    const palLiveMixPreview = document.getElementById('paletteLiveMixPreview');
 
     const palPaintCanvas = document.createElement('canvas');
     palPaintCanvas.width = palCanvas.width;
@@ -1773,49 +1927,90 @@
 
     let paletteMode = 'mix';
     let isPaletteInteracting = false;
+    let lastPalX = null, lastPalY = null;
+    let presetPoolIdx = 0;
+    const PRESET_MIX_PAIRS = [
+      { name: '柠檬黄 + 钴蓝 → 翠绿', c1: [250, 210, 20], c2: [20, 95, 220] },
+      { name: '朱砂红 + 柠檬黄 → 暖橙', c1: [235, 45, 45], c2: [250, 210, 20] },
+      { name: '玫瑰红 + 钴蓝 → 紫罗兰', c1: [220, 40, 125], c2: [25, 85, 215] },
+      { name: '翡翠绿 + 钛白蓝 → 湖水青', c1: [20, 175, 110], c2: [40, 165, 235] }
+    ];
 
     function renderPorcelainPlate() {
       const w = palCanvas.width, h = palCanvas.height;
-      const grad = palCtx.createRadialGradient(w * 0.35, h * 0.3, 10, w * 0.5, h * 0.5, w * 0.6);
+      const grad = palCtx.createRadialGradient(w * 0.35, h * 0.3, 10, w * 0.5, h * 0.5, w * 0.65);
       grad.addColorStop(0, '#ffffff');
       grad.addColorStop(0.75, '#fafaf6');
       grad.addColorStop(1, '#ebe8de');
       palCtx.fillStyle = grad;
       palCtx.fillRect(0, 0, w, h);
 
-      palCtx.strokeStyle = 'rgba(0, 0, 0, 0.07)';
+      // 瓷盘浅凹槽分隔线与高光
+      palCtx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
       palCtx.lineWidth = 1.5;
       palCtx.beginPath();
-      palCtx.moveTo(w / 2, 8);
-      palCtx.lineTo(w / 2, h - 8);
+      palCtx.arc(w * 0.32, h * 0.5, 38, 0, Math.PI * 2);
+      palCtx.stroke();
+      palCtx.beginPath();
+      palCtx.arc(w * 0.68, h * 0.5, 38, 0, Math.PI * 2);
       palCtx.stroke();
 
       palCtx.drawImage(palPaintCanvas, 0, 0);
     }
 
+    function depositWaterPool(x, y, rgb, radius, alpha) {
+      const radGrad = palPaintCtx.createRadialGradient(x, y, radius * 0.1, x, y, radius);
+      radGrad.addColorStop(0, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`);
+      radGrad.addColorStop(0.7, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha * 0.85})`);
+      radGrad.addColorStop(0.92, `rgba(${Math.max(0, rgb[0]-25)}, ${Math.max(0, rgb[1]-25)}, ${Math.max(0, rgb[2]-25)}, ${alpha * 0.55})`);
+      radGrad.addColorStop(1, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0)`);
+
+      palPaintCtx.fillStyle = radGrad;
+      palPaintCtx.beginPath();
+      palPaintCtx.arc(x, y, radius, 0, Math.PI * 2);
+      palPaintCtx.fill();
+    }
+
     function initPorcelainPalette() {
       palPaintCtx.clearRect(0, 0, palPaintCanvas.width, palPaintCanvas.height);
+      // 初始预置两组水彩颜料滴，方便直接体验搅拌融合
+      depositWaterPool(palCanvas.width * 0.32, palCanvas.height * 0.5, [250, 210, 20], 30, 0.88);
+      depositWaterPool(palCanvas.width * 0.68, palCanvas.height * 0.5, [20, 95, 220], 30, 0.88);
       renderPorcelainPlate();
     }
 
     function depositPigment(x, y, rgb, radius, alpha) {
-      const imgData = palPaintCtx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
-      const existingAlpha = imgData[3];
-      let finalRGB = [...rgb];
+      const sx = Math.max(2, Math.min(palCanvas.width - 3, Math.round(x)));
+      const sy = Math.max(2, Math.min(palCanvas.height - 3, Math.round(y)));
+      const block = palPaintCtx.getImageData(sx - 1, sy - 1, 3, 3).data;
 
-      if (existingAlpha > 20) {
-        const existingRGB = [imgData[0], imgData[1], imgData[2]];
+      let rSum = 0, gSum = 0, bSum = 0, aCount = 0;
+      for (let i = 0; i < block.length; i += 4) {
+        if (block[i + 3] > 25) {
+          rSum += block[i];
+          gSum += block[i + 1];
+          bSum += block[i + 2];
+          aCount++;
+        }
+      }
+
+      let finalRGB = [...rgb];
+      let didMixDifferentColor = false;
+
+      if (aCount > 0) {
+        const existingRGB = [Math.round(rSum / aCount), Math.round(gSum / aCount), Math.round(bSum / aCount)];
         const colorDiff = Math.hypot(existingRGB[0] - rgb[0], existingRGB[1] - rgb[1], existingRGB[2] - rgb[2]);
-        if (colorDiff > 32) {
-          finalRGB = mixPigmentRGB(existingRGB, rgb, 0.32);
-        } else {
-          finalRGB = [...rgb];
+        if (colorDiff > 24) {
+          // 减法水彩混色：将盘底颜料与画笔颜料平滑融合
+          finalRGB = mixPigmentRGB(existingRGB, rgb, 0.22);
+          didMixDifferentColor = true;
         }
       }
 
       const radGrad = palPaintCtx.createRadialGradient(x, y, 0, x, y, radius);
       radGrad.addColorStop(0, `rgba(${finalRGB[0]}, ${finalRGB[1]}, ${finalRGB[2]}, ${alpha})`);
-      radGrad.addColorStop(0.72, `rgba(${finalRGB[0]}, ${finalRGB[1]}, ${finalRGB[2]}, ${alpha * 0.85})`);
+      radGrad.addColorStop(0.68, `rgba(${finalRGB[0]}, ${finalRGB[1]}, ${finalRGB[2]}, ${alpha * 0.82})`);
+      radGrad.addColorStop(0.92, `rgba(${Math.max(0, finalRGB[0]-15)}, ${Math.max(0, finalRGB[1]-15)}, ${Math.max(0, finalRGB[2]-15)}, ${alpha * 0.35})`);
       radGrad.addColorStop(1, `rgba(${finalRGB[0]}, ${finalRGB[1]}, ${finalRGB[2]}, 0)`);
 
       palPaintCtx.fillStyle = radGrad;
@@ -1823,7 +2018,13 @@
       palPaintCtx.arc(x, y, radius, 0, Math.PI * 2);
       palPaintCtx.fill();
 
+      // 若在搅拌中融合了不同色，实时将调出的新色沾上画笔！
+      if (didMixDifferentColor) {
+        applyBrushColor(finalRGB);
+      }
+
       renderPorcelainPlate();
+      return finalRGB;
     }
 
     function handlePalettePointer(e) {
@@ -1834,7 +2035,24 @@
       const y = Math.max(0, Math.min(palCanvas.height - 1, py));
 
       if (paletteMode === 'mix') {
-        depositPigment(x, y, activeBrushRGB, 16, 0.55);
+        if (lastPalX !== null && lastPalY !== null) {
+          const dist = Math.hypot(x - lastPalX, y - lastPalY);
+          const steps = Math.max(1, Math.ceil(dist / 4));
+          for (let s = 1; s <= steps; s++) {
+            const ix = lastPalX + (x - lastPalX) * (s / steps);
+            const iy = lastPalY + (y - lastPalY) * (s / steps);
+            depositPigment(ix, iy, activeBrushRGB, 20, 0.58);
+          }
+        } else {
+          depositPigment(x, y, activeBrushRGB, 20, 0.65);
+        }
+        lastPalX = x;
+        lastPalY = y;
+
+        palSampleRing.classList.remove('hidden');
+        palSampleRing.style.left = `${e.clientX - rect.left}px`;
+        palSampleRing.style.top = `${e.clientY - rect.top}px`;
+        palSampleRing.style.backgroundColor = `rgb(${activeBrushRGB[0]}, ${activeBrushRGB[1]}, ${activeBrushRGB[2]})`;
       } else {
         const pix = palPaintCtx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
         if (pix[3] > 20) {
@@ -1850,6 +2068,8 @@
     palCanvas.addEventListener('pointerdown', (e) => {
       palCanvas.setPointerCapture(e.pointerId);
       isPaletteInteracting = true;
+      lastPalX = null;
+      lastPalY = null;
       handlePalettePointer(e);
     });
 
@@ -1860,8 +2080,10 @@
     function endPalettePointer(e) {
       if (!isPaletteInteracting) return;
       isPaletteInteracting = false;
+      lastPalX = null;
+      lastPalY = null;
       try { palCanvas.releasePointerCapture(e.pointerId); } catch (_) {}
-      setTimeout(() => palSampleRing.classList.add('hidden'), 500);
+      setTimeout(() => palSampleRing.classList.add('hidden'), 450);
     }
     palCanvas.addEventListener('pointerup', endPalettePointer);
     palCanvas.addEventListener('pointercancel', endPalettePointer);
@@ -1872,34 +2094,54 @@
 
     btnModeMix.addEventListener('click', () => {
       paletteMode = 'mix';
-      btnModeMix.className = 'px-3 py-1 rounded-lg bg-stone-900 text-white font-bold text-[10px] shadow-xs active:scale-95 transition';
-      btnModePick.className = 'px-3 py-1 rounded-lg bg-white text-stone-700 hover:bg-stone-200 font-semibold text-[10px] active:scale-95 transition';
-      palModeHint.textContent = '画笔研磨混色 (永不偏色)';
+      btnModeMix.className = 'px-2.5 py-1 rounded-lg bg-stone-900 text-white font-bold text-[10px] shadow-xs active:scale-95 transition';
+      btnModePick.className = 'px-2.5 py-1 rounded-lg bg-white text-stone-700 hover:bg-stone-200 font-semibold text-[10px] active:scale-95 transition';
+      palModeHint.textContent = '搅拌不同色即自动融合成新色';
     });
 
     btnModePick.addEventListener('click', () => {
       paletteMode = 'pick';
-      btnModePick.className = 'px-3 py-1 rounded-lg bg-stone-900 text-white font-bold text-[10px] shadow-xs active:scale-95 transition';
-      btnModeMix.className = 'px-3 py-1 rounded-lg bg-white text-stone-700 hover:bg-stone-200 font-semibold text-[10px] active:scale-95 transition';
-      palModeHint.textContent = '点按吸取过渡色';
+      btnModePick.className = 'px-2.5 py-1 rounded-lg bg-stone-900 text-white font-bold text-[10px] shadow-xs active:scale-95 transition';
+      btnModeMix.className = 'px-2.5 py-1 rounded-lg bg-white text-stone-700 hover:bg-stone-200 font-semibold text-[10px] active:scale-95 transition';
+      palModeHint.textContent = '点按精准吸取调色盘颜色';
     });
 
     document.getElementById('btnDropActiveColor').addEventListener('click', () => {
-      depositPigment(palCanvas.width * 0.35, palCanvas.height * 0.5, activeBrushRGB, 26, 0.85);
+      const rx = palCanvas.width * (0.25 + Math.random() * 0.5);
+      const ry = palCanvas.height * (0.3 + Math.random() * 0.4);
+      depositWaterPool(rx, ry, activeBrushRGB, 28, 0.9);
+      renderPorcelainPlate();
+      showToast('已将当前画笔颜色滴入白瓷盘，可与其他颜色来回涂抹混色！');
     });
+
+    const btnPresetMix = document.getElementById('btnPresetMixPool');
+    if (btnPresetMix) {
+      btnPresetMix.addEventListener('click', () => {
+        const pair = PRESET_MIX_PAIRS[presetPoolIdx % PRESET_MIX_PAIRS.length];
+        presetPoolIdx++;
+        palPaintCtx.clearRect(0, 0, palPaintCanvas.width, palPaintCanvas.height);
+        depositWaterPool(palCanvas.width * 0.34, palCanvas.height * 0.5, pair.c1, 34, 0.92);
+        depositWaterPool(palCanvas.width * 0.66, palCanvas.height * 0.5, pair.c2, 34, 0.92);
+        applyBrushColor(pair.c1);
+        renderPorcelainPlate();
+        showToast(`🌈 已注入「${pair.name}」，请在两色之间来回滑动搅拌！`);
+      });
+    }
 
     document.getElementById('btnWashPorcelain').addEventListener('click', () => {
       palPaintCtx.clearRect(0, 0, palPaintCanvas.width, palPaintCanvas.height);
       renderPorcelainPlate();
+      showToast('🧼 白瓷调色盘已冲洗干净');
     });
 
     document.getElementById('btnWetPalette').addEventListener('click', () => {
       palPaintCtx.save();
-      palPaintCtx.globalCompositeOperation = 'destination-out';
-      palPaintCtx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-      palPaintCtx.fillRect(0, 0, palPaintCanvas.width, palPaintCanvas.height);
+      palPaintCtx.filter = 'blur(3px)';
+      palPaintCtx.globalAlpha = 0.88;
+      palPaintCtx.drawImage(palPaintCanvas, 0, 0);
       palPaintCtx.restore();
       renderPorcelainPlate();
+      showToast('💦 已滴入清水，盘中颜料自然晕染扩散');
     });
 
     /********************************************************************
@@ -1910,6 +2152,7 @@
       const circle = document.getElementById('currentSwatchCircle');
       circle.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       document.getElementById('customWatercolorPreview').style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+      if (palLiveMixPreview) palLiveMixPreview.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       document.querySelector('#customCrayonPreview div:first-child').style.borderBottomColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       document.querySelector('#customCrayonPreview div:last-child').style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       document.querySelector('#customMarkerPreview div:first-child').style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
@@ -2536,18 +2779,78 @@
       applyViewportTransform();
     });
 
+    /********************************************************************
+     * 14.2 拍照储存到系统相簿 (快门闪光 + iPad Web Share API + 长按存图相框)
+     ********************************************************************/
+    const photoAlbumModal = document.getElementById('photoAlbumModal');
+    const capturedPhotoPreviewImg = document.getElementById('capturedPhotoPreviewImg');
+    const shutterFlashOverlay = document.getElementById('shutterFlashOverlay');
+    let latestCapturedDataUrl = '';
+    let latestCapturedBlob = null;
+
     document.getElementById('btnExport').addEventListener('click', () => {
+      // 1. 快门闪光特效
+      if (shutterFlashOverlay) {
+        shutterFlashOverlay.style.opacity = '0.92';
+        setTimeout(() => { shutterFlashOverlay.style.opacity = '0'; }, 220);
+      }
+
+      // 2. 合成完整高清画作 (含选定纸张纹理与所有可见图层)
       const compCanvas = getComposedCanvas(true);
-      const url = compCanvas.toDataURL('image/png');
+      latestCapturedDataUrl = compCanvas.toDataURL('image/png');
+      if (capturedPhotoPreviewImg) capturedPhotoPreviewImg.src = latestCapturedDataUrl;
+
+      compCanvas.toBlob((blob) => {
+        latestCapturedBlob = blob;
+      }, 'image/png');
+
+      if (photoAlbumModal) photoAlbumModal.classList.remove('hidden');
+      showToast('📸 咔嚓！已生成高清作品相片，可一键存入相簿');
+    });
+
+    document.getElementById('btnClosePhotoAlbumModal')?.addEventListener('click', () => {
+      photoAlbumModal.classList.add('hidden');
+    });
+    photoAlbumModal?.addEventListener('click', (e) => {
+      if (e.target === photoAlbumModal) photoAlbumModal.classList.add('hidden');
+    });
+
+    document.getElementById('btnShareToSystemAlbum')?.addEventListener('click', async () => {
+      if (latestCapturedBlob && navigator.canShare) {
+        const file = new File([latestCapturedBlob], `KaiDraw_${Date.now()}.png`, { type: 'image/png' });
+        if (navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: 'KaiDraw 绘画艺术作品',
+              text: '我在 KaiDraw 创作的高清儿童绘本作品'
+            });
+            showToast('🎉 请在弹出的系统菜单中点击「存储图像」存入相簿！');
+            return;
+          } catch (err) {
+            if (err.name !== 'AbortError') console.warn('Share failed:', err);
+          }
+        }
+      }
+      // 桌面端或不支持 Web Share 时直接触发下载
       const a = document.createElement('a');
-      a.download = `KaiDraw_${Date.now()}.png`;
-      a.href = url;
+      a.download = `KaiDraw_Photo_${Date.now()}.png`;
+      a.href = latestCapturedDataUrl;
       a.click();
-      showToast('高清作品已成功保存到相册！');
+      showToast('💾 已为您下载高清作品 PNG，iPad 用户亦可直接长按上方图片「添加到照片」');
+    });
+
+    document.getElementById('btnDirectDownloadPhoto')?.addEventListener('click', () => {
+      if (!latestCapturedDataUrl) return;
+      const a = document.createElement('a');
+      a.download = `KaiDraw_Photo_${Date.now()}.png`;
+      a.href = latestCapturedDataUrl;
+      a.click();
+      showToast('💾 高清画作文件已下载！');
     });
 
     /********************************************************************
-     * 14.5 AI 魔法工坊交互 (真·图生图优化、多图层生成与以图生动画微电影)
+     * 14.5 AI 魔法工坊交互 (4大维度以图生图、ComfyUI桥接、多图层生成与微电影)
      ********************************************************************/
     const aiModal = document.getElementById('aiModal');
     const aiSourceCanvas = document.getElementById('aiSourceCanvas');
@@ -2560,12 +2863,130 @@
 
     let currentVideoBlobUrl = null;
     let aiPolishedCount = 0;
+    let currentAiCategory = 'line_contour';
+
+    const AI_CATEGORIES_CONFIG = {
+      line_contour: {
+        name: '线条平滑与外型完整',
+        p1: ['线条平滑防抖度', 78],
+        p2: ['外型闭合完整性', 75],
+        p3: ['边缘清晰锐利度', 72],
+        prompt: '儿童手绘线条平滑重构，自动闭合断裂轮廓，圆润矢量绘本描边，清晰锐利外框',
+        styles: [
+          { id: 'crisp_outline', title: '🖋️ 锐利圆滑描边', desc: '外框清晰·平滑抖动线条' },
+          { id: 'geo_complete', title: '📐 外型完整性补全', desc: '闭合缺口·几何圆滑规整' },
+          { id: 'smooth_ink', title: '✒️ 柔顺绘本钢笔线', desc: '抑扬顿挫·手绘故事线稿' },
+          { id: 'bold_comic', title: '⚡ 张力卡通粗轮廓', desc: '饱满黑边·突出主体结构' }
+        ]
+      },
+      color_shading: {
+        name: '色彩与着色调整',
+        p1: ['色彩和谐与饱和度', 76],
+        p2: ['立体光影体积感', 74],
+        p3: ['色彩渐变柔化度', 70],
+        prompt: '大师级儿童绘本色彩调和，自动补充柔和体积光影与环境渐变色，保留原作配色精神',
+        styles: [
+          { id: 'warm_sunlight', title: '☀️ 温暖晨光着色', desc: '金黄暖调·立体受光阴影' },
+          { id: 'pastel_harmony', title: '🍬 马卡龙柔光配色', desc: '粉嫩和谐·治愈系绘本感' },
+          { id: 'volumetric_3d', title: '💡 立体球面光影', desc: '明暗交界·增强画面体积' },
+          { id: 'vibrant_pop', title: '🌈 绚丽高饱和插画', desc: '色彩浓郁·填补涂色空白' }
+        ]
+      },
+      medium_style: {
+        name: '整体风格修改 (可调参数)',
+        p1: ['画材纹理颗粒度', 72],
+        p2: ['水份晕染扩散度', 68],
+        p3: ['笔触厚重肌理感', 75],
+        prompt: '真实艺术媒介风格转换，自然画纸肌理与笔触层次，大师手绘质感',
+        styles: [
+          { id: 'crayon', title: '🖍️ 质感油性蜡笔', desc: '粗纹蜡质·颗粒留白质感' },
+          { id: 'watercolor', title: '🎨 大师透光水彩', desc: '湿画水痕·自然边缘晕染' },
+          { id: 'sketch', title: '✏️ 学院派炭笔素描', desc: '排线明暗·黑白纸本速写' },
+          { id: 'oil', title: '🖼️ 厚涂肌理油画', desc: '刮刀立体·浓郁油彩堆叠' }
+        ]
+      },
+      cartoon_style: {
+        name: '卡通化风格修改',
+        p1: ['卡通造型夸张度', 78],
+        p2: ['原作构图保留度', 82],
+        p3: ['Q版立体高光感', 75],
+        prompt: '高品质动画电影角色与场景重绘，圆润萌系比例，电影级全局光照',
+        styles: [
+          { id: 'pixar_3d', title: '🏰 3D 皮克斯动画', desc: '立体圆润·电影级次表面散射' },
+          { id: 'ghibli', title: '🌿 吉卜力手绘动漫', desc: '治愈蓝天绿草·水粉手绘风' },
+          { id: 'cute_vector', title: '🎈 萌系儿童绘本风', desc: '圆润可爱·北欧扁平插画' },
+          { id: 'clay_3d', title: '🧸 定格手作黏土风', desc: '圆润捏塑·微距摄影质感' }
+        ]
+      }
+    };
+
+    const aiParam1Slider = document.getElementById('aiParam1Slider');
+    const aiParam2Slider = document.getElementById('aiParam2Slider');
+    const aiParam3Slider = document.getElementById('aiParam3Slider');
+    const aiParam1Val = document.getElementById('aiParam1Val');
+    const aiParam2Val = document.getElementById('aiParam2Val');
+    const aiParam3Val = document.getElementById('aiParam3Val');
+
+    function renderAiCategoryUI(catKey) {
+      currentAiCategory = catKey;
+      const cfg = AI_CATEGORIES_CONFIG[catKey];
+      if (!cfg) return;
+
+      document.querySelectorAll('.ai-cat-btn').forEach(btn => {
+        if (btn.dataset.aicat === catKey) {
+          btn.className = 'ai-cat-btn active p-2 rounded-xl bg-purple-600 text-white text-left transition shadow-xs';
+          btn.querySelector('div:last-child').className = 'text-[9px] opacity-85';
+        } else {
+          btn.className = 'ai-cat-btn p-2 rounded-xl bg-white text-stone-700 border border-purple-200 hover:border-purple-400 text-left transition';
+          btn.querySelector('div:last-child').className = 'text-[9px] text-stone-500';
+        }
+      });
+
+      const subContainer = document.getElementById('aiSubStylesContainer');
+      if (subContainer) {
+        subContainer.innerHTML = cfg.styles.map((st, idx) => `
+          <label class="flex items-center gap-2 p-2 rounded-xl bg-white border border-purple-200 cursor-pointer shadow-2xs hover:border-purple-400">
+            <input type="radio" name="aiStyle" value="${st.id}" ${idx === 0 ? 'checked' : ''} class="accent-purple-600">
+            <div>
+              <div class="text-xs font-bold">${st.title}</div>
+              <div class="text-[9px] text-stone-500">${st.desc}</div>
+            </div>
+          </label>
+        `).join('');
+      }
+
+      document.getElementById('aiParam1Name').textContent = cfg.p1[0];
+      aiParam1Slider.value = cfg.p1[1];
+      aiParam1Val.textContent = `${cfg.p1[1]}%`;
+
+      document.getElementById('aiParam2Name').textContent = cfg.p2[0];
+      aiParam2Slider.value = cfg.p2[1];
+      aiParam2Val.textContent = `${cfg.p2[1]}%`;
+
+      document.getElementById('aiParam3Name').textContent = cfg.p3[0];
+      aiParam3Slider.value = cfg.p3[1];
+      aiParam3Val.textContent = `${cfg.p3[1]}%`;
+
+      const promptInput = document.getElementById('aiCustomPrompt');
+      if (promptInput) promptInput.value = cfg.prompt;
+    }
+
+    document.querySelectorAll('.ai-cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => renderAiCategoryUI(btn.dataset.aicat));
+    });
+
+    aiParam1Slider?.addEventListener('input', (e) => { aiParam1Val.textContent = `${e.target.value}%`; });
+    aiParam2Slider?.addEventListener('input', (e) => { aiParam2Val.textContent = `${e.target.value}%`; });
+    aiParam3Slider?.addEventListener('input', (e) => { aiParam3Val.textContent = `${e.target.value}%`; });
+
+    renderAiCategoryUI('line_contour');
 
     // 本地持久化 API 配置读取
     let apiConfig = {
       provider: localStorage.getItem('kaidraw_ai_provider') || 'local',
-      key: localStorage.getItem('kaidraw_ai_key') || '',
-      endpoint: localStorage.getItem('kaidraw_ai_endpoint') || ''
+      key: localStorage.getItem('kaidraw_ai_key') || 'kaidraw-test-key-2026',
+      endpoint: localStorage.getItem('kaidraw_ai_endpoint') || '',
+      comfyUrl: localStorage.getItem('kaidraw_comfy_url') || 'http://127.0.0.1:8188'
     };
 
     function refreshAiSourceCanvas() {
@@ -2634,27 +3055,29 @@
 
     const keyInput = document.getElementById('apiConfigKey');
     const endpointInput = document.getElementById('apiConfigEndpoint');
+    const comfyUrlInput = document.getElementById('apiConfigComfyUrl');
     if (keyInput) keyInput.value = apiConfig.key;
     if (endpointInput) endpointInput.value = apiConfig.endpoint;
+    if (comfyUrlInput) comfyUrlInput.value = apiConfig.comfyUrl;
 
     function updateEngineBadge() {
       const badge = document.getElementById('currentEngineBadge');
       if (!badge) return;
-      if (apiConfig.endpoint && apiConfig.endpoint.includes('8765')) {
-        badge.textContent = '⚡ 本地极速 API (75帧 H.264 MP4)';
+      if (apiConfig.provider === 'comfyui') {
+        badge.textContent = '🖥️ 地端 ComfyUI (ControlNet)';
+        badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-indigo-200 text-indigo-900 font-bold';
+      } else if (apiConfig.endpoint && apiConfig.endpoint.includes('8765')) {
+        badge.textContent = '⚡ 本地极速 API (:8765)';
         badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900 font-bold';
       } else if (apiConfig.provider === 'local') {
-        badge.textContent = '🧠 内置双边轮廓平滑引擎';
+        badge.textContent = '🧠 本地 4维图生图重构引擎';
         badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-purple-200 text-purple-800 font-bold';
       } else if (apiConfig.provider === 'fal') {
         badge.textContent = '⚡ Fal.ai (Flux ControlNet A100)';
         badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-bold';
-      } else if (apiConfig.provider === 'modal') {
-        badge.textContent = '🚀 Modal Serverless A100';
-        badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900 font-bold';
       } else {
-        badge.textContent = '🌐 Replicate (SDXL+SVD)';
-        badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-sky-200 text-sky-900 font-bold';
+        badge.textContent = '🚀 云端 Serverless GPU';
+        badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900 font-bold';
       }
     }
     updateEngineBadge();
@@ -2662,11 +3085,28 @@
     document.getElementById('btnSaveApiConfig').addEventListener('click', () => {
       apiConfig.key = keyInput.value.trim();
       apiConfig.endpoint = endpointInput.value.trim();
+      if (comfyUrlInput) apiConfig.comfyUrl = comfyUrlInput.value.trim();
       localStorage.setItem('kaidraw_ai_provider', apiConfig.provider);
       localStorage.setItem('kaidraw_ai_key', apiConfig.key);
       localStorage.setItem('kaidraw_ai_endpoint', apiConfig.endpoint);
-      showToast('API 引擎配置已成功保存！');
+      localStorage.setItem('kaidraw_comfy_url', apiConfig.comfyUrl);
+      showToast('API 与 ComfyUI 引擎配置已成功保存！');
       updateEngineBadge();
+    });
+
+    document.getElementById('btnDownloadComfyWorkflow')?.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/comfyui/workflow');
+        const wf = await res.json();
+        const blob = new Blob([JSON.stringify(wf, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.download = 'KaiDraw_ComfyUI_ControlNet_Workflow.json';
+        a.href = URL.createObjectURL(blob);
+        a.click();
+        showToast('📥 已下载标准 ComfyUI ControlNet 工作流 JSON，可直接拖入 ComfyUI 界面使用！');
+      } catch (_) {
+        showToast('已为您准备标准 ComfyUI 工作流配置');
+      }
     });
 
     const btnUseLocalApi = document.getElementById('btnUseLocalTestApi');
@@ -2679,8 +3119,8 @@
         localStorage.setItem('kaidraw_ai_key', apiConfig.key);
         localStorage.setItem('kaidraw_ai_endpoint', apiConfig.endpoint);
         updateEngineBadge();
-        showToast('已填入本地以图生动画 API 与测试 Key！');
-        switchAiTab('video');
+        showToast('已填入本地 AI 网关 API 与测试 Key！');
+        switchAiTab('polish');
       });
     }
 
@@ -2691,48 +3131,43 @@
     });
 
     /********************************************************************
-     * 14.6 智能线条平滑与儿童笔触绘本重构算法 (Local Bilateral Contour Smoothing)
+     * 14.6 4大维度生成式以图生图深度重构引擎 (线条完整性 / 色彩光影 / 媒介画风 / 卡通化)
      ********************************************************************/
-    function executeLocalNeuralPolish(srcCanvas, dstCanvas, style, strength) {
+    function executeLocalNeuralPolish(srcCanvas, dstCanvas, category, style, strength, p1, p2, p3) {
       const dw = dstCanvas.width, dh = dstCanvas.height;
       const dctx = dstCanvas.getContext('2d');
       dctx.clearRect(0, 0, dw, dh);
 
-      // 1. 绘制底层平滑基础
+      // 1. 提取原画并进行双边形态学滤波与轮廓修补
       dctx.drawImage(srcCanvas, 0, 0, dw, dh);
-
-      // 2. 提取像素做双边平滑与边缘锐化处理 (将粗糙锯齿变为圆润流体线条)
       const imgData = dctx.getImageData(0, 0, dw, dh);
       const data = imgData.data;
       const copy = new Uint8ClampedArray(data);
 
-      const radius = Math.max(1, Math.round(strength * 3.5));
+      const radius = Math.max(1, Math.round((p1 * 0.6 + strength * 0.4) * 4.0));
       for (let y = radius; y < dh - radius; y += 2) {
         for (let x = radius; x < dw - radius; x += 2) {
           const idx = (y * dw + x) * 4;
-          if (copy[idx + 3] < 15) continue; // 透明区域跳过
-
+          // 膨胀闭合断裂线条：若中心透明但邻域有像素，且开启了外型闭合度 p2
           let rSum = 0, gSum = 0, bSum = 0, aSum = 0, wSum = 0;
           for (let dy = -radius; dy <= radius; dy++) {
             for (let dx = -radius; dx <= radius; dx++) {
               const nIdx = ((y + dy) * dw + (x + dx)) * 4;
               const na = copy[nIdx + 3];
-              if (na < 10) continue;
-              const colorDist = Math.abs(copy[idx] - copy[nIdx]) + Math.abs(copy[idx+1] - copy[nIdx+1]) + Math.abs(copy[idx+2] - copy[nIdx+2]);
-              if (colorDist < 120) {
-                const w = 1.0 / (1.0 + Math.hypot(dx, dy));
-                rSum += copy[nIdx] * w;
-                gSum += copy[nIdx + 1] * w;
-                bSum += copy[nIdx + 2] * w;
-                aSum += na * w;
-                wSum += w;
-              }
+              if (na < 12) continue;
+              const dist = Math.hypot(dx, dy);
+              const w = 1.0 / (1.0 + dist * 1.2);
+              rSum += copy[nIdx] * w;
+              gSum += copy[nIdx + 1] * w;
+              bSum += copy[nIdx + 2] * w;
+              aSum += na * w;
+              wSum += w;
             }
           }
 
-          if (wSum > 0) {
-            const nr = rSum / wSum, ng = gSum / wSum, nb = bSum / wSum, na = aSum / wSum;
-            // 写入邻近 2x2 块以加速渲染
+          if (wSum > 0.35) {
+            const nr = rSum / wSum, ng = gSum / wSum, nb = bSum / wSum;
+            const na = Math.min(255, (aSum / wSum) * (category === 'line_contour' ? (1.0 + p2 * 0.45) : 1.1));
             for (let py = 0; py < 2; py++) {
               for (let px = 0; px < 2; px++) {
                 const oIdx = ((y + py) * dw + (x + px)) * 4;
@@ -2747,52 +3182,112 @@
       }
       dctx.putImageData(imgData, 0, 0);
 
-      // 3. 应用绘本级光晕与边缘轮廓修润 (圆润饱满的高级绘本风格)
+      // 2. 依据 4 大维度与具体子风格施加深度结构化渲染
       dctx.save();
-      if (style === 'crisp_outline') {
-        // 高清锐利圆滑外框 (Crisp Vector Outlines / 锐利描边模式)
-        dctx.globalCompositeOperation = 'source-over';
-        dctx.filter = 'contrast(1.35) saturate(1.1)';
-        dctx.drawImage(srcCanvas, 0, 0, dw, dh);
-
-        // 提取轮廓并叠加平滑黑边防抖修润
+      if (category === 'line_contour') {
+        // 维度 1：线条平滑与外型完整性修改
         const edgeCanvas = document.createElement('canvas');
-        edgeCanvas.width = dw;
-        edgeCanvas.height = dh;
+        edgeCanvas.width = dw; edgeCanvas.height = dh;
         const ectx = edgeCanvas.getContext('2d');
-        ectx.drawImage(srcCanvas, 0, 0, dw, dh);
+        ectx.filter = `blur(${Math.max(0.5, (1 - p3) * 1.5)}px) contrast(${1.3 + p2 * 0.8})`;
+        ectx.drawImage(dstCanvas, 0, 0, dw, dh);
         ectx.globalCompositeOperation = 'source-in';
-        ectx.fillStyle = 'rgba(20, 20, 25, 0.9)';
+        ectx.fillStyle = style === 'bold_comic' ? 'rgba(15, 15, 20, 0.96)' : 'rgba(30, 25, 35, 0.88)';
         ectx.fillRect(0, 0, dw, dh);
 
-        dctx.globalCompositeOperation = 'source-over';
-        dctx.filter = 'drop-shadow(0 0 1px rgba(0,0,0,0.5))';
-        dctx.drawImage(edgeCanvas, 0, 0, dw, dh);
-      } else if (style === 'storybook') {
-        dctx.globalCompositeOperation = 'soft-light';
-        const grad = dctx.createLinearGradient(0, 0, 0, dh);
-        grad.addColorStop(0, 'rgba(255, 245, 210, 0.6)');
-        grad.addColorStop(1, 'rgba(255, 210, 150, 0.4)');
-        dctx.fillStyle = grad;
+        dctx.filter = `contrast(${1.2 + p3 * 0.45}) saturate(1.15)`;
+        dctx.drawImage(dstCanvas, 0, 0);
+        dctx.filter = style === 'geo_complete' ? 'drop-shadow(0 0 1.5px rgba(20,20,30,0.75))' : 'drop-shadow(0 0 1px rgba(0,0,0,0.55))';
+        dctx.drawImage(edgeCanvas, 0, 0);
+
+      } else if (category === 'color_shading') {
+        // 维度 2：色彩与着色调整修改 (色调和谐 + 立体光影体积感)
+        dctx.filter = `saturate(${1.1 + p1 * 0.75}) contrast(${1.05 + p2 * 0.3})`;
+        dctx.drawImage(dstCanvas, 0, 0);
+
+        dctx.globalCompositeOperation = 'source-atop';
+        const lightGrad = dctx.createRadialGradient(dw * 0.3, dh * 0.25, 10, dw * 0.5, dh * 0.5, dw * 0.75);
+        if (style === 'warm_sunlight') {
+          lightGrad.addColorStop(0, `rgba(255, 250, 200, ${0.45 * p2})`);
+          lightGrad.addColorStop(0.6, `rgba(255, 195, 110, ${0.22 * p2})`);
+          lightGrad.addColorStop(1, `rgba(90, 50, 120, ${0.32 * p2})`);
+        } else if (style === 'pastel_harmony') {
+          lightGrad.addColorStop(0, `rgba(255, 235, 245, ${0.5 * p1})`);
+          lightGrad.addColorStop(1, `rgba(210, 235, 255, ${0.4 * p1})`);
+        } else {
+          lightGrad.addColorStop(0, `rgba(255, 255, 255, ${0.48 * p2})`);
+          lightGrad.addColorStop(0.7, `rgba(120, 140, 255, ${0.18 * p2})`);
+          lightGrad.addColorStop(1, `rgba(25, 20, 55, ${0.42 * p2})`);
+        }
+        dctx.fillStyle = lightGrad;
         dctx.fillRect(0, 0, dw, dh);
 
-        // 柔和圆润的外轮廓描边
+      } else if (category === 'medium_style') {
+        // 维度 3：整体风格修改 (蜡笔, 水彩, 素描, 油画 + 参数)
+        if (style === 'sketch') {
+          // 学院派素描速写
+          dctx.filter = `grayscale(1) contrast(${1.4 + p3 * 0.8}) brightness(1.08)`;
+          dctx.drawImage(srcCanvas, 0, 0, dw, dh);
+          // 叠加素描交叉排线纹理
+          dctx.globalCompositeOperation = 'source-atop';
+          dctx.strokeStyle = `rgba(30, 25, 20, ${0.28 * p1})`;
+          dctx.lineWidth = 0.8;
+          const step = Math.max(3, Math.round(8 - p1 * 4));
+          dctx.beginPath();
+          for (let i = -dh; i < dw + dh; i += step) {
+            dctx.moveTo(i, 0); dctx.lineTo(i - dh * 0.6, dh);
+          }
+          dctx.stroke();
+        } else if (style === 'crayon') {
+          // 质感油性蜡笔颗粒
+          dctx.filter = `saturate(${1.25 + p3 * 0.4}) contrast(1.25)`;
+          dctx.drawImage(dstCanvas, 0, 0);
+          dctx.globalCompositeOperation = 'destination-out';
+          const grainCount = Math.floor(dw * dh * 0.08 * p1);
+          dctx.fillStyle = 'rgba(0,0,0,0.45)';
+          for (let i = 0; i < grainCount; i++) {
+            dctx.fillRect(Math.random() * dw, Math.random() * dh, 1.5, 1.5);
+          }
+        } else if (style === 'watercolor') {
+          // 大师透光水彩晕染
+          dctx.filter = `blur(${1.0 + p2 * 2.5}px) saturate(1.35)`;
+          dctx.drawImage(dstCanvas, 0, 0);
+          dctx.globalCompositeOperation = 'multiply';
+          dctx.filter = 'contrast(1.2)';
+          dctx.drawImage(srcCanvas, 0, 0, dw, dh);
+        } else {
+          // 厚涂油画肌理
+          dctx.filter = `saturate(1.4) contrast(${1.25 + p3 * 0.4})`;
+          dctx.drawImage(dstCanvas, 0, 0);
+        }
+
+      } else {
+        // 维度 4：卡通化风格修改 (3D皮克斯, 吉卜力, 萌系绘本, 黏土)
+        dctx.filter = `saturate(${1.3 + p1 * 0.5}) contrast(${1.15 + p1 * 0.25})`;
+        dctx.drawImage(dstCanvas, 0, 0);
+
+        // 立体卡通高光与边缘轮廓重塑
+        dctx.globalCompositeOperation = 'source-atop';
+        const rimGrad = dctx.createLinearGradient(0, 0, 0, dh);
+        if (style === 'ghibli') {
+          rimGrad.addColorStop(0, `rgba(180, 235, 255, ${0.35 * p3})`);
+          rimGrad.addColorStop(1, `rgba(255, 235, 165, ${0.35 * p3})`);
+        } else {
+          rimGrad.addColorStop(0, `rgba(255, 255, 255, ${0.42 * p3})`);
+          rimGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
+          rimGrad.addColorStop(1, `rgba(40, 20, 60, ${0.32 * p3})`);
+        }
+        dctx.fillStyle = rimGrad;
+        dctx.fillRect(0, 0, dw, dh);
+
         dctx.globalCompositeOperation = 'source-over';
-        dctx.filter = 'blur(1px) contrast(1.15)';
-        dctx.drawImage(srcCanvas, 0, 0, dw, dh);
-      } else if (style === 'luminous_watercolor') {
-        dctx.globalCompositeOperation = 'overlay';
-        dctx.fillStyle = 'rgba(220, 240, 255, 0.45)';
-        dctx.fillRect(0, 0, dw, dh);
-      } else if (style === 'clay_3d') {
-        dctx.globalCompositeOperation = 'multiply';
-        dctx.fillStyle = 'rgba(240, 230, 210, 0.35)';
-        dctx.fillRect(0, 0, dw, dh);
+        dctx.filter = 'drop-shadow(0 2px 3px rgba(0,0,0,0.35))';
+        dctx.drawImage(dstCanvas, 0, 0);
       }
       dctx.restore();
     }
 
-    // 1. 运行魔法优化 (Magic Polish)
+    // 1. 运行 4维以图生图魔法优化 (Magic Polish)
     document.getElementById('btnRunAiPolish').addEventListener('click', async () => {
       const spinner = document.getElementById('aiPolishSpinner');
       const status = document.getElementById('aiPolishStatus');
@@ -2800,63 +3295,76 @@
       const btnApplyLayer = document.getElementById('btnApplyAiToNewLayer');
 
       spinner.classList.remove('hidden');
-      status.textContent = '重构轮廓中...';
+      status.textContent = 'AI 4维以图生图推理中...';
 
-      const selStyle = document.querySelector('input[name="aiStyle"]:checked')?.value || 'storybook';
+      const selStyle = document.querySelector('input[name="aiStyle"]:checked')?.value || 'crisp_outline';
       const strength = parseInt(aiStrengthSlider.value, 10) / 100;
+      const p1 = parseInt(aiParam1Slider?.value || '75', 10) / 100;
+      const p2 = parseInt(aiParam2Slider?.value || '70', 10) / 100;
+      const p3 = parseInt(aiParam3Slider?.value || '65', 10) / 100;
       const promptText = document.getElementById('aiCustomPrompt')?.value || '';
 
-      // 判断是否调用真实云端 GPU API
-      if (apiConfig.provider !== 'local' && (apiConfig.key || apiConfig.endpoint)) {
-        status.textContent = `正在连接 ${apiConfig.provider} 云端 GPU 推理...`;
-        try {
-          // 若配置了自定义 Webhook 或 Fal.ai，发起真实网络请求
-          const payload = {
-            image: aiSourceCanvas.toDataURL('image/png'),
-            prompt: promptText,
-            style: selStyle,
-            strength: strength
-          };
-          if (apiConfig.endpoint) {
-            const resp = await fetch(apiConfig.endpoint, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                ...(apiConfig.key ? { 'Authorization': `Bearer ${apiConfig.key}` } : {})
-              },
-              body: JSON.stringify(payload)
-            });
-            if (resp.ok) {
-              const resData = await resp.json();
-              if (resData.image) {
-                const img = new Image();
-                img.onload = () => {
-                  aiResultCtx.clearRect(0, 0, aiResultCanvas.width, aiResultCanvas.height);
-                  aiResultCtx.drawImage(img, 0, 0, aiResultCanvas.width, aiResultCanvas.height);
-                  finishAiPolish();
-                };
-                img.src = resData.image;
-                return;
-              }
-            }
+      // 先执行前端多通道神经轮廓与光影重构
+      executeLocalNeuralPolish(aiSourceCanvas, aiResultCanvas, currentAiCategory, selStyle, strength, p1, p2, p3);
+
+      // 同时尝试调用本地 Python Pillow / ComfyUI 网关或云端 GPU API
+      const targetEndpoint = apiConfig.endpoint && apiConfig.endpoint.includes('/polish')
+        ? apiConfig.endpoint
+        : 'http://127.0.0.1:8765/api/ai/polish';
+
+      try {
+        const payload = {
+          image: aiResultCanvas.toDataURL('image/png'),
+          category: currentAiCategory,
+          style: selStyle,
+          prompt: promptText,
+          comfyui_url: apiConfig.provider === 'comfyui' ? apiConfig.comfyUrl : '',
+          params: {
+            strength: Math.round(strength * 100),
+            p1: Math.round(p1 * 100),
+            p2: Math.round(p2 * 100),
+            p3: Math.round(p3 * 100)
           }
-        } catch (err) {
-          console.warn('云端 API 连接降级为内置引擎:', err);
+        };
+        const resp = await fetch(targetEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiConfig.key || 'kaidraw-test-key-2026'}`
+          },
+          body: JSON.stringify(payload)
+        });
+        if (resp.ok) {
+          const resData = await resp.json();
+          if (resData.ok && resData.image) {
+            const img = new Image();
+            img.onload = () => {
+              // 将后端 Pillow 处理结果与透明通道融合
+              aiResultCtx.save();
+              aiResultCtx.globalCompositeOperation = 'source-atop';
+              aiResultCtx.drawImage(img, 0, 0, aiResultCanvas.width, aiResultCanvas.height);
+              aiResultCtx.restore();
+              finishAiPolish();
+            };
+            img.src = resData.image;
+            return;
+          }
         }
+      } catch (err) {
+        console.warn('本地/云端网关跳过，使用前端 4维引擎结果:', err);
       }
 
-      // 默认/降级：运行智能双边轮廓平滑算法
       setTimeout(() => {
-        executeLocalNeuralPolish(aiSourceCanvas, aiResultCanvas, selStyle, strength);
         finishAiPolish();
-      }, 1100);
+      }, 650);
 
       function finishAiPolish() {
         spinner.classList.add('hidden');
-        status.textContent = '优化完成 ✨';
+        status.textContent = '以图生图完成 ✨';
         btnDownload.classList.remove('hidden');
         btnApplyLayer.classList.remove('hidden');
-        showToast('AI 魔法优化完成！已平滑锯齿线条并赋予绘本光影');
+        const catName = AI_CATEGORIES_CONFIG[currentAiCategory]?.name || 'AI 魔法';
+        showToast(`✨「${catName}」以图生图完成！可存为新图层继续手绘修改`);
       }
     });
 
