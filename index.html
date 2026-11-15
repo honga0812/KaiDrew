@@ -1645,21 +1645,59 @@
       }
     }
 
+    function getBrushTaperConfig(radius) {
+      if (currentTool === 'eraser') {
+        return { hasTaper: false, entryLen: 0, exitLen: 0, minTipP: 1.0 };
+      }
+      if (currentBrushMedium === 'watercolor') {
+        if (watercolorBrushType === 'calligraphy_brush') {
+          // 书法毛笔：露锋细起笔 -> 渐粗行笔 -> 长锋顺滑收尖
+          return {
+            hasTaper: true,
+            entryLen: Math.max(18, radius * 1.45),
+            exitLen: Math.max(26, radius * 2.10),
+            minTipP: 0.025
+          };
+        }
+        if (watercolorBrushType === 'watercolor_round') {
+          // 水彩圆头笔：笔尖轻入 -> 水色铺展 -> 提笔柔顺收细
+          return {
+            hasTaper: true,
+            entryLen: Math.max(14, radius * 1.10),
+            exitLen: Math.max(20, radius * 1.60),
+            minTipP: 0.04
+          };
+        }
+        // 喷笔无硬笔尖收锋
+        return { hasTaper: false, entryLen: 0, exitLen: 0, minTipP: 1.0 };
+      }
+      if (currentBrushMedium === 'marker' && markerTip === 'brush') {
+        // 软尖头马克笔：具备弹性起收笔锋
+        return {
+          hasTaper: true,
+          entryLen: Math.max(12, radius * 0.95),
+          exitLen: Math.max(18, radius * 1.35),
+          minTipP: 0.05
+        };
+      }
+      return { hasTaper: false, entryLen: 0, exitLen: 0, minTipP: 1.0 };
+    }
+
     function getEffectiveBrushRadius(radius, pressure) {
-      const p = Math.max(0.14, Math.min(1.0, pressure));
+      const p = Math.max(0.015, Math.min(1.0, pressure));
       if (currentTool === 'eraser') {
         return Math.max(2.0, radius * (0.55 + p * 0.55));
       }
       if (currentBrushMedium === 'watercolor') {
         if (watercolorBrushType === 'calligraphy_brush') {
-          // 毛笔：快速移动 (p小) 显著变细出锋 (0.16x)，慢速顿笔 (p大) 笔腹饱满展开 (1.26x)
-          return Math.max(1.0, radius * (0.16 + Math.pow(p, 1.35) * 1.10));
+          // 毛笔：起收笔尖可细至 0.45px 锋芒，快移变细，慢速顿笔饱满展开 (1.12x)
+          return Math.max(0.45, radius * Math.pow(p, 1.08) * 1.12);
         } else if (watercolorBrushType === 'airbrush') {
           // 喷笔：宽幅雾化半径随力度舒展 (0.68x ~ 1.32x)
           return Math.max(3.0, radius * (0.68 + Math.pow(p, 0.85) * 0.64));
         }
-        // 标准水彩笔：快移变细 (0.42x)，慢移饱满 (1.10x)
-        return Math.max(1.8, radius * (0.42 + Math.pow(p, 0.95) * 0.68));
+        // 标准水彩笔：起收笔尖细至 0.6px，快移变细，慢移饱满 (1.05x)
+        return Math.max(0.6, radius * Math.pow(p, 0.95) * 1.05);
       }
       if (currentBrushMedium === 'crayon') {
         const isSide = crayonTipMode === 'side';
@@ -1669,8 +1707,8 @@
       }
       if (currentBrushMedium === 'marker') {
         if (markerTip === 'brush') {
-          // 软尖头马克笔：快移明显收细出锋 (0.30x)，慢移饱满 (1.16x)
-          return Math.max(1.3, radius * 0.62 * (0.30 + Math.pow(p, 1.15) * 0.86));
+          // 软尖头马克笔：起收笔与快移显著变细出锋，慢移饱满
+          return Math.max(0.6, radius * 0.65 * Math.pow(p, 1.02) * 1.15);
         } else if (markerTip === 'chisel') {
           return Math.max(2.0, radius * (0.58 + Math.pow(p, 0.90) * 0.48));
         }
@@ -1728,15 +1766,17 @@
     }
 
     function dabWatercolorAt(targetCtx, cx, cy, radius, pressure, stepIndex) {
-      const p = Math.max(0.14, Math.min(1.0, pressure));
+      const p = Math.max(0.02, Math.min(1.0, pressure));
       const effRadius = getEffectiveBrushRadius(radius, p);
       const wetness = waterLevel / 100;
 
       if (watercolorBrushType === 'calligraphy_brush') {
-        // ✒️ 书法毛笔：慢移浓墨重彩且笔腹宽厚，快移显著变细出锋且墨色微淡带丝缕飞白
+        // ✒️ 书法毛笔：下笔由细渐粗、快移变细变淡、收笔顺滑收尖 (p 代表行笔力度与提按包络)
         const minStr = Math.max(0.24, 0.34 - wetness * 0.10);
-        const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, Math.pow(p, 0.85), brushDilution, minStr);
-        const innerR = Math.max(0.55, (effRadius - 1.2) / effRadius);
+        // 即使在极细笔锋尖端 (p < 0.15) 也保持清晰墨迹不断线
+        const inkP = Math.max(0.28, Math.pow(p, 0.72));
+        const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, inkP, brushDilution, minStr);
+        const innerR = Math.max(0.50, (effRadius - Math.min(1.1, effRadius * 0.35)) / effRadius);
         const radGrad = targetCtx.createRadialGradient(cx, cy, 0, cx, cy, effRadius);
         radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.88)`);
         radGrad.addColorStop(innerR, `rgba(${r}, ${g}, ${b}, 0.78)`);
@@ -1747,10 +1787,10 @@
         targetCtx.arc(cx, cy, effRadius, 0, Math.PI * 2);
         targetCtx.fill();
 
-        // 快速运笔时模拟毛笔毫毛分叉飞白丝缕感
-        if (p < 0.42 && effRadius > 2.5 && stepIndex % 2 === 0) {
+        // 快速运笔中段模拟毛笔毫毛分叉飞白丝缕感
+        if (p > 0.16 && p < 0.42 && effRadius > 3.2 && stepIndex % 2 === 0) {
           const paperRGB = getPaperBaseRGB(currentPaperId);
-          targetCtx.fillStyle = `rgba(${paperRGB[0]}, ${paperRGB[1]}, ${paperRGB[2]}, ${(0.45 - p) * 0.55})`;
+          targetCtx.fillStyle = `rgba(${paperRGB[0]}, ${paperRGB[1]}, ${paperRGB[2]}, ${(0.45 - p) * 0.50})`;
           const streakAngle = (stepIndex * 1.7) % (Math.PI * 2);
           const sx = cx + Math.cos(streakAngle) * effRadius * 0.35;
           const sy = cy + Math.sin(streakAngle) * effRadius * 0.35;
@@ -1791,7 +1831,8 @@
 
       // 🖌️ 标准水彩笔 (watercolor_round)：湿度与速度共同控制浓淡与粗细
       const minStr = Math.max(0.14, 0.26 - wetness * 0.10);
-      const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, p * (1.08 - wetness * 0.22), brushDilution, minStr);
+      const inkP = Math.max(0.22, p * (1.08 - wetness * 0.22));
+      const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, inkP, brushDilution, minStr);
 
       const dabAlpha = 0.54;
       const radGrad = targetCtx.createRadialGradient(cx, cy, 0, cx, cy, effRadius);
@@ -1932,22 +1973,43 @@
     let strokeStepCounter = 0;
 
     function getStepInterval(radius, pressure) {
-      const p = Math.max(0.14, Math.min(1.0, pressure));
+      const p = Math.max(0.02, Math.min(1.0, pressure));
       const effR = getEffectiveBrushRadius(radius, p);
       if (currentBrushMedium === 'crayon') {
         return Math.max(1.1, effR * 0.18);
       }
       if (currentBrushMedium === 'watercolor') {
         if (watercolorBrushType === 'calligraphy_brush') {
-          return Math.max(0.55, effR * 0.12);
+          return Math.max(0.35, effR * 0.12);
         }
         if (watercolorBrushType === 'airbrush') {
           return Math.max(1.0, effR * 0.16);
         }
-        return Math.max(0.85, effR * 0.15);
+        return Math.max(0.45, effR * 0.15);
       }
       // marker / eraser: 紧密步进确保色彩丝滑连贯无圆圈
-      return Math.max(0.55, effR * 0.12);
+      return Math.max(0.40, effR * 0.12);
+    }
+
+    function walkSegmentOnCtx(targetCtx, x0, y0, x1, y1, p0, p1, remainState) {
+      const segLen = Math.hypot(x1 - x0, y1 - y0);
+      if (segLen < 0.01) return;
+      let walked = remainState.remain;
+
+      while (walked <= segLen) {
+        const t = segLen > 0.0001 ? (walked / segLen) : 0;
+        const sx = x0 + (x1 - x0) * t;
+        const sy = y0 + (y1 - y0) * t;
+        const sp = p0 + (p1 - p0) * t;
+
+        remainState.stepCount++;
+        emitBrushDab(targetCtx, sx, sy, sp, remainState.stepCount);
+
+        const stepInterval = getStepInterval(brushRadius, sp);
+        walked += stepInterval;
+      }
+
+      remainState.remain = walked - segLen;
     }
 
     function walkQuadraticCurveWithPressure(x0, y0, cxCtrl, cyCtrl, x1, y1, p0, p1) {
@@ -1957,9 +2019,9 @@
       const targetCtx = getActiveCtx();
       targetCtx.save();
 
-      // 将贝塞尔曲线细分为紧密微线段，严格按照物理弧长步进
       const subSegments = Math.max(4, Math.ceil(chordLen / 1.5));
       let prevBx = x0, prevBy = y0, prevBp = p0;
+      const state = { remain: strokeRemainDist, stepCount: strokeStepCounter };
 
       for (let i = 1; i <= subSegments; i++) {
         const u = i / subSegments;
@@ -1968,28 +2030,14 @@
         const by = invU * invU * y0 + 2 * invU * u * cyCtrl + u * u * y1;
         const bp = p0 + (p1 - p0) * u;
 
-        const segLen = Math.hypot(bx - prevBx, by - prevBy);
-        let walked = strokeRemainDist;
-
-        while (walked <= segLen) {
-          const t = segLen > 0.0001 ? (walked / segLen) : 0;
-          const sx = prevBx + (bx - prevBx) * t;
-          const sy = prevBy + (by - prevBy) * t;
-          const sp = prevBp + (bp - prevBp) * t;
-
-          strokeStepCounter++;
-          emitBrushDab(targetCtx, sx, sy, sp, strokeStepCounter);
-
-          const stepInterval = getStepInterval(brushRadius, sp);
-          walked += stepInterval;
-        }
-
-        strokeRemainDist = walked - segLen;
+        walkSegmentOnCtx(targetCtx, prevBx, prevBy, bx, by, prevBp, bp, state);
         prevBx = bx;
         prevBy = by;
         prevBp = bp;
       }
 
+      strokeRemainDist = state.remain;
+      strokeStepCounter = state.stepCount;
       targetCtx.restore();
     }
 
@@ -2095,8 +2143,9 @@
       if (isFirstSegment) {
         smoothedPressure = targetP;
       } else {
-        // 渐进式 EMA 滤波，确保从快到慢时颜色深度细腻渐深，绝不突变
-        smoothedPressure = smoothedPressure * 0.76 + targetP * 0.24;
+        // 非对称 EMA 滤波：加速变细响应快 (0.34)，减速变粗渐进柔和 (0.14)，防止收笔停顿瞬间突然鼓包变粗
+        const alpha = targetP < smoothedPressure ? 0.34 : 0.14;
+        smoothedPressure = smoothedPressure * (1 - alpha) + targetP * alpha;
       }
       return smoothedPressure;
     }
@@ -2106,7 +2155,7 @@
     }
 
     /********************************************************************
-     * 8. 画布绘画事件 (拦截 iOS 随手写延迟 + 首段真实测速防起笔黑球 + 贝塞尔平滑渐深)
+     * 8. 画布绘画事件 (起笔由细渐粗包络 + 行笔速度提按 + 滑动尾段顺滑收锋缓冲队列)
      ********************************************************************/
     paintCanvas.addEventListener('touchstart', (e) => {
       if (e.touches.length <= 1) {
@@ -2124,7 +2173,151 @@
     let prevMidX = 0, prevMidY = 0;
     let hasMovedInStroke = false;
     let totalStrokeDist = 0;
-    let strokeInitBuffer = [];
+    let strokeSamples = []; // 存储整条笔画的细分采样点 [{ x, y, arcDist, speedP }]
+    let committedSampleIdx = 0; // 已永久绘制到图层上的采样点下标
+
+    // 计算采样点在起笔包络 (0 -> entryLen 由细渐粗) 下的有效压力
+    function computeEntryEnvelopeP(arcDist, speedP, cfg) {
+      if (!cfg.hasTaper || cfg.entryLen <= 0) return speedP;
+      const u = Math.max(0, Math.min(1, arcDist / cfg.entryLen));
+      // 正弦缓入曲线：下笔第 0 像素为笔尖极细值 (minTipP)，随运笔前移平滑展开至饱满粗细
+      const entryEnv = cfg.minTipP + (1 - cfg.minTipP) * Math.pow(Math.sin(u * Math.PI * 0.5), 1.12);
+      return speedP * entryEnv;
+    }
+
+    // 计算采样点在起笔+收笔双重包络下的有效压力（用于实时笔锋预览与最终提笔收尖）
+    function computeFullEnvelopeP(arcDist, totalArc, speedP, anchorExitP, cfg) {
+      if (!cfg.hasTaper) return speedP;
+      const entryU = cfg.entryLen > 0 ? Math.max(0, Math.min(1, arcDist / cfg.entryLen)) : 1;
+      const entryEnv = cfg.minTipP + (1 - cfg.minTipP) * Math.pow(Math.sin(entryU * Math.PI * 0.5), 1.12);
+
+      const remainDist = Math.max(0, totalArc - arcDist);
+      if (remainDist >= cfg.exitLen || cfg.exitLen <= 0) {
+        return speedP * entryEnv;
+      }
+
+      // 进入收笔段 (最后 exitLen 距离)：限制基础压力不超过进入收笔段时的压力 anchorExitP，并按余弦曲线顺滑衰减至极细笔尖 minTipP
+      const cappedBaseP = Math.min(speedP, anchorExitP);
+      const exitU = Math.max(0, Math.min(1, remainDist / cfg.exitLen)); // 1 (收笔段起点) -> 0 (笔尖终点)
+      const exitEnv = cfg.minTipP + (1 - cfg.minTipP) * Math.pow(Math.sin(exitU * Math.PI * 0.5), 1.25);
+      return cappedBaseP * Math.min(entryEnv, exitEnv);
+    }
+
+    // 将距当前笔尖超过 exitLen 的穩定笔身段固化到活动图层，并在 paintCanvas 上实时渲染顺滑收尖的动态笔锋
+    function flushAndPreviewStrokeTail(isFinalCommit = false) {
+      if (strokeSamples.length === 0) return;
+      const cfg = getBrushTaperConfig(brushRadius);
+      const totalArc = strokeSamples[strokeSamples.length - 1].arcDist;
+      const activeCtx = getActiveCtx();
+
+      if (!cfg.hasTaper) {
+        // 蜡笔、圆头/斜切马克笔、喷笔、橡皮擦：直接固化新采样段
+        activeCtx.save();
+        if (committedSampleIdx === 0) {
+          emitBrushDab(activeCtx, strokeSamples[0].x, strokeSamples[0].y, strokeSamples[0].speedP, 0);
+        }
+        const state = { remain: strokeRemainDist, stepCount: strokeStepCounter };
+        for (let i = Math.max(1, committedSampleIdx); i < strokeSamples.length; i++) {
+          const s0 = strokeSamples[i - 1];
+          const s1 = strokeSamples[i];
+          walkSegmentOnCtx(activeCtx, s0.x, s0.y, s1.x, s1.y, s0.speedP, s1.speedP, state);
+        }
+        strokeRemainDist = state.remain;
+        strokeStepCounter = state.stepCount;
+        committedSampleIdx = strokeSamples.length;
+        activeCtx.restore();
+        return;
+      }
+
+      if (!isFinalCommit) {
+        // 1. 将距离当前笔尖 > exitLen 的笔身采样点永久绘制到活动图层（仅应用起笔渐粗包络）
+        const safeArcLimit = totalArc - cfg.exitLen;
+        if (safeArcLimit > 0) {
+          activeCtx.save();
+          if (committedSampleIdx === 0) {
+            const p0 = computeEntryEnvelopeP(strokeSamples[0].arcDist, strokeSamples[0].speedP, cfg);
+            emitBrushDab(activeCtx, strokeSamples[0].x, strokeSamples[0].y, p0, 0);
+            committedSampleIdx = 1;
+          }
+          const state = { remain: strokeRemainDist, stepCount: strokeStepCounter };
+          while (committedSampleIdx < strokeSamples.length && strokeSamples[committedSampleIdx].arcDist <= safeArcLimit) {
+            const s0 = strokeSamples[committedSampleIdx - 1];
+            const s1 = strokeSamples[committedSampleIdx];
+            const p0 = computeEntryEnvelopeP(s0.arcDist, s0.speedP, cfg);
+            const p1 = computeEntryEnvelopeP(s1.arcDist, s1.speedP, cfg);
+            walkSegmentOnCtx(activeCtx, s0.x, s0.y, s1.x, s1.y, p0, p1, state);
+            committedSampleIdx++;
+          }
+          strokeRemainDist = state.remain;
+          strokeStepCounter = state.stepCount;
+          activeCtx.restore();
+        }
+
+        // 2. 在顶层 paintCanvas 实时预览尚未固化的最后 exitLen 尾段（自带实时收尖锋芒）
+        paintCtx.clearRect(0, 0, W, H);
+        const startIdx = Math.max(0, committedSampleIdx - 1);
+        const anchorExitP = strokeSamples[startIdx].speedP;
+        paintCtx.save();
+        if (startIdx === 0) {
+          const pFirst = computeFullEnvelopeP(strokeSamples[0].arcDist, totalArc, strokeSamples[0].speedP, anchorExitP, cfg);
+          emitBrushDab(paintCtx, strokeSamples[0].x, strokeSamples[0].y, pFirst, 0);
+        }
+        const previewState = { remain: strokeRemainDist, stepCount: strokeStepCounter };
+        for (let i = Math.max(1, startIdx + 1); i < strokeSamples.length; i++) {
+          const s0 = strokeSamples[i - 1];
+          const s1 = strokeSamples[i];
+          const p0 = computeFullEnvelopeP(s0.arcDist, totalArc, s0.speedP, anchorExitP, cfg);
+          const p1 = computeFullEnvelopeP(s1.arcDist, totalArc, s1.speedP, anchorExitP, cfg);
+          walkSegmentOnCtx(paintCtx, s0.x, s0.y, s1.x, s1.y, p0, p1, previewState);
+        }
+        paintCtx.restore();
+      } else {
+        // 3. 提笔收锋 (pointerup)：清空临时预览层，将剩余尾段以平滑起收笔包络一次性固化到活动图层
+        paintCtx.clearRect(0, 0, W, H);
+        const startIdx = Math.max(0, committedSampleIdx - 1);
+        const anchorExitP = strokeSamples[startIdx].speedP;
+        activeCtx.save();
+        if (committedSampleIdx === 0) {
+          const pFirst = computeFullEnvelopeP(strokeSamples[0].arcDist, totalArc, strokeSamples[0].speedP, anchorExitP, cfg);
+          emitBrushDab(activeCtx, strokeSamples[0].x, strokeSamples[0].y, pFirst, 0);
+          committedSampleIdx = 1;
+        }
+        const state = { remain: strokeRemainDist, stepCount: strokeStepCounter };
+        for (let i = Math.max(1, committedSampleIdx); i < strokeSamples.length; i++) {
+          const s0 = strokeSamples[i - 1];
+          const s1 = strokeSamples[i];
+          const p0 = computeFullEnvelopeP(s0.arcDist, totalArc, s0.speedP, anchorExitP, cfg);
+          const p1 = computeFullEnvelopeP(s1.arcDist, totalArc, s1.speedP, anchorExitP, cfg);
+          walkSegmentOnCtx(activeCtx, s0.x, s0.y, s1.x, s1.y, p0, p1, state);
+        }
+        strokeRemainDist = state.remain;
+        strokeStepCounter = state.stepCount;
+        committedSampleIdx = strokeSamples.length;
+        activeCtx.restore();
+      }
+    }
+
+    function appendQuadraticSamplesToStroke(x0, y0, cxCtrl, cyCtrl, x1, y1, p0, p1) {
+      const chordLen = Math.hypot(cxCtrl - x0, cyCtrl - y0) + Math.hypot(x1 - cxCtrl, y1 - cyCtrl);
+      if (chordLen < 0.05) return;
+      const subSegments = Math.max(4, Math.ceil(chordLen / 1.2));
+      let prevBx = x0, prevBy = y0;
+
+      for (let i = 1; i <= subSegments; i++) {
+        const u = i / subSegments;
+        const invU = 1 - u;
+        const bx = invU * invU * x0 + 2 * invU * u * cxCtrl + u * u * x1;
+        const by = invU * invU * y0 + 2 * invU * u * cyCtrl + u * u * y1;
+        const bp = p0 + (p1 - p0) * u;
+        const d = Math.hypot(bx - prevBx, by - prevBy);
+        if (d > 0.02) {
+          totalStrokeDist += d;
+          strokeSamples.push({ x: bx, y: by, arcDist: totalStrokeDist, speedP: bp });
+          prevBx = bx;
+          prevBy = by;
+        }
+      }
+    }
 
     paintCanvas.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'pen') {
@@ -2153,6 +2346,8 @@
       strokeStepCounter = 0;
       hasMovedInStroke = false;
       totalStrokeDist = 0;
+      committedSampleIdx = 0;
+      paintCtx.clearRect(0, 0, W, H);
 
       saveUndoState();
 
@@ -2161,10 +2356,12 @@
       lastY = pt.y;
       prevMidX = pt.x;
       prevMidY = pt.y;
-      strokeInitBuffer = [{ x: pt.x, y: pt.y, t: strokeStartTime }];
+      lastStrokePressure = 0.65;
+      strokeSamples = [{ x: pt.x, y: pt.y, arcDist: 0, speedP: 0.65 }];
 
-      // 起笔瞬间先收集前 6px 位移测出真实初速度，避免快速挥笔时因起笔瞬间速度为0而在起点留下深色大圆点
-      updateCursorRing(e.clientX, e.clientY, 0.5, true);
+      // 下笔瞬间光标呈现纤细笔尖状态
+      const cfg = getBrushTaperConfig(brushRadius);
+      updateCursorRing(e.clientX, e.clientY, cfg.hasTaper ? 0.12 : 0.6, true);
     }, { passive: false });
 
     paintCanvas.addEventListener('pointermove', (e) => {
@@ -2188,65 +2385,6 @@
         : [e];
 
       const now = performance.now();
-
-      // 阶段 1：尚未完成起笔测速（累计位移 < 5.5px 且时间 < 55ms）时，先缓冲坐标点以准确测量起笔初速度
-      if (!hasMovedInStroke) {
-        for (let i = 0; i < coalesced.length; i++) {
-          const ce = coalesced[i];
-          const pt = screenToCanvas(ce.clientX, ce.clientY);
-          const prevPt = strokeInitBuffer[strokeInitBuffer.length - 1];
-          const d = Math.hypot(pt.x - prevPt.x, pt.y - prevPt.y);
-          if (d >= 0.2) {
-            totalStrokeDist += d;
-            strokeInitBuffer.push({ x: pt.x, y: pt.y, t: now, d });
-          }
-        }
-
-        const elapsed = now - strokeStartTime;
-        if (totalStrokeDist < 5.5 && elapsed < 55) {
-          return;
-        }
-
-        // 已达到测速阈值：根据起笔真实总位移与时间计算初始压力（快速挥笔则起笔即为浅色，慢速起笔则为深色）
-        lastStrokeTime = strokeStartTime;
-        const initP = computeDynamicPressure(e, totalStrokeDist, now, true);
-        hasMovedInStroke = true;
-        lastStrokePressure = initP;
-
-        const firstPt = strokeInitBuffer[0];
-        lastX = firstPt.x;
-        lastY = firstPt.y;
-        prevMidX = firstPt.x;
-        prevMidY = firstPt.y;
-
-        const targetCtx = getActiveCtx();
-        targetCtx.save();
-        emitBrushDab(targetCtx, firstPt.x, firstPt.y, initP, 0);
-        targetCtx.restore();
-        strokeRemainDist = getStepInterval(brushRadius, initP);
-
-        for (let i = 1; i < strokeInitBuffer.length; i++) {
-          const bPt = strokeInitBuffer[i];
-          const currMidX = (lastX + bPt.x) * 0.5;
-          const currMidY = (lastY + bPt.y) * 0.5;
-          walkQuadraticCurveWithPressure(
-            prevMidX, prevMidY,
-            lastX, lastY,
-            currMidX, currMidY,
-            initP, initP
-          );
-          prevMidX = currMidX;
-          prevMidY = currMidY;
-          lastX = bPt.x;
-          lastY = bPt.y;
-        }
-        strokeInitBuffer = [];
-        updateStylusPressureUI(initP, e.pointerType, true);
-        updateCursorRing(e.clientX, e.clientY, initP, true);
-        return;
-      }
-
-      // 阶段 2：正常连续运笔，平滑计算当前帧速度与目标压力，并沿贝塞尔曲线逐微步线性插值色深
       let totalMoveDist = 0;
       const pts = [];
       let tempX = lastX, tempY = lastY;
@@ -2264,21 +2402,29 @@
 
       if (pts.length === 0 || totalMoveDist < 0.2) return;
 
-      const frameTargetP = computeDynamicPressure(e, totalMoveDist, now, false);
+      const isFirst = !hasMovedInStroke;
+      const frameTargetP = computeDynamicPressure(e, totalMoveDist, now, isFirst);
+      if (isFirst) {
+        hasMovedInStroke = true;
+        lastStrokePressure = frameTargetP;
+        if (strokeSamples.length > 0) {
+          strokeSamples[0].speedP = frameTargetP;
+        }
+      }
+
       let accDist = 0;
       const startP = lastStrokePressure;
 
       for (let i = 0; i < pts.length; i++) {
         const { pt, d } = pts[i];
         accDist += d;
-        totalStrokeDist += d;
         const segRatio = totalMoveDist > 0 ? (accDist / totalMoveDist) : 1;
         const segEndP = startP + (frameTargetP - startP) * segRatio;
 
         const currMidX = (lastX + pt.x) * 0.5;
         const currMidY = (lastY + pt.y) * 0.5;
 
-        walkQuadraticCurveWithPressure(
+        appendQuadraticSamplesToStroke(
           prevMidX, prevMidY,
           lastX, lastY,
           currMidX, currMidY,
@@ -2292,8 +2438,14 @@
         lastStrokePressure = segEndP;
       }
 
-      updateStylusPressureUI(frameTargetP, e.pointerType, true);
-      updateCursorRing(e.clientX, e.clientY, frameTargetP, true);
+      flushAndPreviewStrokeTail(false);
+
+      const cfg = getBrushTaperConfig(brushRadius);
+      const displayP = cfg.hasTaper
+        ? computeEntryEnvelopeP(totalStrokeDist, frameTargetP, cfg)
+        : frameTargetP;
+      updateStylusPressureUI(displayP, e.pointerType, true);
+      updateCursorRing(e.clientX, e.clientY, displayP, true);
     }, { passive: false });
 
     function endDrawing(e) {
@@ -2306,76 +2458,62 @@
         return;
       }
 
-      if (!hasMovedInStroke) {
-        if (totalStrokeDist < 1.2 || strokeInitBuffer.length <= 1) {
-          // 原地轻点一下画布：绘制一个干净饱满的单点
-          const tapP = 0.72;
-          const targetCtx = getActiveCtx();
-          targetCtx.save();
-          emitBrushDab(targetCtx, lastX, lastY, tapP, 0);
-          targetCtx.restore();
-        } else {
-          // 短促微划（< 5.5px）：按实际速度补齐短笔画
-          const now = performance.now();
-          lastStrokeTime = strokeStartTime;
-          const shortP = computeDynamicPressure(e, totalStrokeDist, now, true);
-          const firstPt = strokeInitBuffer[0];
-          lastX = firstPt.x;
-          lastY = firstPt.y;
-          prevMidX = firstPt.x;
-          prevMidY = firstPt.y;
-          const targetCtx = getActiveCtx();
-          targetCtx.save();
-          emitBrushDab(targetCtx, firstPt.x, firstPt.y, shortP, 0);
-          targetCtx.restore();
-          strokeRemainDist = getStepInterval(brushRadius, shortP);
-          for (let i = 1; i < strokeInitBuffer.length; i++) {
-            const bPt = strokeInitBuffer[i];
-            const currMidX = (lastX + bPt.x) * 0.5;
-            const currMidY = (lastY + bPt.y) * 0.5;
-            walkQuadraticCurveWithPressure(prevMidX, prevMidY, lastX, lastY, currMidX, currMidY, shortP, shortP);
-            prevMidX = currMidX;
-            prevMidY = currMidY;
-            lastX = bPt.x;
-            lastY = bPt.y;
-          }
-          walkQuadraticCurveWithPressure(prevMidX, prevMidY, lastX, lastY, lastX, lastY, shortP, shortP);
-        }
-        strokeInitBuffer = [];
+      if (!hasMovedInStroke || totalStrokeDist < 1.5 || strokeSamples.length <= 1) {
+        // 原地轻点一下画布：绘制一个干净饱满的单点
+        paintCtx.clearRect(0, 0, W, H);
+        const tapP = 0.65;
+        const targetCtx = getActiveCtx();
+        targetCtx.save();
+        emitBrushDab(targetCtx, lastX, lastY, tapP, 0);
+        targetCtx.restore();
       } else {
-        // 补齐收笔最后半段路径；若运笔速度较快，在收笔段自然收细出锋 (尤其针对书法毛笔与软头马克笔)
-        const isCalligraphy = (currentBrushMedium === 'watercolor' && watercolorBrushType === 'calligraphy_brush');
-        const isBrushMarker = (currentBrushMedium === 'marker' && markerTip === 'brush');
-        const endTaperP = (smoothedVelocity > 0.32 && (isCalligraphy || isBrushMarker))
-          ? Math.max(0.14, lastStrokePressure * 0.38)
-          : Math.max(0.16, lastStrokePressure * (smoothedVelocity > 0.45 ? 0.72 : 0.95));
-
-        walkQuadraticCurveWithPressure(
+        // 1. 先补齐最后半段中点到松手点的平滑曲线
+        appendQuadraticSamplesToStroke(
           prevMidX, prevMidY,
           lastX, lastY,
           lastX, lastY,
-          lastStrokePressure, endTaperP
+          lastStrokePressure, lastStrokePressure
         );
 
-        // 书法毛笔快速甩笔时，顺着运笔惯性方向延伸纤细笔锋尖梢
-        if (isCalligraphy && smoothedVelocity > 0.38) {
-          const vx = lastX - prevMidX;
-          const vy = lastY - prevMidY;
-          const vLen = Math.hypot(vx, vy);
-          if (vLen > 0.5) {
-            const tailLen = Math.min(brushRadius * 0.85, smoothedVelocity * 9.5);
-            const tipX = lastX + (vx / vLen) * tailLen;
-            const tipY = lastY + (vy / vLen) * tailLen;
-            walkQuadraticCurveWithPressure(
-              lastX, lastY,
-              (lastX + tipX) * 0.5, (lastY + tipY) * 0.5,
+        // 2. 针对毛笔/水彩笔/软头马克笔：顺着末段平滑切线方向自然延伸一段提笔收锋弧线，使收笔像真毛笔慢慢提离纸面一样顺滑成尖，绝无阶梯或滴管嘴断层
+        const cfg = getBrushTaperConfig(brushRadius);
+        if (cfg.hasTaper && strokeSamples.length >= 2) {
+          const endSample = strokeSamples[strokeSamples.length - 1];
+          // 往前找约 10~18px 处的采样点计算平滑运笔切线方向
+          let lookbackIdx = strokeSamples.length - 2;
+          while (lookbackIdx > 0 && (endSample.arcDist - strokeSamples[lookbackIdx].arcDist) < Math.min(14, totalStrokeDist * 0.4)) {
+            lookbackIdx--;
+          }
+          const refSample = strokeSamples[lookbackIdx];
+          const dx = endSample.x - refSample.x;
+          const dy = endSample.y - refSample.y;
+          const dLen = Math.hypot(dx, dy);
+
+          if (dLen > 0.5) {
+            const ux = dx / dLen;
+            const uy = dy / dLen;
+            // 顺着切线方向自然提笔延伸 (长度与笔刷半径及当前速度匹配)
+            const followLen = Math.min(
+              brushRadius * 1.15,
+              Math.max(brushRadius * 0.42, smoothedVelocity * 15)
+            );
+            const tipX = endSample.x + ux * followLen;
+            const tipY = endSample.y + uy * followLen;
+            appendQuadraticSamplesToStroke(
+              endSample.x, endSample.y,
+              (endSample.x + tipX) * 0.5, (endSample.y + tipY) * 0.5,
               tipX, tipY,
-              endTaperP, 0.14
+              lastStrokePressure, lastStrokePressure * 0.5
             );
           }
         }
+
+        // 3. 将整条尾段按余弦收锋包络一次性顺滑固化到活动图层
+        flushAndPreviewStrokeTail(true);
       }
 
+      strokeSamples = [];
+      committedSampleIdx = 0;
       isDrawing = false;
       activeDrawingPointerId = null;
       updateStylusPressureUI(0, e.pointerType, false);
