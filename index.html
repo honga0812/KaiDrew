@@ -300,6 +300,31 @@
 
     <!-- 1. 水彩画室详细设置 -->
     <div id="drawerWatercolorContent" class="flex flex-col gap-3.5">
+      <!-- 水彩单元 3 大笔刷造型切换：水彩笔 / 书法毛笔 / 柔和喷笔 -->
+      <div class="bg-sky-50/70 p-2.5 rounded-2xl border border-sky-200/80 shadow-2xs flex flex-col gap-1.5">
+        <div class="text-[11px] font-bold text-sky-900 flex items-center justify-between">
+          <span>🖌️ 水彩单元笔刷切换 (速度控制浓淡与粗细)</span>
+          <span id="watercolorSubBrushHint" class="text-[10px] text-sky-600 font-semibold">温润水色晕染</span>
+        </div>
+        <div class="grid grid-cols-3 gap-1.5 text-xs">
+          <button data-wcbrush="watercolor_round" class="wc-brush-btn py-2 px-1.5 rounded-xl border-2 border-amber-500 bg-amber-50 text-amber-900 font-bold active:scale-95 transition shadow-2xs flex flex-col items-center gap-0.5">
+            <span class="text-base">🖌️</span>
+            <span class="text-[11px]">水彩笔</span>
+            <span class="text-[9px] text-amber-700/80 font-normal">水痕自然渐变</span>
+          </button>
+          <button data-wcbrush="calligraphy_brush" class="wc-brush-btn py-2 px-1.5 rounded-xl border border-stone-200 bg-white text-stone-700 font-semibold hover:bg-stone-50 active:scale-95 transition shadow-2xs flex flex-col items-center gap-0.5">
+            <span class="text-base">✒️</span>
+            <span class="text-[11px]">书法毛笔</span>
+            <span class="text-[9px] text-stone-400 font-normal">快移细出笔锋</span>
+          </button>
+          <button data-wcbrush="airbrush" class="wc-brush-btn py-2 px-1.5 rounded-xl border border-stone-200 bg-white text-stone-700 font-semibold hover:bg-stone-50 active:scale-95 transition shadow-2xs flex flex-col items-center gap-0.5">
+            <span class="text-base">💨</span>
+            <span class="text-[11px]">柔和喷笔</span>
+            <span class="text-[9px] text-stone-400 font-normal">柔雾喷枪渐变</span>
+          </button>
+        </div>
+      </div>
+
       <!-- 12 块金属盒固体水彩块 (黑搪瓷金属盒底托，温润半块质感) -->
       <div class="bg-stone-900 p-3 rounded-2xl border border-stone-800 shadow-md">
         <div class="text-[11px] font-bold text-stone-300 mb-2 flex items-center justify-between">
@@ -1089,6 +1114,7 @@
     let lastX = 0, lastY = 0;
 
     let waterLevel = 65;
+    let watercolorBrushType = 'watercolor_round'; // 'watercolor_round' | 'calligraphy_brush' | 'airbrush'
     let crayonTipMode = 'tip';
     let crayonRoughness = 65;
     let markerTip = 'round';
@@ -1619,14 +1645,49 @@
       }
     }
 
+    function getEffectiveBrushRadius(radius, pressure) {
+      const p = Math.max(0.14, Math.min(1.0, pressure));
+      if (currentTool === 'eraser') {
+        return Math.max(2.0, radius * (0.55 + p * 0.55));
+      }
+      if (currentBrushMedium === 'watercolor') {
+        if (watercolorBrushType === 'calligraphy_brush') {
+          // 毛笔：快速移动 (p小) 显著变细出锋 (0.16x)，慢速顿笔 (p大) 笔腹饱满展开 (1.26x)
+          return Math.max(1.0, radius * (0.16 + Math.pow(p, 1.35) * 1.10));
+        } else if (watercolorBrushType === 'airbrush') {
+          // 喷笔：宽幅雾化半径随力度舒展 (0.68x ~ 1.32x)
+          return Math.max(3.0, radius * (0.68 + Math.pow(p, 0.85) * 0.64));
+        }
+        // 标准水彩笔：快移变细 (0.42x)，慢移饱满 (1.10x)
+        return Math.max(1.8, radius * (0.42 + Math.pow(p, 0.95) * 0.68));
+      }
+      if (currentBrushMedium === 'crayon') {
+        const isSide = crayonTipMode === 'side';
+        const baseR = isSide ? radius * 1.32 : Math.max(2.0, radius);
+        // 蜡笔：速度越快线条越细 (0.52x)，慢速涂抹宽厚 (1.06x)
+        return Math.max(1.8, baseR * (0.52 + Math.pow(p, 0.95) * 0.54));
+      }
+      if (currentBrushMedium === 'marker') {
+        if (markerTip === 'brush') {
+          // 软尖头马克笔：快移明显收细出锋 (0.30x)，慢移饱满 (1.16x)
+          return Math.max(1.3, radius * 0.62 * (0.30 + Math.pow(p, 1.15) * 0.86));
+        } else if (markerTip === 'chisel') {
+          return Math.max(2.0, radius * (0.58 + Math.pow(p, 0.90) * 0.48));
+        }
+        // 圆头马克笔：快移变细 (0.54x)，慢移标准饱满 (1.04x)
+        return Math.max(1.5, radius * 0.58 * (0.54 + Math.pow(p, 0.95) * 0.50));
+      }
+      return radius;
+    }
+
     function updateCursorRing(clientX, clientY, pressure = 0.65, isActiveDrawing = false) {
       if (isPinching && activeStylusId === null) {
         cursorRing.classList.add('hidden');
         return;
       }
       cursorRing.classList.remove('hidden');
-      const pScale = isActiveDrawing ? (0.5 + pressure * 0.7) : 1.0;
-      const screenDiameter = Math.max(6, brushRadius * 2 * viewScale * pScale);
+      const effR = isActiveDrawing ? getEffectiveBrushRadius(brushRadius, pressure) : brushRadius;
+      const screenDiameter = Math.max(4, effR * 2 * viewScale);
       const screenRadius = screenDiameter / 2;
       cursorRing.style.width = `${screenDiameter}px`;
       cursorRing.style.height = `${screenDiameter}px`;
@@ -1643,7 +1704,7 @@
     }
 
     /********************************************************************
-     * 7. 3 大画种真实笔触渲染算法 (等距微步插值 + 压感色素浓度平滑渐变 + 零深色圆圈伪影)
+     * 7. 3 大画种真实笔触渲染算法 (水彩3笔刷：水彩笔/毛笔/喷笔 + 蜡笔恒定浓彩 + 马克笔微深浅利落边缘)
      ********************************************************************/
     function getPaperBaseRGB(paperId) {
       if (paperId === 'plain') return [255, 255, 255];
@@ -1654,7 +1715,7 @@
       return [255, 255, 255];
     }
 
-    // 根据实时压力 p 与洗笔桶稀释度，计算平滑过渡的颜料浓度 RGB（速度快/压力轻时整体变淡，速度慢/压力重时慢慢变深，绝不产生深色圆圈叠加）
+    // 根据实时压力 p 与洗笔桶稀释度，计算颜料浓度 RGB
     function getPressurePigmentRGB(rgb, pressure, dilution, minStrength = 0.22) {
       const p = Math.max(0.12, Math.min(1.0, pressure));
       const paperRGB = getPaperBaseRGB(currentPaperId);
@@ -1667,14 +1728,71 @@
     }
 
     function dabWatercolorAt(targetCtx, cx, cy, radius, pressure, stepIndex) {
-      const p = Math.max(0.15, Math.min(1.0, pressure));
-      const effRadius = Math.max(2.0, radius * (0.52 + p * 0.62));
+      const p = Math.max(0.14, Math.min(1.0, pressure));
+      const effRadius = getEffectiveBrushRadius(radius, p);
       const wetness = waterLevel / 100;
-      // 湿度越高颜色越清透，压力越轻整体越淡，压力越重越深邃
+
+      if (watercolorBrushType === 'calligraphy_brush') {
+        // ✒️ 书法毛笔：慢移浓墨重彩且笔腹宽厚，快移显著变细出锋且墨色微淡带丝缕飞白
+        const minStr = Math.max(0.24, 0.34 - wetness * 0.10);
+        const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, Math.pow(p, 0.85), brushDilution, minStr);
+        const innerR = Math.max(0.55, (effRadius - 1.2) / effRadius);
+        const radGrad = targetCtx.createRadialGradient(cx, cy, 0, cx, cy, effRadius);
+        radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.88)`);
+        radGrad.addColorStop(innerR, `rgba(${r}, ${g}, ${b}, 0.78)`);
+        radGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+
+        targetCtx.fillStyle = radGrad;
+        targetCtx.beginPath();
+        targetCtx.arc(cx, cy, effRadius, 0, Math.PI * 2);
+        targetCtx.fill();
+
+        // 快速运笔时模拟毛笔毫毛分叉飞白丝缕感
+        if (p < 0.42 && effRadius > 2.5 && stepIndex % 2 === 0) {
+          const paperRGB = getPaperBaseRGB(currentPaperId);
+          targetCtx.fillStyle = `rgba(${paperRGB[0]}, ${paperRGB[1]}, ${paperRGB[2]}, ${(0.45 - p) * 0.55})`;
+          const streakAngle = (stepIndex * 1.7) % (Math.PI * 2);
+          const sx = cx + Math.cos(streakAngle) * effRadius * 0.35;
+          const sy = cy + Math.sin(streakAngle) * effRadius * 0.35;
+          targetCtx.beginPath();
+          targetCtx.arc(sx, sy, Math.max(0.6, effRadius * 0.18), 0, Math.PI * 2);
+          targetCtx.fill();
+        }
+        return;
+      }
+
+      if (watercolorBrushType === 'airbrush') {
+        // 💨 柔和喷笔：高斯雾化渐变 + 微米喷雾颗粒，快移轻雾、慢移浓雾
+        const minStr = Math.max(0.14, 0.22 - wetness * 0.08);
+        const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, p, brushDilution, minStr);
+        const radGrad = targetCtx.createRadialGradient(cx, cy, 0, cx, cy, effRadius);
+        radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.28)`);
+        radGrad.addColorStop(0.38, `rgba(${r}, ${g}, ${b}, 0.18)`);
+        radGrad.addColorStop(0.72, `rgba(${r}, ${g}, ${b}, 0.06)`);
+        radGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+
+        targetCtx.fillStyle = radGrad;
+        targetCtx.beginPath();
+        targetCtx.arc(cx, cy, effRadius, 0, Math.PI * 2);
+        targetCtx.fill();
+
+        // 外围雾化微粒
+        if (stepIndex % 2 === 0) {
+          const mistCount = Math.max(2, Math.floor(effRadius * 0.32));
+          targetCtx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.22)`;
+          for (let mi = 0; mi < mistCount; mi++) {
+            const mAngle = Math.random() * Math.PI * 2;
+            const mDist = (0.35 + Math.random() * 0.65) * effRadius;
+            targetCtx.fillRect(cx + Math.cos(mAngle) * mDist, cy + Math.sin(mAngle) * mDist, 1.3, 1.3);
+          }
+        }
+        return;
+      }
+
+      // 🖌️ 标准水彩笔 (watercolor_round)：湿度与速度共同控制浓淡与粗细
       const minStr = Math.max(0.14, 0.26 - wetness * 0.10);
       const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, p * (1.08 - wetness * 0.22), brushDilution, minStr);
 
-      // 采用高密度微步柔和径向融合，相邻微步无缝汇合为均匀水彩带，彻底消除圆圈纹
       const dabAlpha = 0.54;
       const radGrad = targetCtx.createRadialGradient(cx, cy, 0, cx, cy, effRadius);
       radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${dabAlpha})`);
@@ -1718,57 +1836,57 @@
     function dabCrayonAt(targetCtx, cx, cy, radius, pressure) {
       const p = Math.max(0.15, Math.min(1.0, pressure));
       const isSide = crayonTipMode === 'side';
-      const effRadius = (isSide ? radius * 1.35 : Math.max(2.0, radius)) * (0.58 + p * 0.56);
-      const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, p, brushDilution, 0.28);
-      const density = Math.max(4, Math.floor(effRadius * effRadius * (isSide ? 0.28 : 0.48) * (0.45 + p * 0.70)));
+      // 🖍️ 真实蜡笔：移动速度只改变笔触粗细与蜡粉疏密（快移变细），但蜡笔颜色深浅本身保持浓郁恒定 (minStrength = 0.95)！
+      const effRadius = getEffectiveBrushRadius(radius, p);
+      const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, p, brushDilution, 0.95);
+      const density = Math.max(5, Math.floor(effRadius * effRadius * (isSide ? 0.30 : 0.52) * (0.58 + p * 0.52)));
 
       for (let i = 0; i < density; i++) {
         const angle = Math.random() * Math.PI * 2;
         const rad = Math.sqrt(Math.random()) * effRadius;
         const px = cx + Math.cos(angle) * rad, py = cy + Math.sin(angle) * rad;
 
-        let toothThreshold = (crayonRoughness / 100) * (0.62 + p * 0.36);
+        let toothThreshold = (crayonRoughness / 100) * (0.68 + p * 0.28);
         if (currentPaperId === 'plain') {
-          toothThreshold = 0.82 + p * 0.16;
+          toothThreshold = 0.84 + p * 0.14;
         } else if (currentPaperId === 'coldpress') {
-          toothThreshold = 0.52 + p * 0.32;
+          toothThreshold = 0.55 + p * 0.30;
         } else if (currentPaperId === 'toned') {
-          toothThreshold = 0.74 + p * 0.22;
+          toothThreshold = 0.76 + p * 0.20;
         }
 
         const noise = ((Math.floor(px * 17) + Math.floor(py * 31)) % 19) / 19;
         if (noise > toothThreshold) continue;
 
-        targetCtx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.88)`;
+        targetCtx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.94)`;
         targetCtx.fillRect(px, py, 2.2, 2.2);
       }
     }
 
     function dabMarkerAt(targetCtx, cx, cy, radius, pressure) {
       const p = Math.max(0.15, Math.min(1.0, pressure));
-      // 马克笔墨水色深完全随压力平滑渐变（快移时整体清透变淡，慢移时醇厚变深，绝无半透明圆头叠加产生的深色圆圈）
-      const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, p, brushDilution, 0.22);
+      // 🖊️ 真实马克笔：仅保留轻微的墨水流量深浅变化 (minStrength = 0.82，快移略清透、慢移醇厚)，同时边缘利落清晰、快移显著变细！
+      const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, p, brushDilution, 0.82);
 
       if (markerTip === 'chisel') {
         const angle = -Math.PI / 4;
-        const hw = Math.max(2.0, radius * (0.62 + p * 0.55));
+        const hw = getEffectiveBrushRadius(radius, p);
         const ht = Math.max(1.2, hw * 0.36);
         targetCtx.save();
         targetCtx.translate(cx, cy);
         targetCtx.rotate(angle);
-        targetCtx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.92)`;
+        targetCtx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.96)`;
         targetCtx.beginPath();
         targetCtx.roundRect(-hw, -ht, hw * 2, ht * 2, ht);
         targetCtx.fill();
         targetCtx.restore();
       } else {
-        const widthFactor = markerTip === 'brush' ? (0.42 + p * 0.88) : (0.62 + p * 0.52);
-        const effRadius = Math.max(1.5, radius * 0.55 * widthFactor);
-        // 内部饱满不叠加变深、边缘 1.5px 抗锯齿羽化，彻底杜绝深色圆圈
-        const innerRatio = Math.max(0.55, (effRadius - 1.4) / effRadius);
+        const effRadius = getEffectiveBrushRadius(radius, p);
+        // 马克笔纤维头：边缘清晰扎实（仅最外圈 0.8px 抗锯齿），无喷笔模糊感，且无重叠深圈
+        const innerRatio = Math.max(0.78, (effRadius - 0.8) / effRadius);
         const radGrad = targetCtx.createRadialGradient(cx, cy, 0, cx, cy, effRadius);
-        radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.94)`);
-        radGrad.addColorStop(innerRatio, `rgba(${r}, ${g}, ${b}, 0.92)`);
+        radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.97)`);
+        radGrad.addColorStop(innerRatio, `rgba(${r}, ${g}, ${b}, 0.95)`);
         radGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
 
         targetCtx.fillStyle = radGrad;
@@ -1814,17 +1932,22 @@
     let strokeStepCounter = 0;
 
     function getStepInterval(radius, pressure) {
-      const p = Math.max(0.15, Math.min(1.0, pressure));
+      const p = Math.max(0.14, Math.min(1.0, pressure));
+      const effR = getEffectiveBrushRadius(radius, p);
       if (currentBrushMedium === 'crayon') {
-        return Math.max(1.2, radius * 0.18);
+        return Math.max(1.1, effR * 0.18);
       }
       if (currentBrushMedium === 'watercolor') {
-        const effR = Math.max(2.0, radius * (0.52 + p * 0.62));
-        return Math.max(0.9, effR * 0.15);
+        if (watercolorBrushType === 'calligraphy_brush') {
+          return Math.max(0.55, effR * 0.12);
+        }
+        if (watercolorBrushType === 'airbrush') {
+          return Math.max(1.0, effR * 0.16);
+        }
+        return Math.max(0.85, effR * 0.15);
       }
       // marker / eraser: 紧密步进确保色彩丝滑连贯无圆圈
-      const effR = Math.max(1.5, radius * 0.55 * (0.55 + p * 0.60));
-      return Math.max(0.65, effR * 0.14);
+      return Math.max(0.55, effR * 0.12);
     }
 
     function walkQuadraticCurveWithPressure(x0, y0, cxCtrl, cyCtrl, x1, y1, p0, p1) {
@@ -2220,13 +2343,37 @@
         }
         strokeInitBuffer = [];
       } else {
-        // 补齐收笔最后半段中点到终点的路径
+        // 补齐收笔最后半段路径；若运笔速度较快，在收笔段自然收细出锋 (尤其针对书法毛笔与软头马克笔)
+        const isCalligraphy = (currentBrushMedium === 'watercolor' && watercolorBrushType === 'calligraphy_brush');
+        const isBrushMarker = (currentBrushMedium === 'marker' && markerTip === 'brush');
+        const endTaperP = (smoothedVelocity > 0.32 && (isCalligraphy || isBrushMarker))
+          ? Math.max(0.14, lastStrokePressure * 0.38)
+          : Math.max(0.16, lastStrokePressure * (smoothedVelocity > 0.45 ? 0.72 : 0.95));
+
         walkQuadraticCurveWithPressure(
           prevMidX, prevMidY,
           lastX, lastY,
           lastX, lastY,
-          lastStrokePressure, lastStrokePressure
+          lastStrokePressure, endTaperP
         );
+
+        // 书法毛笔快速甩笔时，顺着运笔惯性方向延伸纤细笔锋尖梢
+        if (isCalligraphy && smoothedVelocity > 0.38) {
+          const vx = lastX - prevMidX;
+          const vy = lastY - prevMidY;
+          const vLen = Math.hypot(vx, vy);
+          if (vLen > 0.5) {
+            const tailLen = Math.min(brushRadius * 0.85, smoothedVelocity * 9.5);
+            const tipX = lastX + (vx / vLen) * tailLen;
+            const tipY = lastY + (vy / vLen) * tailLen;
+            walkQuadraticCurveWithPressure(
+              lastX, lastY,
+              (lastX + tipX) * 0.5, (lastY + tipY) * 0.5,
+              tipX, tipY,
+              endTaperP, 0.14
+            );
+          }
+        }
       }
 
       isDrawing = false;
@@ -2715,11 +2862,31 @@
       marker: { name: '双头马克笔', icon: '🖊️' }
     };
 
+    const WATERCOLOR_SUBBRUSH_INFO = {
+      watercolor_round: { name: '水彩画笔', icon: '🖌️', hint: '温润水色晕染·快移变淡变细' },
+      calligraphy_brush: { name: '书法毛笔', icon: '✒️', hint: '提按顿挫·快移显著细出笔锋' },
+      airbrush: { name: '柔和喷笔', icon: '💨', hint: '空气雾化喷枪·柔光扩散渐变' }
+    };
+
+    function updateTopMediumButtonDisplay() {
+      if (currentBrushMedium === 'watercolor') {
+        const sub = WATERCOLOR_SUBBRUSH_INFO[watercolorBrushType] || WATERCOLOR_SUBBRUSH_INFO.watercolor_round;
+        if (currentMediumIcon) currentMediumIcon.textContent = sub.icon;
+        if (currentMediumName) currentMediumName.textContent = sub.name;
+        const dockIcon = document.getElementById('dockBrushIcon');
+        if (dockIcon) dockIcon.textContent = sub.icon;
+      } else {
+        if (currentMediumIcon) currentMediumIcon.textContent = MEDIUM_INFO[currentBrushMedium].icon;
+        if (currentMediumName) currentMediumName.textContent = MEDIUM_INFO[currentBrushMedium].name;
+        const dockIcon = document.getElementById('dockBrushIcon');
+        if (dockIcon) dockIcon.textContent = MEDIUM_INFO[currentBrushMedium].icon;
+      }
+    }
+
     function switchBrushMedium(medium) {
       currentBrushMedium = medium;
       activeMediumTab = medium;
-      if (currentMediumIcon) currentMediumIcon.textContent = MEDIUM_INFO[medium].icon;
-      if (currentMediumName) currentMediumName.textContent = MEDIUM_INFO[medium].name;
+      updateTopMediumButtonDisplay();
 
       document.querySelectorAll('.medium-tab-btn').forEach(b => {
         if (b.dataset.modetab === medium) {
@@ -2769,6 +2936,27 @@
     document.querySelectorAll('.medium-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         switchBrushMedium(btn.dataset.modetab);
+      });
+    });
+
+    // 水彩单元内部 3 种笔刷切换 (水彩笔 / 书法毛笔 / 柔和喷笔)
+    document.querySelectorAll('.wc-brush-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        watercolorBrushType = btn.dataset.wcbrush;
+        document.querySelectorAll('.wc-brush-btn').forEach(b => {
+          b.className = 'wc-brush-btn py-2 px-1.5 rounded-xl border border-stone-200 bg-white text-stone-700 font-semibold hover:bg-stone-50 active:scale-95 transition shadow-2xs flex flex-col items-center gap-0.5';
+          const subSpan = b.querySelector('span:last-child');
+          if (subSpan) subSpan.className = 'text-[9px] text-stone-400 font-normal';
+        });
+        btn.className = 'wc-brush-btn py-2 px-1.5 rounded-xl border-2 border-amber-500 bg-amber-50 text-amber-900 font-bold active:scale-95 transition shadow-2xs flex flex-col items-center gap-0.5';
+        const activeSub = btn.querySelector('span:last-child');
+        if (activeSub) activeSub.className = 'text-[9px] text-amber-700/80 font-normal';
+
+        const subInfo = WATERCOLOR_SUBBRUSH_INFO[watercolorBrushType];
+        const hintEl = document.getElementById('watercolorSubBrushHint');
+        if (hintEl && subInfo) hintEl.textContent = subInfo.hint;
+        updateTopMediumButtonDisplay();
+        if (subInfo) showToast(`已切换至：${subInfo.icon} ${subInfo.name}（${subInfo.hint}）`);
       });
     });
 
