@@ -1,0 +1,22 @@
+{
+  "name": "KaiDraw - 专属儿童物理画室",
+  "short_name": "KaiDraw",
+  "description": "让每一个孩子的奇思妙想跃然纸上 - 纯粹3大画种与真实纸张物理引擎",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#f8f7f4",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "images/logo button_v4_.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "images/logo_button_v4_.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}
