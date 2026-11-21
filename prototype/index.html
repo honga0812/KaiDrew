@@ -71,41 +71,79 @@
     #brushSizePreviewOverlay {
       transition: opacity 0.2s ease, transform 0.05s ease;
     }
+    /* 物理卷边呼吸微动动效 (提示右下角可翻页新建画纸) */
+    @keyframes curlBreathingWave {
+      0%, 100% {
+        transform: scale(1) translate(0px, 0px);
+      }
+      50% {
+        transform: scale(1.1) translate(-3px, -3px);
+      }
+    }
+    .animate-curl-breathing {
+      animation: curlBreathingWave 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      transform-origin: bottom right;
+    }
+
+    /* 开场组件逐次渐显流光动效 (Staggered Entrance) */
+    .stagger-init-fade {
+      opacity: 0;
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .stagger-init-top {
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .stagger-init-left {
+      opacity: 0;
+      transform: translateX(-24px);
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .stagger-init-right {
+      opacity: 0;
+      transform: translate(24px, -50%) scale(0.85);
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .stagger-init-scale {
+      opacity: 0;
+      transform: scale(0.94);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .stagger-visible {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+    .stagger-visible-right {
+      opacity: 1 !important;
+      transform: translateY(-50%) scale(1) !important;
+    }
   </style>
 </head>
 <body class="text-stone-800 antialiased h-screen flex flex-col p-2 select-none relative overflow-hidden bg-[#f8f7f4]" style="height: 100dvh; padding-top: max(0.5rem, env(safe-area-inset-top)); padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); padding-left: max(0.5rem, env(safe-area-inset-left)); padding-right: max(0.5rem, env(safe-area-inset-right));">
 
-  <!-- ==================== KaiQuest 启动转场动效全屏遮罩 (提供优雅光晕与探险粒子，可无缝替换为正式影片) ==================== -->
-  <div id="kaiQuestSplash" class="fixed inset-0 z-50 bg-[#0d1117] flex flex-col items-center justify-center select-none cursor-pointer overflow-hidden transition-all duration-700">
-    <!-- 背景流光与微粒 -->
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.18)_0%,rgba(99,102,241,0.12)_45%,rgba(13,17,23,0.95)_100%)] pointer-events-none"></div>
-    <div class="relative z-10 flex flex-col items-center gap-5 text-center px-6">
-      <div class="relative group">
-        <div class="absolute -inset-2 bg-gradient-to-r from-amber-500 via-pink-500 to-sky-500 rounded-3xl blur-xl opacity-70 group-hover:opacity-100 transition duration-1000 animate-pulse"></div>
-        <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="relative w-28 h-28 sm:w-36 sm:h-36 rounded-3xl shadow-2xl object-cover border border-white/20 transform transition duration-500 hover:scale-105" />
-      </div>
-      <div class="flex flex-col items-center gap-1.5 text-white">
-        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wider bg-gradient-to-r from-amber-300 via-rose-300 to-sky-300 bg-clip-text text-transparent">KaiQuest Studio</h1>
-        <p class="text-xs sm:text-sm text-stone-400 font-medium tracking-widest">让每一个孩子的奇思妙想跃然纸上</p>
-        <span class="mt-2 text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-white/10 text-amber-300/90 border border-white/10">B.26.11.90 · Pro Edition</span>
-      </div>
-      <!-- 动态加载指示器或点击跳过 -->
-      <div class="mt-4 flex items-center gap-2 text-stone-400 text-xs font-mono">
-        <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
-        <span id="splashStatusText">正在准备你的专属物理画室...</span>
-      </div>
+  <!-- ==================== KaiDraw 纯白极简开屏 (纯白底色，居中 Logo，顶部版本号，主功能逐次渐显) ==================== -->
+  <div id="kaiQuestSplash" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700">
+    <!-- 顶部居中极简版本编号 -->
+    <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
+      B.26.11.91 · Pro Edition
+    </div>
+
+    <!-- 中心纯净 KaiDraw Logo (纯白无界背景) -->
+    <div class="relative flex flex-col items-center justify-center transition-all duration-700">
+      <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-36 h-36 sm:w-44 sm:h-44 object-contain mix-blend-multiply select-none pointer-events-none drop-shadow-xs transition duration-700" />
     </div>
   </div>
 
   <!-- ==================== 顶部主控制总成 (置于画布正上方，展开时绝不遮盖画纸与新建功能) ==================== -->
-  <header id="mainAppHeader" class="shrink-0 flex flex-col gap-1.5 z-40 relative px-1 pt-0.5">
+  <header id="mainAppHeader" class="stagger-init-top shrink-0 flex flex-col gap-1.5 z-40 relative px-1 pt-0.5">
     <!-- 第一行：常驻顶栏 (放大版 Logo + 新建画纸 + 5个画作状态实时预览小视窗 + 撤销/重做 + 展开完整工具按键) -->
     <div class="flex items-center justify-between gap-2 bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl px-2.5 py-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
       
       <!-- 左侧：放大版 Logo 按钮 (无文字与版本号，支持手指与触控笔自由拖移至屏幕任意位置) + 新建画纸 -->
       <div class="flex items-center gap-2 shrink-0">
         <div id="logoMenuAnchor" class="w-13 h-13 sm:w-14 sm:h-14 shrink-0 pointer-events-none" aria-hidden="true"></div>
-        <button id="btnMainLogoMenu" class="fixed left-3.5 top-2 z-50 group w-13 h-13 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border-2 border-amber-500/70 shadow-md hover:shadow-lg active:scale-95 transition-shadow cursor-move p-0 bg-white select-none touch-none" style="touch-action: none;" title="KaiDraw 主控制：可自由拖移至屏幕任意位置，轻点展开/收起完整功能菜单">
+        <button id="btnMainLogoMenu" class="stagger-init-top fixed left-3.5 top-2 z-50 group w-13 h-13 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border-2 border-amber-500/70 shadow-md hover:shadow-lg active:scale-95 transition-shadow cursor-move p-0 bg-white select-none touch-none" style="touch-action: none;" title="KaiDraw 主控制：可自由拖移至屏幕任意位置，轻点展开/收起完整功能菜单">
           <img src="images/logo button_v2_.png" alt="KaiDraw Logo Menu" class="w-full h-full object-cover rounded-2xl pointer-events-none select-none" />
         </button>
 
@@ -251,7 +289,7 @@
     </div>
 
     <!-- 硬件加速视口变形包裹层 (Transform Wrapper - 重磅 300g 艺术画纸悬浮光影) -->
-    <div id="transformCanvasWrapper" class="relative rounded-xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18),0_0_1px_rgba(0,0,0,0.2)] border border-stone-300/40 origin-center transition-none shrink-0 z-10" style="width: 720px; height: 520px; transform: translate(0px, 0px) scale(1); touch-action: none; -webkit-user-select: none; -webkit-touch-callout: none;">
+    <div id="transformCanvasWrapper" class="stagger-init-scale relative rounded-xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18),0_0_1px_rgba(0,0,0,0.2)] border border-stone-300/40 origin-center transition-none shrink-0 z-10" style="width: 720px; height: 520px; transform: translate(0px, 0px) scale(1); touch-action: none; -webkit-user-select: none; -webkit-touch-callout: none;">
       <!-- 0. 真实物理纸张材质底层 -->
       <canvas id="paperCanvas" width="720" height="520" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
       <!-- 1. 参考底图层 -->
@@ -262,6 +300,50 @@
       <canvas id="paintCanvas" width="720" height="520" class="absolute inset-0 w-full h-full cursor-none touch-none" style="touch-action: none; -webkit-user-select: none; -webkit-touch-callout: none;"></canvas>
       <!-- 4. 九宫格辅助线层 -->
       <canvas id="overlayCanvas" width="720" height="520" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+
+      <!-- 5. 右下角物理翻书折页效果 (Dog-Ear Page Flip with Curl - 点击或向左上拖曳翻页新建画纸) -->
+      <div id="pageFlipDogEar" class="stagger-init-fade absolute bottom-0 right-0 z-30 select-none touch-none cursor-pointer group" style="touch-action: none; width: 72px; height: 72px;" title="翻页新建画纸：轻点或向左上方拖曳翻开全新画纸">
+        <!-- 卷角呼吸微动动画层 (带有向外卷动的柔和提示光影) -->
+        <div id="pageFlipCurlBody" class="w-full h-full relative animate-curl-breathing transition-transform duration-150">
+          <svg class="absolute bottom-0 right-0 w-full h-full overflow-visible pointer-events-none" viewBox="0 0 72 72">
+            <defs>
+              <!-- 折角掀起后露出的底衬纸张质感与阴影 -->
+              <linearGradient id="curlBaseShadow" x1="0" y1="0" x2="72" y2="72" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#cfc7b6" />
+                <stop offset="50%" stop-color="#e8e2d4" />
+                <stop offset="100%" stop-color="#faf8f4" />
+              </linearGradient>
+              <!-- 翻起折页的背面高光与弧度渐变 -->
+              <linearGradient id="curlFlapGrad" x1="72" y1="0" x2="0" y2="72" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="35%" stop-color="#fdfcf8" />
+                <stop offset="70%" stop-color="#ede7db" />
+                <stop offset="100%" stop-color="#dbd2c0" />
+              </linearGradient>
+              <!-- 真实折页软阴影 -->
+              <filter id="creaseSoftShadow" x="-30%" y="-30%" width="170%" height="170%">
+                <feDropShadow dx="-3" dy="-3" stdDeviation="3.5" flood-color="rgba(0,0,0,0.22)" />
+              </filter>
+            </defs>
+
+            <!-- 掀起后露出的下一页/桌面角 (Peeled Underlay) -->
+            <path d="M 0 72 L 72 0 L 72 72 Z" fill="url(#curlBaseShadow)" opacity="0.95" />
+
+            <!-- 折叠翻起在正面的弧形折角 (Curled Flap) -->
+            <path id="curlFlapPath" d="M 0 72 Q 26 48 72 0 Q 34 16 8 8 Q 16 34 0 72 Z" fill="url(#curlFlapGrad)" filter="url(#creaseSoftShadow)" stroke="#d4ccbc" stroke-width="0.8" />
+          </svg>
+
+          <!-- 折角表面微提示 (星光 + 翻页新纸) -->
+          <div class="absolute bottom-2 right-2 flex flex-col items-center justify-center leading-none pointer-events-none select-none">
+            <span class="text-[11px] leading-none drop-shadow-xs">📄</span>
+            <span class="text-[7.5px] font-bold text-stone-600 font-mono tracking-tighter mt-0.5 scale-90">新画纸</span>
+          </div>
+          <!-- 翻页手势指引小光标 -->
+          <div class="absolute top-2 left-2 text-[10px] text-amber-600 font-bold leading-none pointer-events-none select-none animate-pulse">
+            ✨
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 拍照快门闪光动画层 -->
@@ -313,7 +395,7 @@
     </div>
 
     <!-- ==================== 左侧高频两列紧凑工具坞 (可隐藏为闪烁发光小圆点) ==================== -->
-    <aside id="leftPrimaryDock" class="absolute left-2.5 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-1.5 bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl p-2 shadow-[0_16px_40px_-8px_rgba(0,0,0,0.14)] select-none w-28 transition-all duration-300">
+    <aside id="leftPrimaryDock" class="stagger-init-left absolute left-2.5 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-1.5 bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl p-2 shadow-[0_16px_40px_-8px_rgba(0,0,0,0.14)] select-none w-28 transition-all duration-300">
       <!-- 顶栏：标题与折叠隐藏按键 -->
       <div class="flex items-center justify-between pb-1 border-b border-stone-100">
         <span class="text-[9px] font-bold text-stone-400 uppercase font-mono">常用工具</span>
@@ -405,7 +487,7 @@
   </main>
 
   <!-- ==================== 悬浮可拖移 AI 魔法圆形按钮 (星光与 AI 标志，支持手指与触控笔自由拖移至画面各处，轻点开启 AI 魔法工坊) ==================== -->
-  <button id="btnFloatingAiMagic" class="fixed right-3.5 top-1/2 -translate-y-1/2 z-40 w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 border-2 border-white/90 shadow-[0_8px_25px_rgba(168,85,247,0.45)] hover:shadow-[0_12px_30px_rgba(168,85,247,0.65)] hover:scale-105 active:scale-95 transition-shadow flex flex-col items-center justify-center text-white cursor-move select-none touch-none group" style="touch-action: none;" title="AI 魔法：可自由拖移至屏幕任意位置，轻点开启以图生图与动画魔法">
+  <button id="btnFloatingAiMagic" class="stagger-init-right fixed right-3.5 top-1/2 -translate-y-1/2 z-40 w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 border-2 border-white/90 shadow-[0_8px_25px_rgba(168,85,247,0.45)] hover:shadow-[0_12px_30px_rgba(168,85,247,0.65)] hover:scale-105 active:scale-95 transition-shadow flex flex-col items-center justify-center text-white cursor-move select-none touch-none group" style="touch-action: none;" title="AI 魔法：可自由拖移至屏幕任意位置，轻点开启以图生图与动画魔法">
     <span class="text-lg sm:text-xl leading-none filter drop-shadow-sm pointer-events-none group-hover:scale-110 transition-transform">✨</span>
     <span class="text-[9px] sm:text-[10px] font-black tracking-widest uppercase font-mono leading-none mt-0.5 filter drop-shadow-sm pointer-events-none">AI</span>
   </button>
@@ -4623,19 +4705,44 @@
     /********************************************************************
      * 14.5 极简模式主控、多画纸状态实时预览条(最多5张)、高频工具坞交互与 KaiQuest 开屏启动
      ********************************************************************/
-    // 1. KaiQuest 启动转场动效控制 (优雅淡出，可点击快速跳过，后续替换为正式动画)
+    // 1. KaiDraw 纯白开场与组件逐个渐显流光动效 (Staggered cascading entrance)
     const splashEl = document.getElementById('kaiQuestSplash');
     if (splashEl) {
       const dismissSplash = () => {
         if (splashEl.dataset.dismissed) return;
         splashEl.dataset.dismissed = 'true';
         splashEl.classList.add('splash-fade-out');
+
+        const wrapper = document.getElementById('transformCanvasWrapper');
+        const header = document.getElementById('mainAppHeader');
+        const logoBtn = document.getElementById('btnMainLogoMenu');
+        const leftDock = document.getElementById('leftPrimaryDock');
+        const aiBtn = document.getElementById('btnFloatingAiMagic');
+        const pageFlip = document.getElementById('pageFlipDogEar');
+
+        // 主要功能渐渐地一个一个跑出来，让使用者开始创作
+        setTimeout(() => wrapper?.classList.add('stagger-visible'), 100);
+        setTimeout(() => {
+          header?.classList.add('stagger-visible');
+          logoBtn?.classList.add('stagger-visible');
+        }, 260);
+        setTimeout(() => leftDock?.classList.add('stagger-visible'), 420);
+        setTimeout(() => aiBtn?.classList.add('stagger-visible-right'), 580);
+        setTimeout(() => pageFlip?.classList.add('stagger-visible'), 720);
+
         setTimeout(() => {
           splashEl.remove();
-        }, 800);
+          // 清理初始化过渡类，确保后续拖动、缩放、平移手势不受 CSS 干扰
+          [wrapper, header, logoBtn, leftDock, aiBtn, pageFlip].forEach(el => {
+            if (el) {
+              el.classList.remove('stagger-init-top', 'stagger-init-left', 'stagger-init-right', 'stagger-init-scale', 'stagger-init-fade', 'stagger-visible', 'stagger-visible-right');
+            }
+          });
+        }, 1100);
       };
+
       splashEl.addEventListener('click', dismissSplash);
-      setTimeout(dismissSplash, 1800);
+      setTimeout(dismissSplash, 1100);
     }
 
     // 2. 自由拖移组件：Logo 主控制按钮 与 AI 魔法圆形悬浮按钮 (支持手指触摸、Apple Pencil 触控笔及鼠标拖移至屏幕任意位置)
@@ -5114,13 +5221,165 @@
       });
     }
 
+    // 物理拟真翻页音效 (Web Audio API 真实白噪声带通滤波，模拟纸张掀动刷刷声)
+    function playPaperFlipSound() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        if (ctx.state === 'suspended') ctx.resume();
+
+        const bufferSize = Math.floor(ctx.sampleRate * 0.28);
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.09));
+        }
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1200, ctx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(320, ctx.currentTime + 0.28);
+        filter.Q.value = 1.2;
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.35, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        noise.start();
+      } catch (_) {}
+    }
+
+    // 翻书过场动效与新建画纸
+    let isPageFlipping = false;
+    function triggerPageFlipNewCanvas() {
+      if (isPageFlipping) return;
+      isPageFlipping = true;
+
+      const wrapper = document.getElementById('transformCanvasWrapper');
+      if (!wrapper) {
+        createNewBlankCanvas();
+        isPageFlipping = false;
+        return;
+      }
+
+      playPaperFlipSound();
+
+      // 创建拟真翻页折起光影覆层 (覆盖在整张画纸上，向左翻出)
+      const turnOverlay = document.createElement('div');
+      turnOverlay.className = 'absolute inset-0 pointer-events-none z-40 overflow-hidden rounded-xl';
+      turnOverlay.style.background = 'linear-gradient(to left, rgba(255,255,255,0.96) 0%, rgba(246,243,236,0.9) 35%, rgba(0,0,0,0.18) 75%, transparent 100%)';
+      turnOverlay.style.boxShadow = 'inset -25px 0 40px rgba(0,0,0,0.2)';
+      turnOverlay.style.transformOrigin = 'left center';
+      turnOverlay.style.transform = 'perspective(1400px) rotateY(0deg)';
+      turnOverlay.style.transition = 'transform 0.52s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.52s ease';
+      wrapper.appendChild(turnOverlay);
+
+      requestAnimationFrame(() => {
+        turnOverlay.style.transform = 'perspective(1400px) rotateY(-88deg) scale(0.96)';
+        turnOverlay.style.opacity = '0';
+      });
+
+      setTimeout(() => {
+        createNewBlankCanvas();
+        setTimeout(() => {
+          turnOverlay.remove();
+          isPageFlipping = false;
+        }, 280);
+      }, 200);
+    }
+
+    // 右下角折角手势监听：支持点选或向左上方拖曳翻页
+    const pageFlipDogEar = document.getElementById('pageFlipDogEar');
+    const pageFlipCurlBody = document.getElementById('pageFlipCurlBody');
+
+    if (pageFlipDogEar && pageFlipCurlBody) {
+      let isDragging = false;
+      let hasMoved = false;
+      let startX = 0;
+      let startY = 0;
+
+      pageFlipDogEar.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        isDragging = true;
+        hasMoved = false;
+        startX = e.clientX;
+        startY = e.clientY;
+
+        pageFlipCurlBody.classList.remove('animate-curl-breathing');
+
+        try {
+          pageFlipDogEar.setPointerCapture(e.pointerId);
+        } catch (_) {}
+      });
+
+      pageFlipDogEar.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        // 向左上方拉动 (dx < 0, dy < 0)
+        const pullX = Math.min(0, dx);
+        const pullY = Math.min(0, dy);
+        const pullDist = Math.hypot(pullX, pullY);
+
+        if (pullDist > 6) {
+          hasMoved = true;
+        }
+
+        if (hasMoved) {
+          const scale = Math.min(2.0, 1 + pullDist / 60);
+          const transX = Math.max(-40, pullX * 0.5);
+          const transY = Math.max(-40, pullY * 0.5);
+          pageFlipCurlBody.style.transform = `scale(${scale}) translate(${transX}px, ${transY}px)`;
+        }
+      });
+
+      const handlePointerEnd = (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+
+        try {
+          if (pageFlipDogEar.hasPointerCapture(e.pointerId)) {
+            pageFlipDogEar.releasePointerCapture(e.pointerId);
+          }
+        } catch (_) {}
+
+        pageFlipCurlBody.style.transform = '';
+        pageFlipCurlBody.classList.add('animate-curl-breathing');
+
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        const pullDist = Math.hypot(Math.min(0, dx), Math.min(0, dy));
+
+        // 点击 或 拖拽达到翻页阈值 (pullDist >= 22)
+        if (!hasMoved || pullDist >= 22) {
+          triggerPageFlipNewCanvas();
+        }
+      };
+
+      pageFlipDogEar.addEventListener('pointerup', handlePointerEnd);
+      pageFlipDogEar.addEventListener('pointercancel', handlePointerEnd);
+
+      pageFlipDogEar.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, true);
+    }
+
     document.getElementById('btnQuickNewCanvas')?.addEventListener('click', (e) => {
       e.stopPropagation();
-      createNewBlankCanvas();
+      triggerPageFlipNewCanvas();
     });
     document.getElementById('btnModalNewCanvas')?.addEventListener('click', (e) => {
       e.stopPropagation();
-      createNewBlankCanvas();
+      triggerPageFlipNewCanvas();
     });
     document.getElementById('btnToggleHistoryModal')?.addEventListener('click', (e) => {
       e.stopPropagation();
