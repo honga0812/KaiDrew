@@ -87,7 +87,7 @@
       <div class="flex flex-col items-center gap-1.5 text-white">
         <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wider bg-gradient-to-r from-amber-300 via-rose-300 to-sky-300 bg-clip-text text-transparent">KaiQuest Studio</h1>
         <p class="text-xs sm:text-sm text-stone-400 font-medium tracking-widest">让每一个孩子的奇思妙想跃然纸上</p>
-        <span class="mt-2 text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-white/10 text-amber-300/90 border border-white/10">B.26.11.89 · Pro Edition</span>
+        <span class="mt-2 text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-white/10 text-amber-300/90 border border-white/10">B.26.11.90 · Pro Edition</span>
       </div>
       <!-- 动态加载指示器或点击跳过 -->
       <div class="mt-4 flex items-center gap-2 text-stone-400 text-xs font-mono">
@@ -102,10 +102,11 @@
     <!-- 第一行：常驻顶栏 (放大版 Logo + 新建画纸 + 5个画作状态实时预览小视窗 + 撤销/重做 + 展开完整工具按键) -->
     <div class="flex items-center justify-between gap-2 bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl px-2.5 py-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
       
-      <!-- 左侧：放大版 Logo 按钮 (无文字与版本号，直接点击展开全功能) + 新建画纸 -->
+      <!-- 左侧：放大版 Logo 按钮 (无文字与版本号，支持手指与触控笔自由拖移至屏幕任意位置) + 新建画纸 -->
       <div class="flex items-center gap-2 shrink-0">
-        <button id="btnMainLogoMenu" class="group relative w-12 h-12 rounded-2xl overflow-hidden border-2 border-amber-500/50 shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition cursor-pointer shrink-0 p-0 bg-white" title="点击展开/收起完整功能菜单 (画纸/画风/图层/AI/相簿)">
-          <img src="images/logo button_v2_.png" alt="KaiDraw Logo Menu" class="w-full h-full object-cover rounded-2xl" />
+        <div id="logoMenuAnchor" class="w-13 h-13 sm:w-14 sm:h-14 shrink-0 pointer-events-none" aria-hidden="true"></div>
+        <button id="btnMainLogoMenu" class="fixed left-3.5 top-2 z-50 group w-13 h-13 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border-2 border-amber-500/70 shadow-md hover:shadow-lg active:scale-95 transition-shadow cursor-move p-0 bg-white select-none touch-none" style="touch-action: none;" title="KaiDraw 主控制：可自由拖移至屏幕任意位置，轻点展开/收起完整功能菜单">
+          <img src="images/logo button_v2_.png" alt="KaiDraw Logo Menu" class="w-full h-full object-cover rounded-2xl pointer-events-none select-none" />
         </button>
 
         <div class="h-6 w-px bg-stone-200 mx-0.5"></div>
@@ -242,14 +243,11 @@
     </div>
   </header>
 
-  <!-- ==================== 主画布视口区 (如阳光洒在设计师浅橡木工作台，重磅画纸悬浮) ==================== -->
-  <main id="viewportContainer" class="flex-1 relative overflow-hidden rounded-2xl border border-stone-300/60 shadow-[inset_0_2px_12px_rgba(0,0,0,0.06)] bg-[#ece8df] flex items-center justify-center min-h-0 touch-none my-1" style="touch-action: none; -webkit-user-select: none; -webkit-touch-callout: none;">
-    <!-- 底层 KaiDraw 品牌水印 (画布缩小时可完整显露，彰显高级质感) -->
-    <div id="viewportLogoBackground" class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center opacity-30 select-none z-0 transition-opacity duration-300">
-      <div class="relative w-64 h-64 sm:w-80 sm:h-80 rounded-3xl overflow-hidden shadow-inner border border-stone-400/20 grayscale-30 flex items-center justify-center">
-        <img src="images/logo_v1.jpeg" alt="KaiDraw Background Brand" class="w-full h-full object-cover opacity-80" />
-      </div>
-      <span class="mt-3 text-xs font-mono font-bold tracking-widest text-stone-500 uppercase">KaiDraw · Creative Studio B.26.11.89</span>
+  <!-- ==================== 主画布视口区 (纯白通透背景，重磅画纸物理悬浮) ==================== -->
+  <main id="viewportContainer" class="flex-1 relative overflow-hidden rounded-2xl border border-stone-200/80 bg-white flex items-center justify-center min-h-0 touch-none my-1 shadow-sm" style="touch-action: none; -webkit-user-select: none; -webkit-touch-callout: none;">
+    <!-- 底层 KaiDraw 品牌水印 (无框线、纯白底色、延伸至全画面，画布缩小时尽显艺术格调) -->
+    <div id="viewportLogoBackground" class="pointer-events-none absolute inset-0 bg-white flex items-center justify-center select-none z-0 overflow-hidden transition-opacity duration-300">
+      <img src="images/logo_v1.jpeg" alt="KaiDraw Background Brand" class="w-full h-full max-w-full max-h-full object-contain p-4 sm:p-8 opacity-35 mix-blend-multiply" />
     </div>
 
     <!-- 硬件加速视口变形包裹层 (Transform Wrapper - 重磅 300g 艺术画纸悬浮光影) -->
@@ -405,6 +403,12 @@
       </div>
     </button>
   </main>
+
+  <!-- ==================== 悬浮可拖移 AI 魔法圆形按钮 (星光与 AI 标志，支持手指与触控笔自由拖移至画面各处，轻点开启 AI 魔法工坊) ==================== -->
+  <button id="btnFloatingAiMagic" class="fixed right-3.5 top-1/2 -translate-y-1/2 z-40 w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 border-2 border-white/90 shadow-[0_8px_25px_rgba(168,85,247,0.45)] hover:shadow-[0_12px_30px_rgba(168,85,247,0.65)] hover:scale-105 active:scale-95 transition-shadow flex flex-col items-center justify-center text-white cursor-move select-none touch-none group" style="touch-action: none;" title="AI 魔法：可自由拖移至屏幕任意位置，轻点开启以图生图与动画魔法">
+    <span class="text-lg sm:text-xl leading-none filter drop-shadow-sm pointer-events-none group-hover:scale-110 transition-transform">✨</span>
+    <span class="text-[9px] sm:text-[10px] font-black tracking-widest uppercase font-mono leading-none mt-0.5 filter drop-shadow-sm pointer-events-none">AI</span>
+  </button>
 
   <!-- ==================== 抽屉背景点击遮罩 (点击画布或空白处立即轻柔关闭抽屉，绝不遮挡画纸) ==================== -->
   <div id="drawerBackdrop" class="hidden fixed inset-0 z-45 bg-black/15 backdrop-blur-2xs transition-opacity"></div>
@@ -4634,13 +4638,113 @@
       setTimeout(dismissSplash, 1800);
     }
 
-    // 2. 顶部纯净极简 Logo 主控胶囊与完整功能菜单展开/收起 (在画布上方正规流布局，展开绝不遮挡)
+    // 2. 自由拖移组件：Logo 主控制按钮 与 AI 魔法圆形悬浮按钮 (支持手指触摸、Apple Pencil 触控笔及鼠标拖移至屏幕任意位置)
+    function makeElementDraggable(element, onTapped) {
+      if (!element) return;
+
+      let isDragging = false;
+      let hasMoved = false;
+      let startX = 0;
+      let startY = 0;
+      let initialLeft = 0;
+      let initialTop = 0;
+
+      element.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        isDragging = true;
+        hasMoved = false;
+        startX = e.clientX;
+        startY = e.clientY;
+
+        const rect = element.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        // 统一转为 fixed 定位绝对像素坐标
+        element.style.left = `${initialLeft}px`;
+        element.style.top = `${initialTop}px`;
+        element.style.right = 'auto';
+        element.style.bottom = 'auto';
+        element.style.transform = 'none';
+
+        try {
+          element.setPointerCapture(e.pointerId);
+        } catch (_) {}
+      });
+
+      element.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        if (!hasMoved && Math.hypot(dx, dy) > 5) {
+          hasMoved = true;
+        }
+
+        if (hasMoved) {
+          const rect = element.getBoundingClientRect();
+          const width = rect.width;
+          const height = rect.height;
+
+          const minX = 6;
+          const maxX = window.innerWidth - width - 6;
+          const minY = 6;
+          const maxY = window.innerHeight - height - 6;
+
+          const newLeft = Math.max(minX, Math.min(maxX, initialLeft + dx));
+          const newTop = Math.max(minY, Math.min(maxY, initialTop + dy));
+
+          element.style.left = `${newLeft}px`;
+          element.style.top = `${newTop}px`;
+        }
+      });
+
+      const handlePointerEnd = (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+
+        try {
+          if (element.hasPointerCapture(e.pointerId)) {
+            element.releasePointerCapture(e.pointerId);
+          }
+        } catch (_) {}
+
+        if (!hasMoved) {
+          if (typeof onTapped === 'function') {
+            onTapped(e);
+          }
+        }
+      };
+
+      element.addEventListener('pointerup', handlePointerEnd);
+      element.addEventListener('pointercancel', handlePointerEnd);
+
+      // 屏蔽拖动结束后的原生点击事件触发
+      element.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, true);
+    }
+
     const btnMainLogoMenu = document.getElementById('btnMainLogoMenu');
+    const btnFloatingAiMagic = document.getElementById('btnFloatingAiMagic');
     const fullTopToolbar = document.getElementById('fullTopToolbar');
     const btnCloseTopToolbar = document.getElementById('btnCloseTopToolbar');
     const btnToggleFullToolbar = document.getElementById('btnToggleFullToolbar');
     const logoMenuToggleArrow = document.getElementById('logoMenuToggleArrow');
     const fullToolbarArrow = document.getElementById('fullToolbarArrow');
+
+    // 初始化 Logo 按钮位置与顶栏锚点对齐
+    const logoMenuAnchor = document.getElementById('logoMenuAnchor');
+    if (logoMenuAnchor && btnMainLogoMenu) {
+      setTimeout(() => {
+        const rect = logoMenuAnchor.getBoundingClientRect();
+        if (rect.width > 0) {
+          btnMainLogoMenu.style.left = `${rect.left}px`;
+          btnMainLogoMenu.style.top = `${rect.top}px`;
+        }
+      }, 50);
+    }
 
     function toggleTopToolbar(forceOpen = null) {
       if (!fullTopToolbar) return;
@@ -4658,12 +4762,36 @@
       }
     }
 
+    // 绑定 Logo 拖动与轻点展开功能
     if (btnMainLogoMenu) {
-      btnMainLogoMenu.addEventListener('click', (e) => {
-        e.stopPropagation();
+      makeElementDraggable(btnMainLogoMenu, () => {
         toggleTopToolbar();
       });
     }
+
+    // 绑定悬浮 AI 魔法圆形按钮拖动与轻点开启工坊
+    if (btnFloatingAiMagic) {
+      makeElementDraggable(btnFloatingAiMagic, () => {
+        const btnOpenAiModal = document.getElementById('btnOpenAiModal');
+        if (btnOpenAiModal) btnOpenAiModal.click();
+      });
+    }
+
+    // 屏幕尺寸变化时校准悬浮按钮不超出视口
+    window.addEventListener('resize', () => {
+      [btnMainLogoMenu, btnFloatingAiMagic].forEach((el) => {
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const minX = 6;
+        const maxX = window.innerWidth - rect.width - 6;
+        const minY = 6;
+        const maxY = window.innerHeight - rect.height - 6;
+        if (rect.left > maxX || rect.top > maxY) {
+          el.style.left = `${Math.max(minX, Math.min(maxX, rect.left))}px`;
+          el.style.top = `${Math.max(minY, Math.min(maxY, rect.top))}px`;
+        }
+      });
+    });
     if (btnToggleFullToolbar) {
       btnToggleFullToolbar.addEventListener('click', (e) => {
         e.stopPropagation();
