@@ -97,142 +97,157 @@
     </div>
   </div>
 
-  <!-- ==================== 顶部超纯净极简常驻主控胶囊 (左上角 Logo + 版本 B.26.11.88 + 展开控制) ==================== -->
-  <div class="fixed top-2.5 left-2.5 z-40 flex items-center gap-2">
-    <!-- 点击展开/收拢全套画笔与扩展功能的 Logo 主控按钮 -->
-    <button id="btnMainLogoMenu" class="group flex items-center gap-2 px-2 py-1.5 rounded-2xl bg-white/95 backdrop-blur-2xl border border-stone-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:shadow-md active:scale-95 transition cursor-pointer" title="点选展开/收起完整功能菜单 (画纸/画风/图层/AI/相簿)">
-      <div class="relative w-8 h-8 rounded-xl overflow-hidden border border-amber-500/40 shadow-xs shrink-0 group-hover:scale-105 transition">
-        <img src="images/logo button_v2_.png" alt="Logo Button" class="w-full h-full object-cover" />
-      </div>
-      <div class="flex flex-col text-left pr-1.5">
-        <div class="flex items-center gap-1">
-          <span class="text-xs font-extrabold tracking-tight text-stone-900 group-hover:text-amber-600 transition">KaiDraw</span>
-          <span id="logoMenuToggleArrow" class="text-[9px] text-stone-400 transition-transform duration-200">▼</span>
-        </div>
-        <span class="text-[9px] font-mono font-bold text-amber-600/90">B.26.11.88</span>
-      </div>
-    </button>
-
-    <!-- 顶部极简快捷撤销 / 重做 / 新画纸 -->
-    <div class="hidden sm:flex items-center gap-1 bg-white/90 backdrop-blur-xl border border-stone-200/80 rounded-2xl px-2 py-1 shadow-xs">
-      <button id="btnQuickNewCanvas" class="p-1.5 rounded-xl hover:bg-amber-50 text-stone-700 hover:text-amber-700 active:scale-95 transition text-xs font-bold flex items-center gap-1" title="新建空白画纸 (自动归档旧画作)">
-        <span>✨</span> <span class="hidden md:inline text-[11px]">新建画纸</span>
-      </button>
-      <div class="h-3 w-px bg-stone-200 mx-0.5"></div>
-      <button id="btnUndoMini" class="p-1.5 rounded-xl hover:bg-stone-100 text-stone-700 active:scale-95 transition text-xs opacity-50 cursor-not-allowed" title="撤销">↩️</button>
-      <button id="btnRedoMini" class="p-1.5 rounded-xl hover:bg-stone-100 text-stone-700 active:scale-95 transition text-xs opacity-50 cursor-not-allowed" title="重做">↪️</button>
-    </div>
-
-    <!-- 5张画作版本快捷历史抽屉触发按钮 -->
-    <button id="btnToggleHistoryModal" class="px-2.5 py-1.5 rounded-2xl bg-white/90 backdrop-blur-xl border border-stone-200/80 hover:bg-amber-50/80 text-stone-700 hover:text-amber-800 active:scale-95 transition shadow-xs flex items-center gap-1.5 text-xs font-bold" title="历史画作版本 (最近 5 张画作随时切换)">
-      <span>🖼️</span>
-      <span class="hidden md:inline">画作历史</span>
-      <span id="artHistoryBadge" class="text-[10px] font-mono px-1 rounded-full bg-amber-500 text-white font-bold">1</span>
-    </button>
-  </div>
-
-  <!-- ==================== 动态弹出/收回的完整画笔工具与系统功能导航条 (由 Logo 点击展开) ==================== -->
-  <header id="fullTopToolbar" class="topbar-hidden fixed top-2 left-2 right-2 max-w-5xl mx-auto bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl px-3 py-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.12)] shrink-0 z-40 transition-all duration-300">
-    <!-- 左侧组：左上角画风选择主按钮 + 撤销/重做/清屏 + 当前颜色/洗笔/橡皮/粗细微调 -->
-    <div class="flex items-center gap-1 flex-wrap">
-      <!-- 带有 Logo 的主控收回按钮 -->
-      <button id="btnCloseTopToolbar" class="p-1 rounded-xl hover:bg-stone-100 text-stone-500 hover:text-stone-800 transition active:scale-95 text-xs font-bold mr-1" title="收起顶部工具栏">
-        ✕
-      </button>
-
-      <!-- 画风选择大胶囊按钮 -->
-      <button id="btnOpenStyleSelector" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-amber-500/20 active:scale-95 transition shrink-0" title="点选展开画风与画具选择">
-        <span id="currentMediumIcon" class="text-sm drop-shadow-xs">🖌️</span>
-        <span id="currentMediumName" class="tracking-wide">水彩画室</span>
-        <span class="text-[9px] opacity-85">▼</span>
-      </button>
-
-      <div class="h-4 w-px bg-stone-200 mx-0.5"></div>
-      <button id="btnUndo" class="p-1.5 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-stone-700 border border-stone-200/60 active:scale-95 transition opacity-50 cursor-not-allowed shadow-2xs shrink-0" title="撤销 (Command+Z)">
-        <span class="text-sm">↩️</span>
-      </button>
-      <button id="btnRedo" class="p-1.5 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-stone-700 border border-stone-200/60 active:scale-95 transition opacity-50 cursor-not-allowed shadow-2xs shrink-0" title="重做 (Command+Shift+Z)">
-        <span class="text-sm">↪️</span>
-      </button>
-      <button id="btnClear" class="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100/90 text-rose-600 border border-rose-200/80 active:scale-95 transition shadow-2xs shrink-0" title="清空当前图层">
-        <span class="text-sm">🗑️</span>
-      </button>
-
-      <div class="h-4 w-px bg-stone-200 mx-0.5"></div>
-
-      <!-- 当前画笔颜色圆环 -->
-      <div id="currentSwatchCircle" class="w-6 h-6 rounded-full border-2 border-white shadow-[0_2px_6px_rgba(0,0,0,0.18)] ring-1 ring-stone-200 transition-transform shrink-0 cursor-pointer" style="background: rgb(20, 85, 210);" title="当前画笔颜色 (点击打开调色抽屉)"></div>
+  <!-- ==================== 顶部主控制总成 (置于画布正上方，展开时绝不遮盖画纸与新建功能) ==================== -->
+  <header id="mainAppHeader" class="shrink-0 flex flex-col gap-1.5 z-40 relative px-1 pt-0.5">
+    <!-- 第一行：常驻顶栏 (Logo + 新建画纸 + 画作状态实时预览切换条 + 撤销/重做 + 展开完整工具按键) -->
+    <div class="flex items-center justify-between gap-2 bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl px-2.5 py-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
       
-      <!-- 洗笔水桶 -->
-      <button id="btnWashBucket" class="px-2 py-1 rounded-xl bg-sky-50 border border-sky-200 hover:bg-sky-100 active:scale-95 transition flex items-center gap-1 text-xs font-bold text-sky-700 shadow-2xs shrink-0" title="点击洗笔桶：稀释画笔颜色">
-        <span id="bucketIcon" class="text-sm">🪣</span>
-        <span id="bucketDiluteBadge" class="text-[10px] font-mono px-1 py-0.2 rounded bg-sky-500 text-white">100%</span>
-      </button>
+      <!-- 左侧：Logo 菜单按钮 + 新建画纸 -->
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button id="btnMainLogoMenu" class="group flex items-center gap-1.5 px-1.5 py-1 rounded-xl hover:bg-stone-100 active:scale-95 transition cursor-pointer" title="点击展开/收起完整功能菜单 (画纸/画风/图层/AI/相簿)">
+          <div class="relative w-8 h-8 rounded-xl overflow-hidden border border-amber-500/40 shadow-xs shrink-0 group-hover:scale-105 transition">
+            <img src="images/logo button_v2_.png" alt="Logo Button" class="w-full h-full object-cover" />
+          </div>
+          <div class="flex flex-col text-left pr-0.5">
+            <div class="flex items-center gap-1">
+              <span class="text-xs font-extrabold tracking-tight text-stone-900 group-hover:text-amber-600 transition">KaiDraw</span>
+              <span id="logoMenuToggleArrow" class="text-[9px] text-stone-400 transition-transform duration-200">▼</span>
+            </div>
+            <span class="text-[9px] font-mono font-bold text-amber-600/90">B.26.11.88</span>
+          </div>
+        </button>
 
-      <!-- 橡皮擦顶栏快捷切换按键 -->
-      <button id="btnToggleEraserTop" class="px-2 py-1 rounded-xl bg-stone-100 hover:bg-stone-200/90 border border-stone-200/80 active:scale-95 transition flex items-center gap-1 text-xs font-bold text-stone-700 shadow-2xs shrink-0" title="橡皮擦模式：局部擦除当前图层笔画">
-        <span class="text-sm">🧼</span>
-        <span class="text-[11px]">橡皮</span>
-      </button>
+        <div class="h-5 w-px bg-stone-200 mx-0.5"></div>
 
-      <!-- 紧凑型 1 ~ 120px 笔触粗细调节条 -->
-      <div class="flex items-center gap-1 bg-stone-100/90 px-1.5 py-0.5 rounded-xl border border-stone-200/70 shadow-inner shrink-0">
-        <button id="btnBrushSizeMinus" class="w-5 h-5 rounded-md bg-white hover:bg-stone-200 text-stone-700 font-bold text-xs flex items-center justify-center shadow-2xs active:scale-90 transition shrink-0" title="减小笔刷 (5px)">−</button>
-        <input id="brushSizeSlider" type="range" min="1" max="120" value="24" class="w-16 xl:w-28 accent-amber-500 cursor-pointer h-1.5 bg-stone-200 rounded-lg appearance-none" style="touch-action: pan-x;" title="平滑调节画笔粗细 (1~120px)" />
-        <button id="btnBrushSizePlus" class="w-5 h-5 rounded-md bg-white hover:bg-stone-200 text-stone-700 font-bold text-xs flex items-center justify-center shadow-2xs active:scale-90 transition shrink-0" title="增大笔刷 (5px)">+</button>
-        <span id="brushSizeLabel" class="text-[11px] font-mono font-bold text-amber-600 w-8 text-right shrink-0">24px</span>
+        <button id="btnQuickNewCanvas" class="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white active:scale-95 transition text-xs font-bold flex items-center gap-1 shadow-sm shadow-amber-500/20 shrink-0" title="新建空白画纸 (支持最多5张画纸，随时在右侧预览卡片切换)">
+          <span>✨</span>
+          <span class="text-xs font-bold">新建画纸</span>
+        </button>
+      </div>
+
+      <!-- 中间：5 张画作状态实时预览与随时切换条 (On-Screen Artwork Switcher Bar) -->
+      <div class="flex items-center gap-1.5 overflow-x-auto py-0.5 px-1 max-w-xl xl:max-w-2xl scrollbar-none" id="artworkPreviewBar">
+        <!-- 动态生成 5 张画纸缩略图与状态卡片，点击任意卡片即可随时切换回该画纸 -->
+      </div>
+
+      <!-- 右侧：撤销/重做 + 完整工具展开收起按钮 -->
+      <div class="flex items-center gap-1.5 shrink-0 ml-auto">
+        <div class="flex items-center gap-0.5 bg-stone-100/80 p-0.5 rounded-xl border border-stone-200/60">
+          <button id="btnUndoMini" class="p-1.5 rounded-lg hover:bg-white text-stone-700 active:scale-95 transition text-xs opacity-50 cursor-not-allowed" title="撤销">↩️</button>
+          <button id="btnRedoMini" class="p-1.5 rounded-lg hover:bg-white text-stone-700 active:scale-95 transition text-xs opacity-50 cursor-not-allowed" title="重做">↪️</button>
+        </div>
+
+        <button id="btnToggleFullToolbar" class="px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-amber-50 hover:text-amber-800 text-stone-700 border border-stone-200/70 text-xs font-bold flex items-center gap-1 active:scale-95 transition shrink-0" title="展开/收起完整功能工具栏">
+          <span>🎨</span>
+          <span class="hidden sm:inline text-[11px]">工具箱</span>
+          <span id="fullToolbarArrow" class="text-[9px] text-stone-400 transition-transform duration-200">▼</span>
+        </button>
       </div>
     </div>
 
-    <!-- 右侧组：画纸选纸、多图层、辅助工具、相片转换、AI 魔法、拍照存相簿 -->
-    <div class="flex items-center gap-1 flex-wrap justify-end ml-auto">
-      <!-- 0. 画纸独立选纸按键 -->
-      <button id="btnOpenPaperModal" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100/90 border border-amber-200/80 text-amber-800 active:scale-95 transition flex items-center gap-1 text-xs font-bold shadow-2xs shrink-0" title="选纸：默认白纸，含水彩纸、宣纸、云彩纸、卡纸">
-        <span class="text-sm">📄</span>
-        <span>选纸</span>
-      </button>
+    <!-- 第二行：展开式完整工具栏 (位于顶栏下方、画布上方，展开时处于正规文档流，绝对不覆盖第一行与画布) -->
+    <div id="fullTopToolbar" class="hidden bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl px-3 py-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all duration-200">
+      <!-- 左侧组：左上角画风选择主按钮 + 撤销/重做/清屏 + 当前颜色/洗笔/橡皮/粗细微调 -->
+      <div class="flex items-center gap-1 flex-wrap">
+        <!-- 带有 Logo 的主控收回按钮 -->
+        <button id="btnCloseTopToolbar" class="p-1 rounded-xl hover:bg-stone-100 text-stone-500 hover:text-stone-800 transition active:scale-95 text-xs font-bold mr-1" title="收起顶部工具栏">
+          ✕
+        </button>
 
-      <!-- 0.5 多图层管理按键 -->
-      <button id="btnToggleLayersPanel" class="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100/90 border border-indigo-200/80 text-indigo-800 active:scale-95 transition flex items-center gap-1 text-xs font-bold shadow-2xs shrink-0" title="多图层面板：支持手绘分层、AI优化逐层递进修改与图层上下移动">
-        <span class="text-sm">📑</span>
-        <span>图层</span>
-        <span id="layerCountBadge" class="text-[10px] font-mono px-1 rounded-full bg-indigo-600 text-white font-bold">1</span>
-      </button>
+        <!-- 画风选择大胶囊按钮 -->
+        <button id="btnOpenStyleSelector" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-amber-500/20 active:scale-95 transition shrink-0" title="点选展开画风与画具选择">
+          <span id="currentMediumIcon" class="text-sm drop-shadow-xs">🖌️</span>
+          <span id="currentMediumName" class="tracking-wide">水彩画室</span>
+          <span class="text-[9px] opacity-85">▼</span>
+        </button>
 
-      <!-- 1~4. 紧凑画布辅助按钮组 -->
-      <div class="flex items-center gap-0.5 bg-stone-100/80 p-0.5 rounded-xl border border-stone-200/60 shrink-0">
-        <button id="btnToggleGrid" class="p-1.5 rounded-lg hover:bg-white text-stone-700 active:scale-95 transition" title="开启/关闭九宫格黄金分割辅助线">
-          <span class="text-xs">#️⃣</span>
+        <div class="h-4 w-px bg-stone-200 mx-0.5"></div>
+        <button id="btnUndo" class="p-1.5 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-stone-700 border border-stone-200/60 active:scale-95 transition opacity-50 cursor-not-allowed shadow-2xs shrink-0" title="撤销 (Command+Z)">
+          <span class="text-sm">↩️</span>
         </button>
-        <button id="btnTogglePalmRejection" class="px-1.5 py-1 rounded-lg hover:bg-white text-stone-700 active:scale-95 transition flex items-center gap-0.5 text-[11px] font-semibold" title="手掌防误触：点击开启 Apple Pencil 专用作画 (屏蔽单指)">
-          <span id="palmIcon" class="text-xs">✍️</span>
-          <span id="palmText" class="hidden xl:inline font-semibold">手指/笔</span>
+        <button id="btnRedo" class="p-1.5 rounded-xl bg-stone-100 hover:bg-stone-200/80 text-stone-700 border border-stone-200/60 active:scale-95 transition opacity-50 cursor-not-allowed shadow-2xs shrink-0" title="重做 (Command+Shift+Z)">
+          <span class="text-sm">↪️</span>
         </button>
-        <button id="btnResetView" class="p-1.5 rounded-lg hover:bg-white text-stone-700 active:scale-95 transition" title="视野居中复位 (100%)">
-          <span class="text-xs">🔄</span>
+        <button id="btnClear" class="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100/90 text-rose-600 border border-rose-200/80 active:scale-95 transition shadow-2xs shrink-0" title="清空当前图层">
+          <span class="text-sm">🗑️</span>
         </button>
-        <button id="btnToggleRef" class="p-1.5 rounded-lg hover:bg-white text-stone-700 active:scale-95 transition" title="显示/隐藏描摹底图">
-          <span id="refEyeIcon" class="text-xs">👁️</span>
+
+        <div class="h-4 w-px bg-stone-200 mx-0.5"></div>
+
+        <!-- 当前画笔颜色圆环 -->
+        <div id="currentSwatchCircle" class="w-6 h-6 rounded-full border-2 border-white shadow-[0_2px_6px_rgba(0,0,0,0.18)] ring-1 ring-stone-200 transition-transform shrink-0 cursor-pointer" style="background: rgb(20, 85, 210);" title="当前画笔颜色 (点击打开调色抽屉)"></div>
+        
+        <!-- 洗笔水桶 -->
+        <button id="btnWashBucket" class="px-2 py-1 rounded-xl bg-sky-50 border border-sky-200 hover:bg-sky-100 active:scale-95 transition flex items-center gap-1 text-xs font-bold text-sky-700 shadow-2xs shrink-0" title="点击洗笔桶：稀释画笔颜色">
+          <span id="bucketIcon" class="text-sm">🪣</span>
+          <span id="bucketDiluteBadge" class="text-[10px] font-mono px-1 py-0.2 rounded bg-sky-500 text-white">100%</span>
         </button>
+
+        <!-- 橡皮擦顶栏快捷切换按键 -->
+        <button id="btnToggleEraserTop" class="px-2 py-1 rounded-xl bg-stone-100 hover:bg-stone-200/90 border border-stone-200/80 active:scale-95 transition flex items-center gap-1 text-xs font-bold text-stone-700 shadow-2xs shrink-0" title="橡皮擦模式：局部擦除当前图层笔画">
+          <span class="text-sm">🧼</span>
+          <span class="text-[11px]">橡皮</span>
+        </button>
+
+        <!-- 紧凑型 1 ~ 120px 笔触粗细调节条 -->
+        <div class="flex items-center gap-1 bg-stone-100/90 px-1.5 py-0.5 rounded-xl border border-stone-200/70 shadow-inner shrink-0">
+          <button id="btnBrushSizeMinus" class="w-5 h-5 rounded-md bg-white hover:bg-stone-200 text-stone-700 font-bold text-xs flex items-center justify-center shadow-2xs active:scale-90 transition shrink-0" title="减小笔刷 (5px)">−</button>
+          <input id="brushSizeSlider" type="range" min="1" max="120" value="24" class="w-16 xl:w-28 accent-amber-500 cursor-pointer h-1.5 bg-stone-200 rounded-lg appearance-none" style="touch-action: pan-x;" title="平滑调节画笔粗细 (1~120px)" />
+          <button id="btnBrushSizePlus" class="w-5 h-5 rounded-md bg-white hover:bg-stone-200 text-stone-700 font-bold text-xs flex items-center justify-center shadow-2xs active:scale-90 transition shrink-0" title="增大笔刷 (5px)">+</button>
+          <span id="brushSizeLabel" class="text-[11px] font-mono font-bold text-amber-600 w-8 text-right shrink-0">24px</span>
+        </div>
       </div>
 
-      <!-- 5. 拍照与相片转换实验室 -->
-      <button id="btnOpenCameraModal" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white font-bold text-xs flex items-center gap-1 shadow-sm shadow-emerald-500/20 active:scale-95 transition shrink-0" title="拍照/相片转画风与黑白描摹草稿">
-        <span class="text-sm">📸</span>
-        <span>相片转换</span>
-      </button>
+      <!-- 右侧组：画纸选纸、多图层、辅助工具、相片转换、AI 魔法、拍照存相簿 -->
+      <div class="flex items-center gap-1 flex-wrap justify-end ml-auto">
+        <!-- 0. 画纸独立选纸按键 -->
+        <button id="btnOpenPaperModal" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100/90 border border-amber-200/80 text-amber-800 active:scale-95 transition flex items-center gap-1 text-xs font-bold shadow-2xs shrink-0" title="选纸：默认白纸，含水彩纸、宣纸、云彩纸、卡纸">
+          <span class="text-sm">📄</span>
+          <span>选纸</span>
+        </button>
 
-      <!-- 5.5 AI 魔法工坊 -->
-      <button id="btnOpenAiModal" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 text-white font-bold text-xs flex items-center gap-1 shadow-sm shadow-purple-500/20 active:scale-95 transition shrink-0" title="AI 魔法工坊：4维以图生图优化 & 2~3秒以图生动画微电影">
-        <span class="text-sm">✨</span>
-        <span>AI 魔法</span>
-      </button>
+        <!-- 0.5 多图层管理按键 -->
+        <button id="btnToggleLayersPanel" class="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100/90 border border-indigo-200/80 text-indigo-800 active:scale-95 transition flex items-center gap-1 text-xs font-bold shadow-2xs shrink-0" title="多图层面板：支持手绘分层、AI优化逐层递进修改与图层上下移动">
+          <span class="text-sm">📑</span>
+          <span>图层</span>
+          <span id="layerCountBadge" class="text-[10px] font-mono px-1 rounded-full bg-indigo-600 text-white font-bold">1</span>
+        </button>
 
-      <!-- 6. 拍照储存到相簿 -->
-      <button id="btnExport" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/90 active:scale-95 transition shadow-2xs flex items-center gap-1 text-xs font-bold shrink-0" title="拍照储存高清画作到系统相簿 (Photos)">
-        <span class="text-sm">📷</span>
-        <span>存相簿</span>
-      </button>
+        <!-- 1~4. 紧凑画布辅助按钮组 -->
+        <div class="flex items-center gap-0.5 bg-stone-100/80 p-0.5 rounded-xl border border-stone-200/60 shrink-0">
+          <button id="btnToggleGrid" class="p-1.5 rounded-lg hover:bg-white text-stone-700 active:scale-95 transition" title="开启/关闭九宫格黄金分割辅助线">
+            <span class="text-xs">#️⃣</span>
+          </button>
+          <button id="btnTogglePalmRejection" class="px-1.5 py-1 rounded-lg hover:bg-white text-stone-700 active:scale-95 transition flex items-center gap-0.5 text-[11px] font-semibold" title="手掌防误触：点击开启 Apple Pencil 专用作画 (屏蔽单指)">
+            <span id="palmIcon" class="text-xs">✍️</span>
+            <span id="palmText" class="hidden xl:inline font-semibold">手指/笔</span>
+          </button>
+          <button id="btnResetView" class="p-1.5 rounded-lg hover:bg-white text-stone-700 active:scale-95 transition" title="视野居中复位 (100%)">
+            <span class="text-xs">🔄</span>
+          </button>
+          <button id="btnToggleRef" class="p-1.5 rounded-lg hover:bg-white text-stone-700 active:scale-95 transition" title="显示/隐藏描摹底图">
+            <span id="refEyeIcon" class="text-xs">👁️</span>
+          </button>
+        </div>
+
+        <!-- 5. 拍照与相片转换实验室 -->
+        <button id="btnOpenCameraModal" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white font-bold text-xs flex items-center gap-1 shadow-sm shadow-emerald-500/20 active:scale-95 transition shrink-0" title="拍照/相片转画风与黑白描摹草稿">
+          <span class="text-sm">📸</span>
+          <span>相片转换</span>
+        </button>
+
+        <!-- 5.5 AI 魔法工坊 -->
+        <button id="btnOpenAiModal" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 text-white font-bold text-xs flex items-center gap-1 shadow-sm shadow-purple-500/20 active:scale-95 transition shrink-0" title="AI 魔法工坊：4维以图生图优化 & 2~3秒以图生动画微电影">
+          <span class="text-sm">✨</span>
+          <span>AI 魔法</span>
+        </button>
+
+        <!-- 6. 拍照储存到相簿 -->
+        <button id="btnExport" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/90 active:scale-95 transition shadow-2xs flex items-center gap-1 text-xs font-bold shrink-0" title="拍照储存高清画作到系统相簿 (Photos)">
+          <span class="text-sm">📷</span>
+          <span>存相簿</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -381,8 +396,11 @@
     </aside>
   </main>
 
+  <!-- ==================== 抽屉背景点击遮罩 (点击画布或空白处立即轻柔关闭抽屉，绝不遮挡画纸) ==================== -->
+  <div id="drawerBackdrop" class="hidden fixed inset-0 z-45 bg-black/15 backdrop-blur-2xs transition-opacity"></div>
+
   <!-- ==================== 左上角动态弹出的画风与画具控制抽屉 (奢华现代设计工作室风) ==================== -->
-  <aside id="mainDrawer" class="drawer-panel drawer-closed fixed left-2.5 top-24 lg:top-16 bottom-4 w-90 max-w-[90vw] bg-white/95 backdrop-blur-3xl border border-stone-200/90 rounded-3xl p-4 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.15)] z-35 flex flex-col gap-3.5 overflow-y-auto text-stone-800">
+  <aside id="mainDrawer" class="drawer-panel drawer-closed fixed left-2.5 top-20 lg:top-16 bottom-4 w-90 max-w-[90vw] bg-white/95 backdrop-blur-3xl border border-stone-200/90 rounded-3xl p-4 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.2)] z-50 flex flex-col gap-3.5 overflow-y-auto text-stone-800">
     <!-- 抽屉顶部：标题与关闭按钮 -->
     <div class="flex items-center justify-between border-b border-stone-100 pb-2.5">
       <div class="text-xs font-bold text-stone-400 tracking-wider uppercase">画具与画风工坊</div>
@@ -1545,6 +1563,7 @@
         }
         updateUndoRedoUI();
         renderLayersUI();
+        if (typeof scheduleActiveCanvasThumbUpdate === 'function') scheduleActiveCanvasThumbUpdate();
       }
     });
 
@@ -1561,6 +1580,7 @@
         }
         updateUndoRedoUI();
         renderLayersUI();
+        if (typeof scheduleActiveCanvasThumbUpdate === 'function') scheduleActiveCanvasThumbUpdate();
       }
     });
 
@@ -1570,6 +1590,7 @@
       saveUndoState();
       active.ctx.clearRect(0, 0, W, H);
       renderLayersUI();
+      if (typeof scheduleActiveCanvasThumbUpdate === 'function') scheduleActiveCanvasThumbUpdate();
       showToast(`已清空当前 ${active.name}`);
     });
 
@@ -2732,6 +2753,11 @@
       updateStylusPressureUI(0, e.pointerType, false);
       try { paintCanvas.releasePointerCapture(e.pointerId); } catch (_) {}
       updateCursorRing(e.clientX, e.clientY, 0.5, false);
+
+      // 笔画落定收尾时，动态更新顶栏中当前画布的实时微缩状态
+      if (typeof scheduleActiveCanvasThumbUpdate === 'function') {
+        scheduleActiveCanvasThumbUpdate();
+      }
     }
 
     paintCanvas.addEventListener('pointerup', endDrawing);
@@ -3301,13 +3327,19 @@
       isDrawerOpen = true;
       drawer.classList.remove('drawer-closed');
       drawer.classList.add('drawer-open');
+      const backdrop = document.getElementById('drawerBackdrop');
+      if (backdrop) backdrop.classList.remove('hidden');
     }
 
     function closeDrawer() {
       isDrawerOpen = false;
       drawer.classList.remove('drawer-open');
       drawer.classList.add('drawer-closed');
+      const backdrop = document.getElementById('drawerBackdrop');
+      if (backdrop) backdrop.classList.add('hidden');
     }
+
+    document.getElementById('drawerBackdrop')?.addEventListener('click', closeDrawer);
 
     btnOpenStyleSelector.addEventListener('click', () => {
       if (isDrawerOpen) closeDrawer();
@@ -3348,6 +3380,9 @@
         if (hintEl && subInfo) hintEl.textContent = subInfo.hint;
         updateTopMediumButtonDisplay();
         if (subInfo) showToast(`已切换至：${subInfo.icon} ${subInfo.name}（${subInfo.hint}）`);
+        
+        // 关键调整前后关系：点选笔刷后自动轻柔关闭抽屉，让画纸立刻完全呈现不被遮挡
+        setTimeout(closeDrawer, 220);
       });
     });
 
@@ -3373,6 +3408,8 @@
         });
         btn.className = 'crayon-tip-btn py-2 rounded-xl border-2 border-amber-500 bg-amber-50 text-amber-900 font-bold active:scale-95 transition shadow-2xs';
         crayonTipMode = btn.dataset.crayontip;
+        showToast(`已选择蜡笔：${btn.textContent.trim()}`);
+        setTimeout(closeDrawer, 220);
       });
     });
 
@@ -3387,6 +3424,8 @@
         });
         btn.className = 'tip-btn py-2 rounded-xl border-2 border-amber-500 bg-amber-50 text-amber-900 font-bold active:scale-95 transition shadow-2xs';
         markerTip = btn.dataset.tip;
+        showToast(`已选择马克笔：${btn.textContent.trim()}`);
+        setTimeout(closeDrawer, 220);
       });
     });
 
@@ -4556,7 +4595,7 @@
     });
 
     /********************************************************************
-     * 14.5 极简模式主控、历史画作库(5张快照)、高频左侧工具坞交互与 KaiQuest 开屏启动动效
+     * 14.5 极简模式主控、多画纸状态实时预览条(最多5张)、高频工具坞交互与 KaiQuest 开屏启动
      ********************************************************************/
     // 1. KaiQuest 启动转场动效控制 (优雅淡出，可点击快速跳过，后续替换为正式动画)
     const splashEl = document.getElementById('kaiQuestSplash');
@@ -4573,30 +4612,38 @@
       setTimeout(dismissSplash, 1800);
     }
 
-    // 2. 顶部纯净极简 Logo 主控胶囊与完整功能菜单展开/收起
+    // 2. 顶部纯净极简 Logo 主控胶囊与完整功能菜单展开/收起 (在画布上方正规流布局，展开绝不遮挡)
     const btnMainLogoMenu = document.getElementById('btnMainLogoMenu');
     const fullTopToolbar = document.getElementById('fullTopToolbar');
     const btnCloseTopToolbar = document.getElementById('btnCloseTopToolbar');
+    const btnToggleFullToolbar = document.getElementById('btnToggleFullToolbar');
     const logoMenuToggleArrow = document.getElementById('logoMenuToggleArrow');
+    const fullToolbarArrow = document.getElementById('fullToolbarArrow');
 
     function toggleTopToolbar(forceOpen = null) {
       if (!fullTopToolbar) return;
-      const isCurrentlyOpen = fullTopToolbar.classList.contains('topbar-visible');
+      const isCurrentlyOpen = !fullTopToolbar.classList.contains('hidden');
       const shouldOpen = (forceOpen !== null) ? forceOpen : !isCurrentlyOpen;
 
       if (shouldOpen) {
-        fullTopToolbar.classList.remove('topbar-hidden');
-        fullTopToolbar.classList.add('topbar-visible');
+        fullTopToolbar.classList.remove('hidden');
         if (logoMenuToggleArrow) logoMenuToggleArrow.style.transform = 'rotate(180deg)';
+        if (fullToolbarArrow) fullToolbarArrow.style.transform = 'rotate(180deg)';
       } else {
-        fullTopToolbar.classList.remove('topbar-visible');
-        fullTopToolbar.classList.add('topbar-hidden');
+        fullTopToolbar.classList.add('hidden');
         if (logoMenuToggleArrow) logoMenuToggleArrow.style.transform = 'rotate(0deg)';
+        if (fullToolbarArrow) fullToolbarArrow.style.transform = 'rotate(0deg)';
       }
     }
 
     if (btnMainLogoMenu) {
       btnMainLogoMenu.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleTopToolbar();
+      });
+    }
+    if (btnToggleFullToolbar) {
+      btnToggleFullToolbar.addEventListener('click', (e) => {
         e.stopPropagation();
         toggleTopToolbar();
       });
@@ -4608,9 +4655,10 @@
       });
     }
 
-    // 在主画布上落笔开始绘画时，若菜单展开则自动轻盈收拢，给孩子最大创作视野
+    // 在主画布上落笔开始绘画时，若工坊抽屉或顶部工具栏展开，自动轻盈收拢，给孩子最大创作视野
     paintCanvas.addEventListener('pointerdown', () => {
-      if (fullTopToolbar && fullTopToolbar.classList.contains('topbar-visible')) {
+      if (isDrawerOpen) closeDrawer();
+      if (fullTopToolbar && !fullTopToolbar.classList.contains('hidden')) {
         toggleTopToolbar(false);
       }
     }, { passive: true });
@@ -4645,58 +4693,85 @@
       document.getElementById('btnRedo')?.click();
     });
 
-    // 4. 历史画作版本库与新增画纸 (最多记录 5 张完整画作快照与图层，随时切换)
-    let savedArtworks = [];
-    let currentArtworkId = 'art_' + Date.now();
+    // 4. 画面上方常驻多画作状态实时预览与随时切换系统 (最多 5 张画纸，随画随更，一键切换)
+    const MAX_CANVASES = 5;
+    let canvases = [];
+    let activeCanvasId = null;
+    let thumbUpdateTimer = null;
 
-    function captureCurrentArtworkSnapshot(customTitle = null) {
-      try {
-        const comp = getComposedCanvas(true);
-        const thumb = document.createElement('canvas');
-        thumb.width = 240;
-        thumb.height = 160;
-        thumb.getContext('2d').drawImage(comp, 0, 0, 240, 160);
-        const thumbDataUrl = thumb.toDataURL('image/jpeg', 0.82);
+    function initCanvasesSystem() {
+      const initId = 'canvas_' + Date.now();
+      activeCanvasId = initId;
+      canvases = [{
+        id: initId,
+        title: '画纸 1',
+        paperId: 'plain',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        layersData: [],
+        activeLayerIdx: 0,
+        thumbDataUrl: ''
+      }];
+    }
 
-        const existingIdx = savedArtworks.findIndex(a => a.id === currentArtworkId);
-        const defaultTitle = `作品 #${existingIdx !== -1 ? (savedArtworks.length - existingIdx) : (savedArtworks.length + 1)}`;
-        const artData = {
-          id: currentArtworkId,
-          title: customTitle || (existingIdx !== -1 ? savedArtworks[existingIdx].title : defaultTitle),
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          dateStr: new Date().toLocaleDateString(),
-          paperId: currentPaperType || 'plain',
-          thumbDataUrl: thumbDataUrl,
-          layers: layers.map(l => ({
-            name: l.name,
-            isAi: l.isAi,
-            opacity: l.opacity,
-            visible: l.visible,
-            snapshotCanvas: cloneCanvasSnapshot(l.canvas)
-          }))
-        };
+    function updateActiveCanvasSnapshot(triggerUI = true) {
+      const activeObj = canvases.find(c => c.id === activeCanvasId);
+      if (!activeObj) return;
 
-        if (existingIdx !== -1) {
-          savedArtworks[existingIdx] = artData;
-        } else {
-          savedArtworks.unshift(artData);
-          if (savedArtworks.length > 5) {
-            savedArtworks.pop();
-          }
-        }
-        updateHistoryBadge();
+      activeObj.paperId = currentPaperType || 'plain';
+      activeObj.activeLayerIdx = activeLayerIndex;
+      activeObj.layersData = layers.map(l => ({
+        name: l.name,
+        isAi: l.isAi,
+        opacity: l.opacity,
+        visible: l.visible,
+        canvasData: cloneCanvasSnapshot(l.canvas)
+      }));
+
+      // 生成小巧清晰的实时缩略图 (120x80)
+      const comp = getComposedCanvas(true);
+      const thumb = document.createElement('canvas');
+      thumb.width = 120;
+      thumb.height = 80;
+      thumb.getContext('2d').drawImage(comp, 0, 0, 120, 80);
+      activeObj.thumbDataUrl = thumb.toDataURL('image/jpeg', 0.82);
+
+      if (triggerUI) {
+        renderArtworkPreviewBar();
         renderArtworkHistoryUI();
-      } catch (err) {
-        console.warn('captureCurrentArtworkSnapshot error:', err);
       }
     }
 
-    function createNewBlankCanvas() {
-      // 1. 将当前画作快照完整保存到历史版本库
-      captureCurrentArtworkSnapshot();
+    function scheduleActiveCanvasThumbUpdate() {
+      if (thumbUpdateTimer) clearTimeout(thumbUpdateTimer);
+      thumbUpdateTimer = setTimeout(() => {
+        updateActiveCanvasSnapshot(true);
+      }, 180);
+    }
 
-      // 2. 生成全新画作 ID
-      currentArtworkId = 'art_' + Date.now();
+    function createNewBlankCanvas() {
+      if (canvases.length >= MAX_CANVASES) {
+        showToast(`⚠️ 已达到 ${MAX_CANVASES} 张画纸上限，请直接点击上方缩略图卡片切换继续作画！`);
+        return;
+      }
+
+      // 1. 保存当前画作完整快照
+      updateActiveCanvasSnapshot(false);
+
+      // 2. 建立新画纸对象并加入画作列表
+      const nextNum = canvases.length + 1;
+      const newId = 'canvas_' + Date.now();
+      const newCanvas = {
+        id: newId,
+        title: `画纸 ${nextNum}`,
+        paperId: 'plain',
+        layersData: [],
+        activeLayerIdx: 0,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        thumbDataUrl: ''
+      };
+
+      canvases.push(newCanvas);
+      activeCanvasId = newId;
 
       // 3. 清空现有图层 DOM，重置为只有 1 个手绘图层
       layersCanvasContainer.innerHTML = '';
@@ -4704,58 +4779,64 @@
       activeLayerIndex = 0;
       createLayer('图层 1 (手绘原作)');
 
-      // 4. 重置画纸为默认纯白印刷纸 (平滑白卡)
+      // 4. 重置画纸为默认纯白印刷纸
       drawPaperTexture('plain');
 
       // 5. 更新所有图层与撤销重做状态
       updateUndoRedoUI();
       renderLayersUI();
-      updateHistoryBadge();
-      renderArtworkHistoryUI();
+      updateActiveCanvasSnapshot(true);
 
-      // 6. 隐退弹窗并反馈
+      // 6. 关闭历史弹窗 (若开启) 并给予正面反馈
       document.getElementById('artworkHistoryModal')?.classList.add('hidden');
-      showToast('✨ 已开立全新空白画纸！上一张作品已归档至历史版本库。');
+      showToast(`✨ 已开立全新【画纸 ${nextNum}】，可随时点击顶栏缩略图切换！`);
     }
 
-    function loadArtworkFromHistory(artId) {
-      const target = savedArtworks.find(a => a.id === artId);
+    function switchToCanvas(canvasId) {
+      if (canvasId === activeCanvasId) return;
+
+      // 切换前先完整保存当前画布状态
+      updateActiveCanvasSnapshot(false);
+
+      const target = canvases.find(c => c.id === canvasId);
       if (!target) return;
 
-      // 切换前先保存当前作画现场
-      captureCurrentArtworkSnapshot();
-
-      currentArtworkId = target.id;
+      activeCanvasId = target.id;
 
       // 重建物理图层画布
       layersCanvasContainer.innerHTML = '';
       layers.length = 0;
 
-      target.layers.forEach((lData, idx) => {
-        const c = document.createElement('canvas');
-        c.width = W;
-        c.height = H;
-        c.className = 'layer-canvas absolute inset-0 w-full h-full';
-        c.style.opacity = lData.opacity;
-        c.style.display = lData.visible ? 'block' : 'none';
-        const ctx = c.getContext('2d');
-        ctx.drawImage(lData.snapshotCanvas, 0, 0);
+      if (target.layersData && target.layersData.length > 0) {
+        target.layersData.forEach((lData, idx) => {
+          const c = document.createElement('canvas');
+          c.width = W;
+          c.height = H;
+          c.className = 'layer-canvas absolute inset-0 w-full h-full';
+          c.style.opacity = lData.opacity;
+          c.style.display = lData.visible ? 'block' : 'none';
+          const ctx = c.getContext('2d');
+          if (lData.canvasData) {
+            ctx.drawImage(lData.canvasData, 0, 0);
+          }
 
-        layersCanvasContainer.appendChild(c);
-        layers.push({
-          id: 'layer_' + Date.now() + '_' + idx,
-          name: lData.name,
-          isAi: lData.isAi,
-          opacity: lData.opacity,
-          visible: lData.visible,
-          canvas: c,
-          ctx: ctx,
-          undoStack: [],
-          redoStack: []
+          layersCanvasContainer.appendChild(c);
+          layers.push({
+            id: 'layer_' + Date.now() + '_' + idx,
+            name: lData.name,
+            isAi: lData.isAi,
+            opacity: lData.opacity,
+            visible: lData.visible,
+            canvas: c,
+            ctx: ctx,
+            undoStack: [],
+            redoStack: []
+          });
         });
-      });
-
-      activeLayerIndex = Math.max(0, layers.length - 1);
+        activeLayerIndex = Math.min(target.activeLayerIdx || 0, layers.length - 1);
+      } else {
+        createLayer('图层 1 (手绘原作)');
+      }
 
       // 恢复画纸底纹
       if (target.paperId) {
@@ -4764,15 +4845,62 @@
 
       updateUndoRedoUI();
       renderLayersUI();
+      renderArtworkPreviewBar();
       renderArtworkHistoryUI();
       document.getElementById('artworkHistoryModal')?.classList.add('hidden');
-      showToast(`已切换至历史版本【${target.title}】继续创作`);
+      showToast(`已切换至【${target.title}】继续创作`);
     }
 
-    function updateHistoryBadge() {
-      const badge = document.getElementById('artHistoryBadge');
-      if (badge) {
-        badge.textContent = Math.max(1, savedArtworks.length);
+    function renderArtworkPreviewBar() {
+      const bar = document.getElementById('artworkPreviewBar');
+      if (!bar) return;
+      bar.innerHTML = '';
+
+      canvases.forEach((art) => {
+        const isActive = (art.id === activeCanvasId);
+        const card = document.createElement('button');
+        card.className = `artwork-slot-btn flex items-center gap-1.5 px-2 py-1 rounded-xl border transition-all active:scale-95 shrink-0 cursor-pointer ${
+          isActive
+            ? 'bg-amber-100/90 border-amber-500 ring-2 ring-amber-400/40 text-amber-900 shadow-xs'
+            : 'bg-white/80 border-stone-200/80 hover:bg-amber-50/70 text-stone-600'
+        }`;
+        card.title = `点击切换至 ${art.title} (${art.timestamp})`;
+
+        const thumbSrc = art.thumbDataUrl || '';
+        card.innerHTML = `
+          <div class="w-8 h-6 rounded-md overflow-hidden bg-white border border-stone-200/80 shadow-2xs shrink-0 flex items-center justify-center">
+            ${thumbSrc ? `<img src="${thumbSrc}" alt="${art.title}" class="w-full h-full object-cover" />` : '<span class="text-[9px] text-stone-300">📄</span>'}
+          </div>
+          <div class="flex flex-col text-left">
+            <div class="flex items-center gap-1">
+              <span class="text-[11px] font-bold leading-tight ${isActive ? 'text-amber-950 font-extrabold' : 'text-stone-700'}">${art.title}</span>
+              ${isActive ? '<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>' : ''}
+            </div>
+            <span class="text-[9px] font-mono opacity-60 leading-tight">${art.timestamp}</span>
+          </div>
+        `;
+
+        card.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (!isActive) {
+            switchToCanvas(art.id);
+          }
+        });
+
+        bar.appendChild(card);
+      });
+
+      // 如果未满 5 张画纸，显示快捷加画纸按钮
+      if (canvases.length < MAX_CANVASES) {
+        const addBtn = document.createElement('button');
+        addBtn.className = 'flex items-center gap-1 px-2 py-1 rounded-xl border border-dashed border-stone-300 hover:border-amber-400 bg-white/50 hover:bg-amber-50 text-stone-500 hover:text-amber-700 text-xs font-bold transition active:scale-95 shrink-0';
+        addBtn.title = `新建画纸 (当前 ${canvases.length}/${MAX_CANVASES})`;
+        addBtn.innerHTML = `<span>+</span> <span class="text-[10px]">加画纸</span>`;
+        addBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          createNewBlankCanvas();
+        });
+        bar.appendChild(addBtn);
       }
     }
 
@@ -4781,13 +4909,13 @@
       if (!grid) return;
       grid.innerHTML = '';
 
-      if (savedArtworks.length === 0) {
-        grid.innerHTML = '<div class="col-span-3 text-center py-8 text-stone-400 text-xs font-medium">尚无历史版本，开始作画或新建画纸即可自动归档</div>';
+      if (canvases.length === 0) {
+        grid.innerHTML = '<div class="col-span-3 text-center py-8 text-stone-400 text-xs font-medium">尚无历史画纸</div>';
         return;
       }
 
-      savedArtworks.forEach((art) => {
-        const isCurrent = (art.id === currentArtworkId);
+      canvases.forEach((art) => {
+        const isCurrent = (art.id === activeCanvasId);
         const card = document.createElement('div');
         card.className = `p-2.5 rounded-2xl border transition-all flex flex-col gap-2 relative cursor-pointer ${
           isCurrent
@@ -4797,23 +4925,23 @@
 
         card.innerHTML = `
           <div class="relative w-full h-28 rounded-xl overflow-hidden bg-stone-100 border border-stone-200/60 flex items-center justify-center">
-            <img src="${art.thumbDataUrl}" alt="${art.title}" class="w-full h-full object-contain" />
-            ${isCurrent ? '<span class="absolute top-1.5 right-1.5 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow-xs">当前作品</span>' : ''}
+            ${art.thumbDataUrl ? `<img src="${art.thumbDataUrl}" alt="${art.title}" class="w-full h-full object-contain" />` : '<span class="text-xs text-stone-400">空白新画纸</span>'}
+            ${isCurrent ? '<span class="absolute top-1.5 right-1.5 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow-xs">当前绘制中</span>' : ''}
           </div>
           <div class="flex items-center justify-between">
             <div class="flex flex-col">
               <span class="text-xs font-bold text-stone-800">${art.title}</span>
-              <span class="text-[10px] text-stone-400 font-mono">${art.dateStr} ${art.timestamp} · ${art.layers.length}个图层</span>
+              <span class="text-[10px] text-stone-400 font-mono">${art.timestamp} · ${(art.layersData && art.layersData.length) || 1}个图层</span>
             </div>
             <button class="btn-switch-art px-2 py-1 rounded-lg ${isCurrent ? 'bg-amber-500 text-white' : 'bg-stone-100 hover:bg-amber-100 text-stone-700'} text-[11px] font-bold transition active:scale-95">
-              ${isCurrent ? '绘制中' : '切到此画'}
+              ${isCurrent ? '当前画布' : '切到此画'}
             </button>
           </div>
         `;
 
         card.addEventListener('click', () => {
           if (!isCurrent) {
-            loadArtworkFromHistory(art.id);
+            switchToCanvas(art.id);
           }
         });
 
@@ -4831,7 +4959,7 @@
     });
     document.getElementById('btnToggleHistoryModal')?.addEventListener('click', (e) => {
       e.stopPropagation();
-      captureCurrentArtworkSnapshot();
+      updateActiveCanvasSnapshot(true);
       document.getElementById('artworkHistoryModal')?.classList.remove('hidden');
     });
     document.getElementById('btnCloseHistoryModal')?.addEventListener('click', (e) => {
@@ -4842,7 +4970,10 @@
     /********************************************************************
      * 15. 初始化系统装配 (图层1初始化、纸张纹理、画具与笔触)
      ********************************************************************/
-    // 初始化默认图层 1 (手绘原作)
+    // 1. 初始化多画布系统
+    initCanvasesSystem();
+
+    // 2. 初始化默认图层 1 (手绘原作)
     createLayer('图层 1 (手绘原作)');
 
     drawPaperTexture('plain');
@@ -4857,7 +4988,7 @@
     switchBrushMedium('watercolor');
     updateBrushSize(24);
     applyViewportTransform();
-    captureCurrentArtworkSnapshot('作品 #1 (手绘原作)');
+    updateActiveCanvasSnapshot(true);
   </script>
 </body>
 </html>
