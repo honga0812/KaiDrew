@@ -87,7 +87,7 @@
       <div class="flex flex-col items-center gap-1.5 text-white">
         <h1 class="text-2xl sm:text-3xl font-extrabold tracking-wider bg-gradient-to-r from-amber-300 via-rose-300 to-sky-300 bg-clip-text text-transparent">KaiQuest Studio</h1>
         <p class="text-xs sm:text-sm text-stone-400 font-medium tracking-widest">让每一个孩子的奇思妙想跃然纸上</p>
-        <span class="mt-2 text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-white/10 text-amber-300/90 border border-white/10">B.26.11.88 · Pro Edition</span>
+        <span class="mt-2 text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-white/10 text-amber-300/90 border border-white/10">B.26.11.89 · Pro Edition</span>
       </div>
       <!-- 动态加载指示器或点击跳过 -->
       <div class="mt-4 flex items-center gap-2 text-stone-400 text-xs font-mono">
@@ -99,35 +99,26 @@
 
   <!-- ==================== 顶部主控制总成 (置于画布正上方，展开时绝不遮盖画纸与新建功能) ==================== -->
   <header id="mainAppHeader" class="shrink-0 flex flex-col gap-1.5 z-40 relative px-1 pt-0.5">
-    <!-- 第一行：常驻顶栏 (Logo + 新建画纸 + 画作状态实时预览切换条 + 撤销/重做 + 展开完整工具按键) -->
+    <!-- 第一行：常驻顶栏 (放大版 Logo + 新建画纸 + 5个画作状态实时预览小视窗 + 撤销/重做 + 展开完整工具按键) -->
     <div class="flex items-center justify-between gap-2 bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl px-2.5 py-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
       
-      <!-- 左侧：Logo 菜单按钮 + 新建画纸 -->
-      <div class="flex items-center gap-1.5 shrink-0">
-        <button id="btnMainLogoMenu" class="group flex items-center gap-1.5 px-1.5 py-1 rounded-xl hover:bg-stone-100 active:scale-95 transition cursor-pointer" title="点击展开/收起完整功能菜单 (画纸/画风/图层/AI/相簿)">
-          <div class="relative w-8 h-8 rounded-xl overflow-hidden border border-amber-500/40 shadow-xs shrink-0 group-hover:scale-105 transition">
-            <img src="images/logo button_v2_.png" alt="Logo Button" class="w-full h-full object-cover" />
-          </div>
-          <div class="flex flex-col text-left pr-0.5">
-            <div class="flex items-center gap-1">
-              <span class="text-xs font-extrabold tracking-tight text-stone-900 group-hover:text-amber-600 transition">KaiDraw</span>
-              <span id="logoMenuToggleArrow" class="text-[9px] text-stone-400 transition-transform duration-200">▼</span>
-            </div>
-            <span class="text-[9px] font-mono font-bold text-amber-600/90">B.26.11.88</span>
-          </div>
+      <!-- 左侧：放大版 Logo 按钮 (无文字与版本号，直接点击展开全功能) + 新建画纸 -->
+      <div class="flex items-center gap-2 shrink-0">
+        <button id="btnMainLogoMenu" class="group relative w-12 h-12 rounded-2xl overflow-hidden border-2 border-amber-500/50 shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition cursor-pointer shrink-0 p-0 bg-white" title="点击展开/收起完整功能菜单 (画纸/画风/图层/AI/相簿)">
+          <img src="images/logo button_v2_.png" alt="KaiDraw Logo Menu" class="w-full h-full object-cover rounded-2xl" />
         </button>
 
-        <div class="h-5 w-px bg-stone-200 mx-0.5"></div>
+        <div class="h-6 w-px bg-stone-200 mx-0.5"></div>
 
-        <button id="btnQuickNewCanvas" class="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white active:scale-95 transition text-xs font-bold flex items-center gap-1 shadow-sm shadow-amber-500/20 shrink-0" title="新建空白画纸 (支持最多5张画纸，随时在右侧预览卡片切换)">
-          <span>✨</span>
+        <button id="btnQuickNewCanvas" class="px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white active:scale-95 transition text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-amber-500/25 shrink-0" title="新建空白画纸 (可在右侧 5 个小视窗随时切换)">
+          <span class="text-sm">✨</span>
           <span class="text-xs font-bold">新建画纸</span>
         </button>
       </div>
 
-      <!-- 中间：5 张画作状态实时预览与随时切换条 (On-Screen Artwork Switcher Bar) -->
-      <div class="flex items-center gap-1.5 overflow-x-auto py-0.5 px-1 max-w-xl xl:max-w-2xl scrollbar-none" id="artworkPreviewBar">
-        <!-- 动态生成 5 张画纸缩略图与状态卡片，点击任意卡片即可随时切换回该画纸 -->
+      <!-- 中间：固定 5 个画作状态实时预览小视窗 (5 Canvas Preview Mini-Windows) -->
+      <div class="flex items-center gap-1.5 overflow-x-auto py-0.5 px-1 scrollbar-none" id="artworkPreviewBar">
+        <!-- 动态注入固定 5 个画纸小视窗，随画随更，点击即跳 -->
       </div>
 
       <!-- 右侧：撤销/重做 + 完整工具展开收起按钮 -->
@@ -258,7 +249,7 @@
       <div class="relative w-64 h-64 sm:w-80 sm:h-80 rounded-3xl overflow-hidden shadow-inner border border-stone-400/20 grayscale-30 flex items-center justify-center">
         <img src="images/logo_v1.jpeg" alt="KaiDraw Background Brand" class="w-full h-full object-cover opacity-80" />
       </div>
-      <span class="mt-3 text-xs font-mono font-bold tracking-widest text-stone-500 uppercase">KaiDraw · Creative Studio B.26.11.88</span>
+      <span class="mt-3 text-xs font-mono font-bold tracking-widest text-stone-500 uppercase">KaiDraw · Creative Studio B.26.11.89</span>
     </div>
 
     <!-- 硬件加速视口变形包裹层 (Transform Wrapper - 重磅 300g 艺术画纸悬浮光影) -->
@@ -323,77 +314,96 @@
       </button>
     </div>
 
-    <!-- ==================== 左侧高频悬浮工具坞 (Left Primary Floating Dock) ==================== -->
-    <aside id="leftPrimaryDock" class="absolute left-3 top-1/2 -translate-y-1/2 z-30 flex flex-col items-center gap-2 bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl p-2 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] select-none">
-      <!-- 1. 当前画笔类型大按键 (点击可直接展开画笔抽屉) -->
-      <button id="leftDockMediumBtn" class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 text-white flex items-center justify-center text-lg shadow-sm shadow-amber-500/25 transition active:scale-90" title="当前画笔类型 (点击切换画笔风格)">
-        <span id="leftDockMediumIcon">🖌️</span>
-      </button>
-
-      <!-- 2. 画笔 vs 橡皮擦 模式切换按键 -->
-      <div class="flex flex-col gap-1.5 p-1 bg-stone-100/90 rounded-xl border border-stone-200/60">
-        <button id="dockBtnBrush" class="w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center text-sm shadow-xs transition active:scale-95" title="画笔模式">
-          <span id="dockBrushIcon">🖌️</span>
+    <!-- ==================== 左侧高频两列紧凑工具坞 (可隐藏为闪烁发光小圆点) ==================== -->
+    <aside id="leftPrimaryDock" class="absolute left-2.5 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-1.5 bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl p-2 shadow-[0_16px_40px_-8px_rgba(0,0,0,0.14)] select-none w-28 transition-all duration-300">
+      <!-- 顶栏：标题与折叠隐藏按键 -->
+      <div class="flex items-center justify-between pb-1 border-b border-stone-100">
+        <span class="text-[9px] font-bold text-stone-400 uppercase font-mono">常用工具</span>
+        <button id="btnCollapseLeftDock" class="w-5 h-5 rounded-md hover:bg-stone-100 text-stone-500 hover:text-stone-800 text-[10px] font-bold flex items-center justify-center active:scale-90 transition cursor-pointer" title="隐藏工具坞 (收起为左侧闪烁小圆点)">
+          ◀
         </button>
-        <button id="dockBtnEraser" class="w-8 h-8 rounded-lg bg-transparent text-stone-600 hover:bg-stone-200 flex items-center justify-center text-sm transition active:scale-95" title="橡皮擦模式 (局部擦除当前图层)">
+      </div>
+
+      <!-- 第 1 行 (两列)：画笔风格大按键 vs 橡皮模式按键 -->
+      <div class="grid grid-cols-2 gap-1.5 items-center">
+        <button id="leftDockMediumBtn" class="h-9 w-full rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 text-white flex items-center justify-center text-base shadow-xs active:scale-90 transition cursor-pointer" title="当前画笔风格 (点击切换水彩/毛笔/喷笔/蜡笔/马克笔)">
+          <span id="leftDockMediumIcon">🖌️</span>
+        </button>
+        <button id="dockBtnEraser" class="h-9 w-full rounded-xl bg-stone-100 text-stone-600 hover:bg-stone-200 flex items-center justify-center text-sm active:scale-90 transition border border-stone-200/60 cursor-pointer" title="橡皮擦模式 (局部擦除当前图层)">
           <span>🧼</span>
         </button>
       </div>
 
-      <div class="w-5 h-px bg-stone-200"></div>
+      <!-- 第 2 行 (两列)：当前颜色大圆环 vs 防误触切换按键 -->
+      <div class="grid grid-cols-2 gap-1.5 items-center">
+        <div class="flex flex-col items-center">
+          <div id="leftDockActiveColor" class="w-7 h-7 rounded-full border-2 border-white shadow-[0_2px_6px_rgba(0,0,0,0.2)] ring-2 ring-amber-500/80 cursor-pointer active:scale-90 transition" style="background: rgb(20, 85, 210);" title="当前画笔色彩 (点击展开调色盘)"></div>
+        </div>
+        <button id="leftDockPalmBtn" class="h-8 w-full rounded-xl bg-stone-100 hover:bg-stone-200/90 text-stone-700 active:scale-90 transition flex items-center justify-center text-xs shadow-2xs border border-stone-200/50 cursor-pointer" title="防误触：开启后仅 Apple Pencil 可作画 (屏蔽单指)">
+          <span id="leftDockPalmIcon">✍️</span>
+        </button>
+      </div>
 
-      <!-- 3. 当前颜色圆环 + 最近使用的 5 种调和颜色历史 (随点即换) -->
-      <div class="flex flex-col items-center gap-1.5" title="当前画笔颜色与最近使用色彩">
-        <div id="leftDockActiveColor" class="w-7 h-7 rounded-full border-2 border-white shadow-[0_2px_8px_rgba(0,0,0,0.2)] ring-2 ring-amber-500/80 cursor-pointer transition active:scale-90" style="background: rgb(20, 85, 210);" title="当前画笔颜色 (点击展开调色盘)"></div>
-        <div id="recentColorsContainer" class="flex flex-col items-center gap-1">
-          <!-- 动态渲染最近使用的 5 种颜色圆点 -->
+      <!-- 第 3 行：最近使用调和色 (6个微型圆点，双列排布) -->
+      <div class="flex flex-col gap-0.5 pt-0.5 border-t border-stone-100">
+        <span class="text-[8px] font-bold text-stone-400 text-center font-mono">常用色</span>
+        <div id="recentColorsContainer" class="grid grid-cols-3 gap-1 place-items-center">
+          <!-- 动态注入最近使用的色彩圆点 -->
         </div>
       </div>
 
-      <div class="w-5 h-px bg-stone-200"></div>
-
-      <!-- 4. 常用粗细快速点选 (圆点大小随粗细直观缩放) -->
-      <div class="flex flex-col items-center gap-1" id="quickSizePresetsContainer">
-        <span class="text-[8px] font-bold text-stone-400 font-mono">粗细</span>
-        <button data-quicksize="4" class="quick-size-btn w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="极细 4px (勾线)">
-          <span class="w-1.5 h-1.5 rounded-full bg-stone-700 block"></span>
-        </button>
-        <button data-quicksize="12" class="quick-size-btn w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="细笔 12px (轮廓细节)">
-          <span class="w-2.5 h-2.5 rounded-full bg-stone-700 block"></span>
-        </button>
-        <button data-quicksize="24" class="quick-size-btn active w-7 h-7 rounded-lg bg-amber-100 ring-2 ring-amber-500 flex items-center justify-center transition active:scale-90" title="常规 24px (标准)">
-          <span class="w-3.5 h-3.5 rounded-full bg-amber-600 block"></span>
-        </button>
-        <button data-quicksize="48" class="quick-size-btn w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="粗笔 48px (填色)">
-          <span class="w-5 h-5 rounded-full bg-stone-700 block"></span>
-        </button>
-        <button data-quicksize="80" class="quick-size-btn w-7 h-7 rounded-lg hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="大笔 80px (大面积)">
-          <span class="w-6 h-6 rounded-full bg-stone-700 block"></span>
-        </button>
-      </div>
-
-      <!-- 纵向微调滑动条 -->
-      <div class="flex flex-col items-center gap-1">
-        <input id="dockVerticalSizeSlider" type="range" min="1" max="120" value="24" class="h-14 w-1.5 accent-amber-500 cursor-pointer appearance-none bg-stone-200 rounded-full" style="writing-mode: vertical-lr; direction: rtl;" title="垂直滑动调节粗细 (1~120px)" />
-        <span id="dockSizeLabel" class="text-[8px] font-mono font-bold text-amber-600">24px</span>
-      </div>
-
-      <div class="w-5 h-px bg-stone-200"></div>
-
-      <!-- 5. 防误触快捷切换按键 -->
-      <button id="leftDockPalmBtn" class="w-8 h-8 rounded-xl bg-stone-100 hover:bg-stone-200/90 text-stone-700 active:scale-90 transition flex items-center justify-center text-xs shadow-2xs" title="防误触：点击开启 Apple Pencil 专用 (屏蔽单指作画)">
-        <span id="leftDockPalmIcon">✍️</span>
-      </button>
-
-      <!-- 6. 实时触控笔力度小仪表 (带模式切换) -->
-      <div id="leftDockPressureBox" class="flex flex-col items-center gap-0.5 cursor-pointer active:scale-95 transition" title="当前触控笔实时力度 (点击切换压感灵敏度模式)">
-        <span class="text-[8px] font-bold text-stone-400">力度</span>
-        <div class="w-2.5 h-9 bg-stone-100 rounded-full border border-stone-200 overflow-hidden flex flex-col justify-end p-0.2">
-          <div id="dockPressureFill" class="w-full bg-gradient-to-t from-sky-400 via-emerald-500 to-purple-600 rounded-full transition-all duration-75" style="height: 0%;"></div>
+      <!-- 第 4 行 (两列)：垂直滑动条 + 快速粗细圆点 -->
+      <div class="grid grid-cols-2 gap-1 items-center pt-0.5 border-t border-stone-100">
+        <!-- 列1：微调滑动条 -->
+        <div class="flex flex-col items-center gap-0.5">
+          <input id="dockVerticalSizeSlider" type="range" min="1" max="120" value="24" class="h-12 w-1.5 accent-amber-500 cursor-pointer appearance-none bg-stone-200 rounded-full" style="writing-mode: vertical-lr; direction: rtl;" title="垂直滑动微调笔触粗细 (1~120px)" />
+          <span id="dockSizeLabel" class="text-[8px] font-mono font-bold text-amber-600">24px</span>
         </div>
-        <span id="dockPressureLabel" class="text-[8px] font-mono font-bold text-purple-600">0%</span>
+        <!-- 列2：预设尺寸微型圆点 -->
+        <div class="flex flex-col items-center gap-1" id="quickSizePresetsContainer">
+          <button data-quicksize="4" class="quick-size-btn w-5 h-5 rounded-md hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="极细 4px">
+            <span class="w-1 h-1 rounded-full bg-stone-700 block"></span>
+          </button>
+          <button data-quicksize="12" class="quick-size-btn w-5 h-5 rounded-md hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="细笔 12px">
+            <span class="w-1.5 h-1.5 rounded-full bg-stone-700 block"></span>
+          </button>
+          <button data-quicksize="24" class="quick-size-btn active w-5 h-5 rounded-md bg-amber-100 ring-1 ring-amber-500 flex items-center justify-center transition active:scale-90" title="标准 24px">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-600 block"></span>
+          </button>
+          <button data-quicksize="48" class="quick-size-btn w-5 h-5 rounded-md hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="粗笔 48px">
+            <span class="w-3.5 h-3.5 rounded-full bg-stone-700 block"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 第 5 行 (两列)：实时压感小仪表 vs 快捷撤销/重做 -->
+      <div class="grid grid-cols-2 gap-1 items-center pt-0.5 border-t border-stone-100">
+        <!-- 压感小仪表 -->
+        <div id="leftDockPressureBox" class="flex flex-col items-center gap-0.5 cursor-pointer active:scale-95 transition" title="当前触控笔压感 (点击切换模式)">
+          <div class="w-2 h-7 bg-stone-100 rounded-full border border-stone-200 overflow-hidden flex flex-col justify-end p-0.2">
+            <div id="dockPressureFill" class="w-full bg-gradient-to-t from-sky-400 via-emerald-500 to-purple-600 rounded-full transition-all duration-75" style="height: 0%;"></div>
+          </div>
+          <span id="dockPressureLabel" class="text-[7px] font-mono font-bold text-purple-600">0%</span>
+        </div>
+        <!-- 快捷撤销重做 -->
+        <div class="flex flex-col items-center gap-1">
+          <button id="dockBtnUndo" class="w-6 h-6 rounded-md hover:bg-stone-100 text-[10px] text-stone-700 active:scale-90 transition flex items-center justify-center cursor-pointer opacity-50 cursor-not-allowed" title="快捷撤销">↩️</button>
+          <button id="dockBtnRedo" class="w-6 h-6 rounded-md hover:bg-stone-100 text-[10px] text-stone-700 active:scale-90 transition flex items-center justify-center cursor-pointer opacity-50 cursor-not-allowed" title="快捷重做">↪️</button>
+        </div>
       </div>
     </aside>
+
+    <!-- ==================== 折叠隐藏后在左侧边缘闪烁的发光小圆点 (点击重新唤出常用工具坞) ==================== -->
+    <button id="leftDockCollapsedPill" class="hidden absolute left-2 top-1/2 -translate-y-1/2 z-30 p-2 cursor-pointer active:scale-90 transition group flex items-center justify-center" title="常用工具坞已隐藏，点击重新展开">
+      <div class="relative flex items-center justify-center w-7 h-7">
+        <!-- 闪烁扩散光波环 (animate-ping) -->
+        <span class="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75 animate-ping"></span>
+        <!-- 呼吸内发光 (animate-pulse) -->
+        <span class="absolute inline-flex h-5 w-5 rounded-full bg-amber-500/50 animate-pulse"></span>
+        <!-- 核心闪烁彩色圆点 -->
+        <span id="collapsedDotCore" class="relative inline-flex rounded-full h-3.5 w-3.5 bg-gradient-to-tr from-amber-500 to-amber-600 border border-white shadow-md group-hover:scale-125 transition"></span>
+      </div>
+    </button>
   </main>
 
   <!-- ==================== 抽屉背景点击遮罩 (点击画布或空白处立即轻柔关闭抽屉，绝不遮挡画纸) ==================== -->
@@ -1531,24 +1541,33 @@
       const rBtn = document.getElementById('btnRedo');
       const uMini = document.getElementById('btnUndoMini');
       const rMini = document.getElementById('btnRedoMini');
+      const uDock = document.getElementById('dockBtnUndo');
+      const rDock = document.getElementById('dockBtnRedo');
       if (!active) return;
       const canUndo = active.undoStack && active.undoStack.length > 0;
       const canRedo = active.redoStack && active.redoStack.length > 0;
       if (canUndo) {
         if (uBtn) uBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         if (uMini) uMini.classList.remove('opacity-50', 'cursor-not-allowed');
+        if (uDock) uDock.classList.remove('opacity-50', 'cursor-not-allowed');
       } else {
         if (uBtn) uBtn.classList.add('opacity-50', 'cursor-not-allowed');
         if (uMini) uMini.classList.add('opacity-50', 'cursor-not-allowed');
+        if (uDock) uDock.classList.add('opacity-50', 'cursor-not-allowed');
       }
       if (canRedo) {
         if (rBtn) rBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         if (rMini) rMini.classList.remove('opacity-50', 'cursor-not-allowed');
+        if (rDock) rDock.classList.remove('opacity-50', 'cursor-not-allowed');
       } else {
         if (rBtn) rBtn.classList.add('opacity-50', 'cursor-not-allowed');
         if (rMini) rMini.classList.add('opacity-50', 'cursor-not-allowed');
+        if (rDock) rDock.classList.add('opacity-50', 'cursor-not-allowed');
       }
     }
+
+    document.getElementById('dockBtnUndo')?.addEventListener('click', () => document.getElementById('btnUndo')?.click());
+    document.getElementById('dockBtnRedo')?.addEventListener('click', () => document.getElementById('btnRedo')?.click());
 
     document.getElementById('btnUndo').addEventListener('click', () => {
       const active = getActiveLayer();
@@ -3074,6 +3093,7 @@
       [225, 45, 57],    // 茜红
       [255, 180, 0],    // 亮黄
       [40, 167, 69],    // 翠绿
+      [147, 51, 234],   // 紫罗兰
       [38, 38, 38]      // 焦黑
     ];
 
@@ -3083,9 +3103,9 @@
       container.innerHTML = '';
       recentColors.forEach((rgb) => {
         const dot = document.createElement('button');
-        dot.className = 'w-5 h-5 rounded-full border border-stone-200/90 shadow-2xs hover:scale-120 active:scale-95 transition cursor-pointer shrink-0';
+        dot.className = 'w-4.5 h-4.5 rounded-full border border-stone-200/90 shadow-2xs hover:scale-120 active:scale-95 transition cursor-pointer shrink-0';
         dot.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
-        dot.title = `使用此调和色 RGB(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+        dot.title = `使用此色彩 RGB(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
         dot.addEventListener('click', (e) => {
           e.stopPropagation();
           applyBrushColor(rgb, true);
@@ -3100,6 +3120,8 @@
       if (circle) circle.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       const dockActive = document.getElementById('leftDockActiveColor');
       if (dockActive) dockActive.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+      const collapsedDot = document.getElementById('collapsedDotCore');
+      if (collapsedDot) collapsedDot.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       const customWater = document.getElementById('customWatercolorPreview');
       if (customWater) customWater.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       if (palLiveMixPreview) palLiveMixPreview.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
@@ -3110,10 +3132,10 @@
       const markerTip = document.querySelector('#customMarkerPreview div:first-child');
       if (markerTip) markerTip.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
 
-      // 维护最近使用 5 种色彩（去重并将最新颜色置顶）
+      // 维护最近使用 6 种色彩（去重并将最新颜色置顶，完美适配双列/3列排布）
       recentColors = recentColors.filter(c => !(Math.abs(c[0] - rgb[0]) < 8 && Math.abs(c[1] - rgb[1]) < 8 && Math.abs(c[2] - rgb[2]) < 8));
       recentColors.unshift([...rgb]);
-      if (recentColors.length > 5) recentColors.length = 5;
+      if (recentColors.length > 6) recentColors.length = 6;
       renderRecentColorsUI();
     }
 
@@ -4663,7 +4685,26 @@
       }
     }, { passive: true });
 
-    // 3. 左侧悬浮高频工具坞事件关联
+    // 3. 左侧悬浮高频工具坞事件关联 (两列紧凑布局 + 折叠收拢为闪烁发光小圆点)
+    const leftDock = document.getElementById('leftPrimaryDock');
+    const collapsedPill = document.getElementById('leftDockCollapsedPill');
+    const btnCollapseLeftDock = document.getElementById('btnCollapseLeftDock');
+
+    if (btnCollapseLeftDock && leftDock && collapsedPill) {
+      btnCollapseLeftDock.addEventListener('click', (e) => {
+        e.stopPropagation();
+        leftDock.classList.add('hidden');
+        collapsedPill.classList.remove('hidden');
+        showToast('已隐藏左侧工具坞，点击左侧闪烁发光小圆点可随时展开');
+      });
+
+      collapsedPill.addEventListener('click', (e) => {
+        e.stopPropagation();
+        collapsedPill.classList.add('hidden');
+        leftDock.classList.remove('hidden');
+      });
+    }
+
     document.getElementById('leftDockMediumBtn')?.addEventListener('click', (e) => {
       e.stopPropagation();
       openDrawer();
@@ -4693,33 +4734,36 @@
       document.getElementById('btnRedo')?.click();
     });
 
-    // 4. 画面上方常驻多画作状态实时预览与随时切换系统 (最多 5 张画纸，随画随更，一键切换)
-    const MAX_CANVASES = 5;
-    let canvases = [];
-    let activeCanvasId = null;
+    // 4. 画面上方固定 5 个画作状态实时预览小视窗 (5 Canvas Preview Mini-Windows)
+    const TOTAL_CANVAS_SLOTS = 5;
+    let canvasSlots = [];
+    let activeSlotIndex = 0;
     let thumbUpdateTimer = null;
 
     function initCanvasesSystem() {
-      const initId = 'canvas_' + Date.now();
-      activeCanvasId = initId;
-      canvases = [{
-        id: initId,
-        title: '画纸 1',
+      activeSlotIndex = 0;
+      canvasSlots = Array.from({ length: TOTAL_CANVAS_SLOTS }, (_, idx) => ({
+        slotIndex: idx,
+        title: `画纸 ${idx + 1}`,
+        isCreated: (idx === 0), // 初始只有画纸 1 激活并开立
         paperId: 'plain',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         layersData: [],
         activeLayerIdx: 0,
-        thumbDataUrl: ''
-      }];
+        thumbDataUrl: '',
+        timestamp: idx === 0 ? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
+      }));
     }
 
-    function updateActiveCanvasSnapshot(triggerUI = true) {
-      const activeObj = canvases.find(c => c.id === activeCanvasId);
-      if (!activeObj) return;
+    function saveCurrentSlotSnapshot(triggerUI = true) {
+      if (activeSlotIndex < 0 || activeSlotIndex >= TOTAL_CANVAS_SLOTS) return;
+      const currentSlot = canvasSlots[activeSlotIndex];
+      if (!currentSlot) return;
 
-      activeObj.paperId = currentPaperType || 'plain';
-      activeObj.activeLayerIdx = activeLayerIndex;
-      activeObj.layersData = layers.map(l => ({
+      currentSlot.isCreated = true;
+      currentSlot.paperId = currentPaperType || 'plain';
+      currentSlot.activeLayerIdx = activeLayerIndex;
+      currentSlot.timestamp = currentSlot.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      currentSlot.layersData = layers.map(l => ({
         name: l.name,
         isAi: l.isAi,
         opacity: l.opacity,
@@ -4727,13 +4771,13 @@
         canvasData: cloneCanvasSnapshot(l.canvas)
       }));
 
-      // 生成小巧清晰的实时缩略图 (120x80)
+      // 生成小巧清晰的实时缩略图 (140x95)
       const comp = getComposedCanvas(true);
       const thumb = document.createElement('canvas');
-      thumb.width = 120;
-      thumb.height = 80;
-      thumb.getContext('2d').drawImage(comp, 0, 0, 120, 80);
-      activeObj.thumbDataUrl = thumb.toDataURL('image/jpeg', 0.82);
+      thumb.width = 140;
+      thumb.height = 95;
+      thumb.getContext('2d').drawImage(comp, 0, 0, 140, 95);
+      currentSlot.thumbDataUrl = thumb.toDataURL('image/jpeg', 0.85);
 
       if (triggerUI) {
         renderArtworkPreviewBar();
@@ -4744,66 +4788,78 @@
     function scheduleActiveCanvasThumbUpdate() {
       if (thumbUpdateTimer) clearTimeout(thumbUpdateTimer);
       thumbUpdateTimer = setTimeout(() => {
-        updateActiveCanvasSnapshot(true);
-      }, 180);
+        saveCurrentSlotSnapshot(true);
+      }, 150);
     }
 
     function createNewBlankCanvas() {
-      if (canvases.length >= MAX_CANVASES) {
-        showToast(`⚠️ 已达到 ${MAX_CANVASES} 张画纸上限，请直接点击上方缩略图卡片切换继续作画！`);
+      // 1. 寻找下一个未开立的视窗卡槽 (0~4)
+      let nextEmptySlot = canvasSlots.findIndex(s => !s.isCreated);
+      if (nextEmptySlot === -1) {
+        showToast('⚠️ 5个画纸视窗均已有作品，请直接点选上方视窗切换，或清空当前画纸！');
         return;
       }
 
-      // 1. 保存当前画作完整快照
-      updateActiveCanvasSnapshot(false);
+      // 2. 完整封存当前正在绘制的画作
+      saveCurrentSlotSnapshot(false);
 
-      // 2. 建立新画纸对象并加入画作列表
-      const nextNum = canvases.length + 1;
-      const newId = 'canvas_' + Date.now();
-      const newCanvas = {
-        id: newId,
-        title: `画纸 ${nextNum}`,
-        paperId: 'plain',
-        layersData: [],
-        activeLayerIdx: 0,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        thumbDataUrl: ''
-      };
+      // 3. 激活新视窗
+      activeSlotIndex = nextEmptySlot;
+      const newSlot = canvasSlots[nextEmptySlot];
+      newSlot.isCreated = true;
+      newSlot.paperId = 'plain';
+      newSlot.timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      canvases.push(newCanvas);
-      activeCanvasId = newId;
-
-      // 3. 清空现有图层 DOM，重置为只有 1 个手绘图层
+      // 4. 重置物理图层为图层 1 (手绘原作)
       layersCanvasContainer.innerHTML = '';
       layers.length = 0;
       activeLayerIndex = 0;
       createLayer('图层 1 (手绘原作)');
 
-      // 4. 重置画纸为默认纯白印刷纸
+      // 5. 清理交互临时画布并重设为平滑白纸
+      paintCtx.clearRect(0, 0, W, H);
       drawPaperTexture('plain');
 
-      // 5. 更新所有图层与撤销重做状态
+      // 6. 更新所有状态并重绘 5 个小视窗
       updateUndoRedoUI();
       renderLayersUI();
-      updateActiveCanvasSnapshot(true);
+      saveCurrentSlotSnapshot(true);
 
-      // 6. 关闭历史弹窗 (若开启) 并给予正面反馈
       document.getElementById('artworkHistoryModal')?.classList.add('hidden');
-      showToast(`✨ 已开立全新【画纸 ${nextNum}】，可随时点击顶栏缩略图切换！`);
+      showToast(`✨ 已成功新建【画纸 ${nextEmptySlot + 1}】，可在上方 5 个小视窗随时点选切换！`);
     }
 
-    function switchToCanvas(canvasId) {
-      if (canvasId === activeCanvasId) return;
+    function switchToSlot(targetIdx) {
+      if (targetIdx < 0 || targetIdx >= TOTAL_CANVAS_SLOTS) return;
+      if (targetIdx === activeSlotIndex) return;
 
-      // 切换前先完整保存当前画布状态
-      updateActiveCanvasSnapshot(false);
+      // 1. 先保存当前正在绘制的视窗现场
+      saveCurrentSlotSnapshot(false);
 
-      const target = canvases.find(c => c.id === canvasId);
-      if (!target) return;
+      const target = canvasSlots[targetIdx];
+      activeSlotIndex = targetIdx;
 
-      activeCanvasId = target.id;
+      // 2. 如果目标视窗尚未开立过，直接作为全新画纸开启
+      if (!target.isCreated) {
+        target.isCreated = true;
+        target.paperId = 'plain';
+        target.timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      // 重建物理图层画布
+        layersCanvasContainer.innerHTML = '';
+        layers.length = 0;
+        activeLayerIndex = 0;
+        createLayer('图层 1 (手绘原作)');
+        paintCtx.clearRect(0, 0, W, H);
+        drawPaperTexture('plain');
+
+        updateUndoRedoUI();
+        renderLayersUI();
+        saveCurrentSlotSnapshot(true);
+        showToast(`✨ 已开立全新【画纸 ${targetIdx + 1}】！`);
+        return;
+      }
+
+      // 3. 如果已有画作，完整还原物理图层
       layersCanvasContainer.innerHTML = '';
       layers.length = 0;
 
@@ -4838,7 +4894,7 @@
         createLayer('图层 1 (手绘原作)');
       }
 
-      // 恢复画纸底纹
+      paintCtx.clearRect(0, 0, W, H);
       if (target.paperId) {
         drawPaperTexture(target.paperId);
       }
@@ -4848,7 +4904,7 @@
       renderArtworkPreviewBar();
       renderArtworkHistoryUI();
       document.getElementById('artworkHistoryModal')?.classList.add('hidden');
-      showToast(`已切换至【${target.title}】继续创作`);
+      showToast(`已切换至【画纸 ${targetIdx + 1}】继续创作`);
     }
 
     function renderArtworkPreviewBar() {
@@ -4856,52 +4912,38 @@
       if (!bar) return;
       bar.innerHTML = '';
 
-      canvases.forEach((art) => {
-        const isActive = (art.id === activeCanvasId);
+      canvasSlots.forEach((slot, idx) => {
+        const isActive = (idx === activeSlotIndex);
         const card = document.createElement('button');
-        card.className = `artwork-slot-btn flex items-center gap-1.5 px-2 py-1 rounded-xl border transition-all active:scale-95 shrink-0 cursor-pointer ${
+        card.className = `canvas-window-slot flex flex-col items-center p-1 rounded-xl border-2 transition-all active:scale-95 cursor-pointer shrink-0 ${
           isActive
-            ? 'bg-amber-100/90 border-amber-500 ring-2 ring-amber-400/40 text-amber-900 shadow-xs'
-            : 'bg-white/80 border-stone-200/80 hover:bg-amber-50/70 text-stone-600'
+            ? 'bg-amber-100/95 border-amber-500 ring-2 ring-amber-400/40 text-amber-950 shadow-xs'
+            : slot.isCreated
+              ? 'bg-white/95 border-stone-200/90 hover:border-amber-400 text-stone-700 shadow-2xs'
+              : 'bg-stone-50/70 border-dashed border-stone-300 hover:border-amber-400 text-stone-400'
         }`;
-        card.title = `点击切换至 ${art.title} (${art.timestamp})`;
+        card.title = slot.isCreated ? `点击切换到【画纸 ${idx + 1}】(${slot.timestamp})` : `点击开立【画纸 ${idx + 1}】`;
 
-        const thumbSrc = art.thumbDataUrl || '';
+        const hasThumb = slot.isCreated && slot.thumbDataUrl;
         card.innerHTML = `
-          <div class="w-8 h-6 rounded-md overflow-hidden bg-white border border-stone-200/80 shadow-2xs shrink-0 flex items-center justify-center">
-            ${thumbSrc ? `<img src="${thumbSrc}" alt="${art.title}" class="w-full h-full object-cover" />` : '<span class="text-[9px] text-stone-300">📄</span>'}
+          <div class="relative w-12 sm:w-14 h-8 rounded-lg overflow-hidden bg-white border border-stone-200/70 shadow-2xs flex items-center justify-center">
+            ${hasThumb 
+              ? `<img src="${slot.thumbDataUrl}" alt="${slot.title}" class="w-full h-full object-cover" />` 
+              : `<span class="text-[10px] text-stone-300 font-mono font-bold">${slot.isCreated ? '📄' : '+'}</span>`}
+            ${isActive ? '<span class="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-amber-500 ring-1 ring-white animate-pulse"></span>' : ''}
           </div>
-          <div class="flex flex-col text-left">
-            <div class="flex items-center gap-1">
-              <span class="text-[11px] font-bold leading-tight ${isActive ? 'text-amber-950 font-extrabold' : 'text-stone-700'}">${art.title}</span>
-              ${isActive ? '<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>' : ''}
-            </div>
-            <span class="text-[9px] font-mono opacity-60 leading-tight">${art.timestamp}</span>
+          <div class="flex items-center gap-0.5 mt-0.5">
+            <span class="text-[9px] sm:text-[10px] font-bold leading-none ${isActive ? 'text-amber-900 font-extrabold' : 'text-stone-600'}">画纸 ${idx + 1}</span>
           </div>
         `;
 
         card.addEventListener('click', (e) => {
           e.stopPropagation();
-          if (!isActive) {
-            switchToCanvas(art.id);
-          }
+          switchToSlot(idx);
         });
 
         bar.appendChild(card);
       });
-
-      // 如果未满 5 张画纸，显示快捷加画纸按钮
-      if (canvases.length < MAX_CANVASES) {
-        const addBtn = document.createElement('button');
-        addBtn.className = 'flex items-center gap-1 px-2 py-1 rounded-xl border border-dashed border-stone-300 hover:border-amber-400 bg-white/50 hover:bg-amber-50 text-stone-500 hover:text-amber-700 text-xs font-bold transition active:scale-95 shrink-0';
-        addBtn.title = `新建画纸 (当前 ${canvases.length}/${MAX_CANVASES})`;
-        addBtn.innerHTML = `<span>+</span> <span class="text-[10px]">加画纸</span>`;
-        addBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          createNewBlankCanvas();
-        });
-        bar.appendChild(addBtn);
-      }
     }
 
     function renderArtworkHistoryUI() {
@@ -4909,40 +4951,35 @@
       if (!grid) return;
       grid.innerHTML = '';
 
-      if (canvases.length === 0) {
-        grid.innerHTML = '<div class="col-span-3 text-center py-8 text-stone-400 text-xs font-medium">尚无历史画纸</div>';
-        return;
-      }
-
-      canvases.forEach((art) => {
-        const isCurrent = (art.id === activeCanvasId);
+      canvasSlots.forEach((slot, idx) => {
+        const isCurrent = (idx === activeSlotIndex);
         const card = document.createElement('div');
         card.className = `p-2.5 rounded-2xl border transition-all flex flex-col gap-2 relative cursor-pointer ${
           isCurrent
             ? 'bg-amber-50/80 border-amber-400 shadow-md ring-2 ring-amber-400/40'
-            : 'bg-white border-stone-200/80 hover:border-amber-300 hover:shadow-sm'
+            : slot.isCreated
+              ? 'bg-white border-stone-200/80 hover:border-amber-300 hover:shadow-sm'
+              : 'bg-stone-50/60 border-dashed border-stone-300 text-stone-400'
         }`;
 
         card.innerHTML = `
           <div class="relative w-full h-28 rounded-xl overflow-hidden bg-stone-100 border border-stone-200/60 flex items-center justify-center">
-            ${art.thumbDataUrl ? `<img src="${art.thumbDataUrl}" alt="${art.title}" class="w-full h-full object-contain" />` : '<span class="text-xs text-stone-400">空白新画纸</span>'}
+            ${slot.thumbDataUrl ? `<img src="${slot.thumbDataUrl}" alt="${slot.title}" class="w-full h-full object-contain" />` : `<span class="text-xs text-stone-400">${slot.isCreated ? '空白新画纸' : '空闲视窗 (点击直接开立)'}</span>`}
             ${isCurrent ? '<span class="absolute top-1.5 right-1.5 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow-xs">当前绘制中</span>' : ''}
           </div>
           <div class="flex items-center justify-between">
             <div class="flex flex-col">
-              <span class="text-xs font-bold text-stone-800">${art.title}</span>
-              <span class="text-[10px] text-stone-400 font-mono">${art.timestamp} · ${(art.layersData && art.layersData.length) || 1}个图层</span>
+              <span class="text-xs font-bold text-stone-800">${slot.title}</span>
+              <span class="text-[10px] text-stone-400 font-mono">${slot.timestamp || '未创建'} · ${(slot.layersData && slot.layersData.length) || 1}个图层</span>
             </div>
             <button class="btn-switch-art px-2 py-1 rounded-lg ${isCurrent ? 'bg-amber-500 text-white' : 'bg-stone-100 hover:bg-amber-100 text-stone-700'} text-[11px] font-bold transition active:scale-95">
-              ${isCurrent ? '当前画布' : '切到此画'}
+              ${isCurrent ? '当前画布' : slot.isCreated ? '切到此画' : '开立此画'}
             </button>
           </div>
         `;
 
         card.addEventListener('click', () => {
-          if (!isCurrent) {
-            switchToCanvas(art.id);
-          }
+          switchToSlot(idx);
         });
 
         grid.appendChild(card);
@@ -4959,7 +4996,7 @@
     });
     document.getElementById('btnToggleHistoryModal')?.addEventListener('click', (e) => {
       e.stopPropagation();
-      updateActiveCanvasSnapshot(true);
+      saveCurrentSlotSnapshot(true);
       document.getElementById('artworkHistoryModal')?.classList.remove('hidden');
     });
     document.getElementById('btnCloseHistoryModal')?.addEventListener('click', (e) => {
@@ -4970,7 +5007,7 @@
     /********************************************************************
      * 15. 初始化系统装配 (图层1初始化、纸张纹理、画具与笔触)
      ********************************************************************/
-    // 1. 初始化多画布系统
+    // 1. 初始化 5 个画纸视窗系统
     initCanvasesSystem();
 
     // 2. 初始化默认图层 1 (手绘原作)
@@ -4988,7 +5025,7 @@
     switchBrushMedium('watercolor');
     updateBrushSize(24);
     applyViewportTransform();
-    updateActiveCanvasSnapshot(true);
+    saveCurrentSlotSnapshot(true);
   </script>
 </body>
 </html>
