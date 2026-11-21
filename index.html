@@ -50,8 +50,8 @@
       pointer-events: auto;
     }
     .splash-fade-out {
-      opacity: 0;
-      pointer-events: none;
+      opacity: 0 !important;
+      pointer-events: none !important;
       transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .hue-slider {
@@ -123,10 +123,10 @@
 <body class="text-stone-800 antialiased h-screen flex flex-col p-0 select-none relative overflow-hidden bg-white" style="height: 100dvh;">
 
   <!-- ==================== KaiDraw 纯白极简开屏 (纯白底色，居中 Logo，顶部版本号，主功能逐次渐显) ==================== -->
-  <div id="kaiQuestSplash" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700">
+  <div id="kaiQuestSplash" onclick="this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="轻点立即进入画室">
     <!-- 顶部居中极简版本编号 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.94 · Pro Edition
+      B.26.11.95 · Pro Edition
     </div>
 
     <!-- 中心纯净 KaiDraw Logo (纯白无界背景) -->
@@ -3975,16 +3975,16 @@
       }
     });
 
-    document.getElementById('btnResetView').addEventListener('click', () => {
+    document.getElementById('btnResetView')?.addEventListener('click', () => {
       fitCanvasToScreen();
       showToast('视野已重置满版居中');
     });
 
-    document.getElementById('btnZoomIn').addEventListener('click', () => {
+    document.getElementById('btnZoomIn')?.addEventListener('click', () => {
       viewScale = Math.min(3.5, viewScale + 0.15);
       applyViewportTransform();
     });
-    document.getElementById('btnZoomOut').addEventListener('click', () => {
+    document.getElementById('btnZoomOut')?.addEventListener('click', () => {
       viewScale = Math.max(0.4, viewScale - 0.15);
       applyViewportTransform();
     });
@@ -4814,8 +4814,19 @@
       };
 
       splashEl.addEventListener('click', dismissSplash);
-      setTimeout(dismissSplash, 1100);
+      splashEl.addEventListener('pointerdown', dismissSplash);
+      setTimeout(dismissSplash, 900);
     }
+
+    // 全局开屏保底计时器：无论如何 1.2 秒后平滑隐去开屏 Logo，绝不卡屏
+    setTimeout(() => {
+      const s = document.getElementById('kaiQuestSplash');
+      if (s && !s.dataset.dismissed) {
+        s.dataset.dismissed = 'true';
+        s.classList.add('splash-fade-out');
+        setTimeout(() => s.remove(), 700);
+      }
+    }, 1200);
 
     // 2. 自由拖移组件：Logo 主控制按钮 与 AI 魔法圆形悬浮按钮 (支持手指触摸、Apple Pencil 触控笔及鼠标拖移至屏幕任意位置)
     function makeElementDraggable(element, onTapped) {
@@ -5069,7 +5080,7 @@
       if (!currentSlot) return;
 
       currentSlot.isCreated = true;
-      currentSlot.paperId = currentPaperType || 'plain';
+      currentSlot.paperId = currentPaperId || 'plain';
       currentSlot.activeLayerIdx = activeLayerIndex;
       currentSlot.timestamp = currentSlot.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       currentSlot.layersData = layers.map(l => ({
