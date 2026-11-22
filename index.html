@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.116 · Pro Edition
+      B.26.11.117 · Pro Edition
     </div>
 
     <!-- 中心純淨 KaiDraw Logo 3秒藝術動畫容器 -->
@@ -250,6 +250,14 @@
   <!-- ==================== 頂部懸浮展開式工具欄 (點選 LogoButton 平滑展開/收起，分類歸類清晰，頂部居中) ==================== -->
   <div id="fullTopToolbar" class="studio-toolbar-collapsed fixed top-3 left-1/2 z-50 max-w-[calc(100vw-2rem)] bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl px-3 py-2 shadow-[0_12px_36px_rgba(0,0,0,0.15)] flex flex-wrap items-center justify-center gap-2 select-none transition-all">
     
+    <!-- 回到開始：相片轉換 / 拍照臨摹 (點選 Logo 後快速回到開始介面) -->
+    <div class="flex items-center gap-1.5 pr-2 border-r border-stone-200/80">
+      <button id="btnToolbarBackToStart" class="px-2.5 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200/80 font-bold text-xs flex items-center gap-1 shadow-2xs active:scale-95 transition shrink-0 cursor-pointer" title="回到開始：相片臨摹與拍照選擇 (重新詢問是否拍照或直接繪圖)">
+        <span class="text-sm">📸</span>
+        <span>回到開始 (拍照臨摹)</span>
+      </button>
+    </div>
+
     <!-- 分類 1：畫種與媒介 -->
     <div class="flex items-center gap-1.5 pr-2 border-r border-stone-200/80">
       <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider hidden md:inline">畫種</span>
@@ -388,7 +396,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.116 · Pro Edition
+        B.26.11.117 · Pro Edition
       </div>
     </div>
 
@@ -503,14 +511,14 @@
         <span>🎯</span>
       </button>
 
-      <!-- 畫室背景音樂 (純音符圖示，等待載入音軌) -->
-      <button id="btnToggleStudioBgm" class="w-8 h-8 rounded-xl bg-white/95 backdrop-blur-xl hover:bg-amber-50 border border-stone-200/90 text-stone-700 text-xs font-semibold flex items-center justify-center active:scale-95 transition shadow-sm cursor-pointer group" title="畫室背景音樂 (等待載入音軌)">
+      <!-- 畫室背景音樂 (純音符圖示，點選切換播放/暫停) -->
+      <button id="btnToggleStudioBgm" class="w-8 h-8 rounded-xl bg-white/95 backdrop-blur-xl hover:bg-amber-50 border border-stone-200/90 text-stone-700 text-xs font-semibold flex items-center justify-center active:scale-95 transition shadow-sm cursor-pointer group" title="畫室背景音樂 (隨機曲目 · 音量 30%)">
         <span id="bgmStateIcon" class="text-sm leading-none transition-transform group-hover:scale-110">🎵</span>
       </button>
     </div>
 
     <!-- ==================== 左側高頻兩列緊湊工具塢 (長條形優雅佈局，整合九宮格與描摹底圖眼睛) ==================== -->
-    <aside id="leftPrimaryDock" class="stagger-init-left absolute left-2 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-1.5 bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl p-2 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.12)] select-none w-24 transition-all duration-300">
+    <aside id="leftPrimaryDock" class="stagger-init-left absolute left-2 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-1.5 bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl p-2 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.12)] select-none w-24 transition-all duration-300 max-h-[calc(100vh-2rem)] overflow-y-auto">
       <!-- 頂欄：標題與摺疊隱藏按鍵 -->
       <div class="flex items-center justify-between pb-1 border-b border-stone-100">
         <span class="text-[8px] font-bold text-stone-400 uppercase font-mono">常用工具</span>
@@ -616,7 +624,6 @@
           <span id="dockRefEyeIcon" class="text-xs">👁️</span>
         </button>
       </div>
-      </div>
 
       <!-- 第 5 行 (兩列)：實時壓感小儀表 vs 快捷撤銷/重做 -->
       <div class="grid grid-cols-2 gap-1 items-center pt-0.5 border-t border-stone-100">
@@ -686,9 +693,9 @@
   </button>
 
   <!-- ==================== 2. 懸浮自由拖移 圖層管理器圓形按鈕 (預設位於右上角第 2 個，Logo下方，輕點喚起迷你圖層條) ==================== -->
-  <button id="btnFloatingLayersManager" class="stagger-init-right fixed z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden shadow-[0_4px_16px_rgba(99,102,241,0.18)] hover:shadow-[0_8px_24px_rgba(99,102,241,0.28)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center p-0 bg-white cursor-move select-none touch-none group border-0 ring-0 outline-none" style="touch-action: none; top: 76px; right: 16px;" title="圖層管理器：預設右上角第 2 個，可自由拖移，輕點展開迷你圖層條">
+  <button id="btnFloatingLayersManager" class="stagger-init-right fixed z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-visible shadow-[0_4px_16px_rgba(99,102,241,0.18)] hover:shadow-[0_8px_24px_rgba(99,102,241,0.28)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center p-0 bg-white cursor-move select-none touch-none group border-0 ring-0 outline-none" style="touch-action: none; top: 76px; right: 16px;" title="圖層管理器：預設右上角第 2 個，可自由拖移，輕點展開迷你圖層條">
     <img src="images/btn_layers_icon.png" alt="Layers Manager" class="w-full h-full object-cover rounded-full pointer-events-none select-none transition-transform group-hover:scale-105" />
-    <span id="floatingLayerCountBadge" class="absolute bottom-0 right-0 text-[7.5px] font-bold text-white bg-indigo-600/90 px-1 py-0.2 rounded-full shadow-xs pointer-events-none font-mono">1層</span>
+    <span id="floatingLayerCountBadge" class="absolute -top-1.5 -right-1.5 z-10 px-1.5 py-0.5 text-[9px] font-bold text-white bg-indigo-600 rounded-full border-2 border-white shadow-sm font-mono leading-none flex items-center justify-center pointer-events-none">1層</span>
   </button>
 
   <!-- ==================== 3. 懸浮自由拖移 AI 魔法圓形按鈕 (預設位於右上角第 3 個，圖層下方，輕點開啟 AI 魔法工坊) ==================== -->
@@ -698,9 +705,9 @@
   </button>
 
   <!-- ==================== 4. 懸浮自由拖移 畫紙與材質圓形按鈕 (預設位於右下角獨立區域，輕點喚起緊湊畫紙版本與材質預覽) ==================== -->
-  <button id="btnFloatingPaperHistory" class="stagger-init-right fixed z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden shadow-[0_4px_16px_rgba(217,119,6,0.18)] hover:shadow-[0_8px_24px_rgba(217,119,6,0.28)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center p-0 bg-white cursor-move select-none touch-none group border-0 ring-0 outline-none" style="touch-action: none; bottom: 24px; right: 16px;" title="新增畫紙與材質：預設右下角，可自由拖移，輕點檢視畫紙版本與物理畫質預覽">
+  <button id="btnFloatingPaperHistory" class="stagger-init-right fixed z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-visible shadow-[0_4px_16px_rgba(217,119,6,0.18)] hover:shadow-[0_8px_24px_rgba(217,119,6,0.28)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center p-0 bg-white cursor-move select-none touch-none group border-0 ring-0 outline-none" style="touch-action: none; bottom: 24px; right: 16px;" title="新增畫紙與材質：預設右下角，可自由拖移，輕點檢視畫紙版本與物理畫質預覽">
     <img src="images/btn_paper_icon.png" alt="Paper & Canvas" class="w-full h-full object-cover rounded-full pointer-events-none select-none transition-transform group-hover:scale-105" />
-    <span id="floatingPaperCountBadge" class="absolute bottom-0 right-0 text-[7.5px] font-bold text-white bg-amber-600/90 px-1 py-0.2 rounded-full shadow-xs pointer-events-none font-mono">1/10</span>
+    <span id="floatingPaperCountBadge" class="absolute -top-1.5 -right-1.5 z-10 px-1.5 py-0.5 text-[9px] font-bold text-white bg-amber-600 rounded-full border-2 border-white shadow-sm font-mono leading-none flex items-center justify-center pointer-events-none">1/10</span>
   </button>
 
   <!-- ==================== 抽屜背景點選遮罩 (點選畫布或空白處立即輕柔關閉抽屜，絕不遮擋畫紙) ==================== -->
@@ -982,11 +989,19 @@
   <!-- ==================== 彈窗：相片轉畫風與黑白描摹草稿實驗室 (明亮現代設計) ==================== -->
   <div id="cameraModal" class="fixed inset-0 bg-stone-900/40 backdrop-blur-md z-50 hidden items-center justify-center p-3">
     <div class="bg-white/95 backdrop-blur-3xl border border-stone-200/90 rounded-3xl max-w-4xl w-full p-5 shadow-2xl flex flex-col gap-3.5 max-h-[94vh] overflow-y-auto text-stone-800">
-      <div class="flex items-center justify-between border-b border-stone-100 pb-2.5">
-        <div class="flex items-center gap-2 font-bold text-sm text-stone-800">
+      <div class="flex items-center justify-between border-b border-stone-100 pb-2.5 gap-2 flex-wrap">
+        <div class="flex items-center gap-2 font-bold text-sm sm:text-base text-stone-800">
           <span>📸</span> <span>相片智慧轉畫風與黑白描摹草稿實驗室</span>
         </div>
-        <button id="btnCloseCameraModal" class="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold flex items-center justify-center active:scale-95 transition">✕</button>
+        <div class="flex items-center gap-2.5 ml-auto">
+          <!-- 右上角明顯放大版：直接進入畫布繪畫 -->
+          <button id="btnSkipPhotoDirectDrawTop" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm shadow-lg shadow-amber-500/35 hover:shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 border border-amber-300/60 ring-2 ring-amber-400/40 cursor-pointer animate-pulse" title="跳過拍照，直接進入空白畫室開始繪畫">
+            <span class="text-base">🎨</span>
+            <span>直接進入畫布繪畫</span>
+            <span class="text-xs bg-white/25 px-1.5 py-0.5 rounded-full font-sans">立即開始 ➜</span>
+          </button>
+          <button id="btnCloseCameraModal" class="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold flex items-center justify-center active:scale-95 transition cursor-pointer" title="關閉">✕</button>
+        </div>
       </div>
 
       <div class="bg-gradient-to-r from-amber-50/90 via-emerald-50/80 to-sky-50/80 border border-amber-200/90 rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
@@ -1809,13 +1824,13 @@
       <!-- 彈窗頂欄 -->
       <div class="flex items-center justify-between border-b border-stone-100 pb-3">
         <div class="flex items-center gap-2.5">
-          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 via-orange-500 to-amber-600 flex items-center justify-center text-white text-xl shadow-md shadow-amber-500/30">👑</div>
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-500 via-pink-500 to-amber-500 flex items-center justify-center text-white text-xl shadow-md shadow-purple-500/30">✨</div>
           <div>
             <h2 class="text-base font-extrabold tracking-tight text-stone-900 flex items-center gap-2">
-              加入 KaiDraw VIP 尊享會員
-              <span class="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold">Pro Unlimited</span>
+              KaiDraw AI 魔法創作會員
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold">AI Pro Unlimited</span>
             </h2>
-            <p class="text-xs text-stone-500">解鎖無限畫紙圖層 · 暢享 AI 魔法無限算力 · 專屬大師級物理材質</p>
+            <p class="text-xs text-stone-500">基礎畫室功能（所有畫紙、畫筆、圖層、相片臨摹與匯出）永久免費！VIP 僅針對「AI 魔法繪圖優化」提供專屬雲端算力。</p>
           </div>
         </div>
         <button id="btnCloseVipModal" class="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 flex items-center justify-center text-sm font-bold transition active:scale-95 cursor-pointer">✕</button>
@@ -1823,59 +1838,59 @@
 
       <!-- VIP 核心權益卡片矩陣 -->
       <div class="grid grid-cols-2 gap-2 text-xs">
-        <div class="p-2.5 rounded-2xl bg-amber-50/70 border border-amber-200/70 flex items-start gap-2">
-          <span class="text-base">📄</span>
+        <div class="p-2.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/70 flex items-start gap-2">
+          <span class="text-base">🎨</span>
           <div>
-            <span class="font-bold text-amber-950 block text-[11px]">無限畫紙與圖層</span>
-            <span class="text-[10px] text-amber-800/80">解除畫紙與圖層數量上限，支援 4K 超高畫質匯出</span>
+            <span class="font-bold text-emerald-950 block text-[11px]">基礎畫室 100% 免費</span>
+            <span class="text-[10px] text-emerald-800/80">所有物理畫紙、多圖層、畫具筆刷與相片臨摹完全免費！</span>
           </div>
         </div>
         <div class="p-2.5 rounded-2xl bg-purple-50/70 border border-purple-200/70 flex items-start gap-2">
           <span class="text-base">✨</span>
           <div>
-            <span class="font-bold text-purple-950 block text-[11px]">AI 魔法工坊無限算力</span>
-            <span class="text-[10px] text-purple-800/80">無限次 4 維以圖生圖與 3 秒運鏡微電影生成</span>
+            <span class="font-bold text-purple-950 block text-[11px]">AI 高清以圖生圖優化</span>
+            <span class="text-[10px] text-purple-800/80">無限次 4 大風格大師級以圖生圖重繪與紋理細節精細化</span>
           </div>
         </div>
-        <div class="p-2.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/70 flex items-start gap-2">
-          <span class="text-base">📜</span>
+        <div class="p-2.5 rounded-2xl bg-pink-50/70 border border-pink-200/70 flex items-start gap-2">
+          <span class="text-base">🎬</span>
           <div>
-            <span class="font-bold text-emerald-950 block text-[11px]">30+ 大師物理畫紙</span>
-            <span class="text-[10px] text-emerald-800/80">解鎖阿詩冷壓水彩紙、手工生宣、金箔木紋紙</span>
+            <span class="font-bold text-pink-950 block text-[11px]">AI 動畫微電影生成</span>
+            <span class="text-[10px] text-pink-800/80">一鍵賦予手繪作品生命力，生成 2.5s~3s 動態運鏡微電影</span>
           </div>
         </div>
-        <div class="p-2.5 rounded-2xl bg-sky-50/70 border border-sky-200/70 flex items-start gap-2">
-          <span class="text-base">🖌️</span>
+        <div class="p-2.5 rounded-2xl bg-amber-50/70 border border-amber-200/70 flex items-start gap-2">
+          <span class="text-base">⚡</span>
           <div>
-            <span class="font-bold text-sky-950 block text-[11px]">18+ 專業特調筆刷</span>
-            <span class="text-[10px] text-sky-800/80">多色混調水彩、潑墨飛白、油畫厚塗刀與熒光筆</span>
+            <span class="font-bold text-amber-950 block text-[11px]">雲端 GPU 專屬極速算力</span>
+            <span class="text-[10px] text-amber-800/80">免排隊極速雲端生成，高並發 GPU 算力隨時待命</span>
           </div>
         </div>
       </div>
 
-      <!-- 購買方案選擇 (3 種方案卡片) -->
+      <!-- 購買方案選擇 (3 種方案卡片 - 新台幣 NTD) -->
       <div class="flex flex-col gap-2">
-        <span class="text-[11px] font-bold text-stone-600">選擇您的訂閱方案：</span>
+        <span class="text-[11px] font-bold text-stone-600">選擇您的 AI 魔法專屬訂閱方案 (新台幣)：</span>
         <div class="grid grid-cols-3 gap-2">
           <!-- 方案 1: 月度 -->
           <div data-plan="monthly" class="vip-plan-card cursor-pointer p-3 rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 transition flex flex-col items-center text-center">
             <span class="text-xs font-bold text-stone-700">月度會員</span>
-            <div class="text-base font-extrabold text-stone-900 my-1">¥28 <span class="text-[10px] font-normal text-stone-500">/月</span></div>
+            <div class="text-base font-extrabold text-stone-900 my-1">NT$ 120 <span class="text-[10px] font-normal text-stone-500">/月</span></div>
             <span class="text-[9px] text-stone-400">適合靈感嚐鮮</span>
           </div>
 
           <!-- 方案 2: 年度 (推薦) -->
           <div data-plan="yearly" class="vip-plan-card active relative cursor-pointer p-3 rounded-2xl border-2 border-amber-500 bg-amber-50/60 shadow-xs transition flex flex-col items-center text-center">
-            <span class="absolute -top-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-red-500 to-amber-500 text-white font-extrabold text-[8px] tracking-wide shadow-2xs">超值推薦 · 省 41%</span>
+            <span class="absolute -top-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-red-500 to-amber-500 text-white font-extrabold text-[8px] tracking-wide shadow-2xs">超值推薦 · 省 39%</span>
             <span class="text-xs font-bold text-amber-950">年度會員</span>
-            <div class="text-base font-extrabold text-amber-600 my-1">¥198 <span class="text-[10px] font-normal text-stone-500">/年</span></div>
-            <span class="text-[9px] text-amber-700 font-medium">摺合僅 ¥16.5 /月</span>
+            <div class="text-base font-extrabold text-amber-600 my-1">NT$ 880 <span class="text-[10px] font-normal text-stone-500">/年</span></div>
+            <span class="text-[9px] text-amber-700 font-medium">摺合僅 NT$ 73 /月</span>
           </div>
 
           <!-- 方案 3: 終身 -->
           <div data-plan="lifetime" class="vip-plan-card cursor-pointer p-3 rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 transition flex flex-col items-center text-center">
             <span class="text-xs font-bold text-stone-700">終身買斷</span>
-            <div class="text-base font-extrabold text-stone-900 my-1">¥398</div>
+            <div class="text-base font-extrabold text-stone-900 my-1">NT$ 1,680</div>
             <span class="text-[9px] text-stone-400">一次付費 · 終身享有</span>
           </div>
         </div>
@@ -1885,7 +1900,7 @@
       <div class="flex flex-col gap-2 pt-1">
         <button id="btnConfirmPurchaseVip" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:opacity-95 text-white font-extrabold text-sm shadow-md shadow-amber-500/30 active:scale-98 transition flex items-center justify-center gap-2 cursor-pointer">
           <span>👑</span>
-          <span id="vipPurchaseBtnText">立即開通【年度會員】¥198/年</span>
+          <span id="vipPurchaseBtnText">立即開通【年度會員】NT$ 880/年</span>
         </button>
         <div class="flex items-center justify-between text-[10px] text-stone-400 px-1">
           <span>🔒 Apple App Store 安全購買保障</span>
@@ -5518,15 +5533,17 @@
       if (typeof onTourTargetClosed === 'function') onTourTargetClosed(0);
     });
 
-    // 跳過拍照直接進入畫布繪畫
-    document.getElementById('btnSkipPhotoDirectDraw')?.addEventListener('click', (e) => {
-      e.stopPropagation();
+    // 跳過拍照直接進入畫布繪畫 (支援右上角放大按鍵與說明條按鍵)
+    const onSkipPhotoDirectDraw = (e) => {
+      e?.stopPropagation?.();
       camModal.classList.add('hidden');
       camModal.classList.remove('flex');
       if (typeof playSuctionPopSound === 'function') playSuctionPopSound(520, 0.08);
       showToast('🎨 祝您創作愉快！已直接進入畫室畫布。');
       if (typeof onTourTargetClosed === 'function') onTourTargetClosed(0);
-    });
+    };
+    document.getElementById('btnSkipPhotoDirectDraw')?.addEventListener('click', onSkipPhotoDirectDraw);
+    document.getElementById('btnSkipPhotoDirectDrawTop')?.addEventListener('click', onSkipPhotoDirectDraw);
 
     document.querySelectorAll('.cam-preset-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -6461,12 +6478,20 @@
      * 14.5 極簡模式主控、多畫紙狀態實時預覽條(最多5張)、高頻工具塢互動與 KaiQuest 開屏啟動
      ********************************************************************/
     // 1. KaiDraw 純白開場與元件逐個漸顯流光動效 (Staggered cascading entrance)
+    let dismissSplashFn = null;
     const splashEl = document.getElementById('kaiQuestSplash');
     if (splashEl) {
-      const dismissSplash = () => {
+      dismissSplashFn = () => {
         if (splashEl.dataset.dismissed) return;
         splashEl.dataset.dismissed = 'true';
         splashEl.classList.add('splash-fade-out');
+
+        // 嘗試自動播放隨機挑選的背景音樂 (符合瀏覽器互動權限規範)
+        try {
+          if (typeof StudioBgmEngine !== 'undefined' && StudioBgmEngine.autoPlay) {
+            StudioBgmEngine.autoPlay();
+          }
+        } catch (_) {}
 
         const wrapper = document.getElementById('transformCanvasWrapper');
         const header = document.getElementById('mainAppHeader');
@@ -6489,7 +6514,7 @@
 
         setTimeout(() => {
           splashEl.remove();
-          // 清理初始化過渡類，確保後續拖動、縮放、平移手勢不受 CSS 干擾
+          // 清理初始化過渡類，確保後續拖動、縮放、平移手勢不受 CSS 干擾，工具列在瀏覽器中完全顯示
           [wrapper, header, leftDock, logoBtn, aiBtn, paperBtn, layersBtn, pageFlip].forEach(el => {
             if (el) {
               el.classList.remove('stagger-init-top', 'stagger-init-left', 'stagger-init-right', 'stagger-init-scale', 'stagger-init-fade', 'stagger-visible', 'stagger-visible-right');
@@ -6507,27 +6532,18 @@
         }, 1100);
       };
 
-      splashEl.addEventListener('click', dismissSplash);
-      splashEl.addEventListener('pointerdown', dismissSplash);
-      setTimeout(dismissSplash, 3000); // 3 秒鐘的出現動畫
+      splashEl.addEventListener('click', dismissSplashFn);
+      splashEl.addEventListener('pointerdown', dismissSplashFn);
+      setTimeout(dismissSplashFn, 3000); // 3 秒鐘的出現動畫
     }
 
-    // 全域性開屏保底計時器：無論如何 3.5 秒後平滑隱去開屏 Logo，並引導至相片轉換介面
+    // 全域性開屏保底計時器：無論如何 3.5 秒後呼叫 dismissSplashFn，徹底清除初始化過渡類與呈現相片轉換介面
     setTimeout(() => {
-      const s = document.getElementById('kaiQuestSplash');
-      if (s && !s.dataset.dismissed) {
-        s.dataset.dismissed = 'true';
-        s.classList.add('splash-fade-out');
-        setTimeout(() => {
-          s.remove();
-          const cam = document.getElementById('cameraModal');
-          if (cam) {
-            cam.classList.remove('hidden');
-            cam.classList.add('flex');
-            if (typeof renderAllStylePreviews === 'function') renderAllStylePreviews();
-            if (typeof renderRefCanvas === 'function') renderRefCanvas();
-          }
-        }, 700);
+      if (dismissSplashFn) {
+        dismissSplashFn();
+      } else {
+        const s = document.getElementById('kaiQuestSplash');
+        if (s) s.remove();
       }
     }, 3500);
 
@@ -6717,6 +6733,19 @@
           el.style.top = `${Math.max(minY, Math.min(maxY, rect.top))}px`;
         }
       });
+    });
+
+    // 頂欄回到開始按鈕 (回到相片臨摹與拍照選擇)
+    document.getElementById('btnToolbarBackToStart')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleTopToolbar(false);
+      const cam = document.getElementById('cameraModal');
+      if (cam) {
+        cam.classList.remove('hidden');
+        cam.classList.add('flex');
+        if (typeof renderAllStylePreviews === 'function') renderAllStylePreviews();
+        if (typeof renderRefCanvas === 'function') renderRefCanvas();
+      }
     });
 
     // 頂欄新建畫紙按鈕關聯翻頁動效與翻書音效
@@ -7313,17 +7342,60 @@
     const playPaperFlipSound = playBookPageFlipSound;
 
     /********************************************************************
-     * 沉浸畫室背景樂控制器 (已載入專屬音軌 images/bgm.mp3，音量設定為 40%)
+     * 沉浸畫室背景樂控制器 (多曲目隨機隨選 bgm.mp3 ~ bgm8.mp3，預設自動播放，音量設定為 30%)
      ********************************************************************/
     const StudioBgmEngine = (() => {
       let isPlaying = false;
       let bgmAudioEl = null;
+      let currentTrackName = '';
+
+      const bgmTracks = [
+        'images/bgm.mp3',
+        'images/bgm2.mp3',
+        'images/bgm3.mp3',
+        'images/bgm4.mp3',
+        'images/bgm5.mp3',
+        'images/bgm6.mp3',
+        'images/bgm7.mp3',
+        'images/bgm8.mp3'
+      ];
 
       function initAudio() {
         if (!bgmAudioEl) {
-          bgmAudioEl = new Audio('images/bgm.mp3');
+          // 每次進入時隨機播放其中一首 (bgm ~ bgm8)
+          const randomIndex = Math.floor(Math.random() * bgmTracks.length);
+          const selectedTrack = bgmTracks[randomIndex];
+          currentTrackName = `bgm${randomIndex === 0 ? '' : randomIndex + 1}.mp3`;
+          
+          bgmAudioEl = new Audio(selectedTrack);
           bgmAudioEl.loop = true;
-          bgmAudioEl.volume = 0.40; // 設定音量為 40%
+          bgmAudioEl.volume = 0.30; // 背景音樂音量調整為 30%
+        }
+      }
+
+      function autoPlay() {
+        initAudio();
+        bgmAudioEl.volume = 0.30;
+        const p = bgmAudioEl.play();
+        if (p !== undefined) {
+          p.then(() => {
+            isPlaying = true;
+            updateUI();
+          }).catch(() => {
+            // 受現代瀏覽器自動播放限制時，在使用者第一次點選螢幕/敲擊任意鍵時自動播放
+            const playOnFirstInteraction = () => {
+              bgmAudioEl.play().then(() => {
+                isPlaying = true;
+                updateUI();
+              }).catch(() => {});
+              window.removeEventListener('pointerdown', playOnFirstInteraction);
+              window.removeEventListener('click', playOnFirstInteraction);
+              window.removeEventListener('keydown', playOnFirstInteraction);
+            };
+            window.addEventListener('pointerdown', playOnFirstInteraction, { once: true });
+            window.addEventListener('click', playOnFirstInteraction, { once: true });
+            window.addEventListener('keydown', playOnFirstInteraction, { once: true });
+          });
         }
       }
 
@@ -7336,13 +7408,13 @@
           updateUI();
           showToast('已暫停畫室背景伴奏');
         } else {
-          bgmAudioEl.volume = 0.40;
+          bgmAudioEl.volume = 0.30;
           const p = bgmAudioEl.play();
           if (p !== undefined) {
             p.then(() => {
               isPlaying = true;
               updateUI();
-              showToast('🎶 已開啟畫室背景伴奏 (音量 40%)');
+              showToast('🎶 已開啟畫室背景伴奏 (音量 30%)');
             }).catch((err) => {
               console.warn('BGM play error:', err);
               updateUI();
@@ -7370,11 +7442,16 @@
         }
       }
 
+      // 初始化嘗試自動播放
+      setTimeout(autoPlay, 500);
+
       return {
         toggle,
+        autoPlay,
         setVolume,
         initAudio,
-        get isPlaying() { return isPlaying; }
+        get isPlaying() { return isPlaying; },
+        get currentTrack() { return currentTrackName; }
       };
     })();
 
@@ -8294,11 +8371,11 @@
 
         if (vipPurchaseBtnText) {
           if (selectedVipPlan === 'monthly') {
-            vipPurchaseBtnText.textContent = '立即開通【月度會員】¥28/月';
+            vipPurchaseBtnText.textContent = '立即開通【月度會員】NT$ 120/月';
           } else if (selectedVipPlan === 'yearly') {
-            vipPurchaseBtnText.textContent = '立即開通【年度會員】¥198/年';
+            vipPurchaseBtnText.textContent = '立即開通【年度會員】NT$ 880/年';
           } else if (selectedVipPlan === 'lifetime') {
-            vipPurchaseBtnText.textContent = '立即開通【終身買斷卡】¥398';
+            vipPurchaseBtnText.textContent = '立即開通【終身買斷卡】NT$ 1,680';
           }
         }
       });
@@ -8319,7 +8396,7 @@
       e.stopPropagation();
       playSuctionPopSound(660, 0.12);
       vipModal?.classList.add('hidden');
-      showToast('👑 恭喜您成功開通 KaiDraw VIP 尊享會員！已解除所有畫紙與圖層限制');
+      showToast('👑 恭喜您成功開通 KaiDraw AI 魔法創作會員！已解鎖無限 AI 以圖生圖與動畫微電影生成算力');
     });
 
     /********************************************************************
