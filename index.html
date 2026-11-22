@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.134 · Pro Edition
+      B.26.11.135 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -411,7 +411,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.134 · Pro Edition
+        B.26.11.135 · Pro Edition
       </div>
     </div>
 
@@ -6277,81 +6277,27 @@
       const d = imgData.data;
 
       if (styleType === "sketch") {
-        // 1. 3x3 高斯預平滑：消除 JPEG 壓縮雜訊、細碎毛刺與紙紋顆粒，讓底紙純淨留白
-        const total = tw * th;
-        const smR = new Float32Array(total);
-        const smG = new Float32Array(total);
-        const smB = new Float32Array(total);
-        const smL = new Float32Array(total);
-
-        for (let y = 0; y < th; y++) {
-          const ym = Math.max(0, y - 1);
-          const yp = Math.min(th - 1, y + 1);
-          for (let x = 0; x < tw; x++) {
-            const xm = Math.max(0, x - 1);
-            const xp = Math.min(tw - 1, x + 1);
-
-            const i00 = (ym * tw + xm) * 4, i01 = (ym * tw + x) * 4, i02 = (ym * tw + xp) * 4;
-            const i10 = (y  * tw + xm) * 4, i11 = (y  * tw + x) * 4, i12 = (y  * tw + xp) * 4;
-            const i20 = (yp * tw + xm) * 4, i21 = (yp * tw + x) * 4, i22 = (yp * tw + xp) * 4;
-
-            const r = (s[i00] + 2*s[i01] + s[i02] + 2*s[i10] + 4*s[i11] + 2*s[i12] + s[i20] + 2*s[i21] + s[i22]) * 0.0625;
-            const g = (s[i00+1] + 2*s[i01+1] + s[i02+1] + 2*s[i10+1] + 4*s[i11+1] + 2*s[i12+1] + s[i20+1] + 2*s[i21+1] + s[i22+1]) * 0.0625;
-            const b = (s[i00+2] + 2*s[i01+2] + s[i02+2] + 2*s[i10+2] + 4*s[i11+2] + 2*s[i12+2] + s[i20+2] + 2*s[i21+2] + s[i22+2]) * 0.0625;
-
-            const p = y * tw + x;
-            smR[p] = r;
-            smG[p] = g;
-            smB[p] = b;
-            smL[p] = r * 0.299 + g * 0.587 + b * 0.114;
-          }
-        }
-
-        // 2. 多通道 RGB + 亮度 Sobel 輪廓偵測 + 原圖深色墨線保留，確保線條連續不破碎
-        const lowT = 36 - str * 14;   // 低於此門檻為純白底紙 (#FFFFFF)
-        const highT = 102 - str * 28; // 高於此門檻為實心清晰黑線 (#141418)
-        const span = Math.max(12, highT - lowT);
-
-        const sobelAt = (arr, x, y) => {
-          const p00 = (y - 1) * tw + (x - 1), p01 = p00 + 1, p02 = p00 + 2;
-          const p10 = y * tw + (x - 1),       p12 = p10 + 2;
-          const p20 = (y + 1) * tw + (x - 1), p21 = p20 + 1, p22 = p20 + 2;
-          const gx = (arr[p02] + 2 * arr[p12] + arr[p22]) - (arr[p00] + 2 * arr[p10] + arr[p20]);
-          const gy = (arr[p20] + 2 * arr[p21] + arr[p22]) - (arr[p00] + 2 * arr[p01] + arr[p02]);
-          return Math.hypot(gx, gy) * 0.35;
-        };
-
-        for (let y = 0; y < th; y++) {
-          for (let x = 0; x < tw; x++) {
+        // 全畫布轉換專用：均勻統一筆觸的 Sobel 線稿演算法（保留上一版線條粗細一致的優點）
+        for (let y = 1; y < th - 1; y++) {
+          for (let x = 1; x < tw - 1; x++) {
             const idx = (y * tw + x) * 4;
-            if (x === 0 || y === 0 || x === tw - 1 || y === th - 1) {
-              d[idx] = 255; d[idx + 1] = 255; d[idx + 2] = 255;
-              continue;
-            }
-            const eR = sobelAt(smR, x, y);
-            const eG = sobelAt(smG, x, y);
-            const eB = sobelAt(smB, x, y);
-            const eL = sobelAt(smL, x, y);
-            let lineStrength = Math.max(eR, eG, eB, eL);
+            const lum = (x0, y0) => {
+              const i = (y0 * tw + x0) * 4;
+              return s[i] * 0.299 + s[i+1] * 0.587 + s[i+2] * 0.114;
+            };
 
-            // 若原圖本身即是深色描邊線條，保留實心墨線避免中空或斷裂
-            const centerLum = smL[y * tw + x];
-            if (centerLum < 72) {
-              lineStrength += (72 - centerLum) * 2.2;
-            }
+            const gx = (lum(x+1, y-1) + 2*lum(x+1, y) + lum(x+1, y+1)) - (lum(x-1, y-1) + 2*lum(x-1, y) + lum(x-1, y+1));
+            const gy = (lum(x-1, y+1) + 2*lum(x, y+1) + lum(x+1, y+1)) - (lum(x-1, y-1) + 2*lum(x, y-1) + lum(x+1, y-1));
+            const edge = Math.hypot(gx, gy);
 
-            let inkRatio = (lineStrength - lowT) / span;
-            if (inkRatio <= 0) {
-              d[idx] = 255; d[idx + 1] = 255; d[idx + 2] = 255;
-            } else if (inkRatio >= 1) {
-              d[idx] = 20; d[idx + 1] = 20; d[idx + 2] = 24;
-            } else {
-              // Smoothstep 抗鋸齒平滑過渡，線條圓潤乾淨
-              const smooth = inkRatio * inkRatio * (3 - 2 * inkRatio);
-              d[idx]     = Math.round(255 - smooth * 235);
-              d[idx + 1] = Math.round(255 - smooth * 235);
-              d[idx + 2] = Math.round(255 - smooth * 231);
-            }
+            const edgeVal = Math.min(255, edge * (1.2 + str * 1.5));
+            let v = 255 - edgeVal;
+            if (v < 180) v = Math.max(25, v * 0.7);
+            else v = 255;
+
+            d[idx]     = v;
+            d[idx + 1] = v;
+            d[idx + 2] = v;
           }
         }
       }
@@ -6359,10 +6305,89 @@
       tCtx.putImageData(imgData, 0, 0);
     }
 
+    // 預覽框專用：先於 640x480 高解析度萃取均勻乾淨線條，再強化連續性並平滑縮小至 320x240，徹底消除縮圖破碎感
+    const previewSketchHiRes = document.createElement("canvas");
+    previewSketchHiRes.width = 640;
+    previewSketchHiRes.height = 480;
+
+    function renderCleanSketchPreview(targetCanvas, strengthVal) {
+      if (!targetCanvas) return;
+      const hw = previewSketchHiRes.width, hh = previewSketchHiRes.height;
+      const hCtx = previewSketchHiRes.getContext("2d");
+      hCtx.clearRect(0, 0, hw, hh);
+      hCtx.drawImage(sourcePhotoCanvas, 0, 0, hw, hh);
+
+      const str = Math.max(0.1, (strengthVal || 70) / 100);
+      const imgData = hCtx.getImageData(0, 0, hw, hh);
+      const s = new Uint8ClampedArray(imgData.data);
+      const d = imgData.data;
+
+      // 1. 輕度 3x3 平滑濾除縮圖雜訊，並萃取乾淨均勻的線條強度圖
+      const lumArr = new Float32Array(hw * hh);
+      for (let y = 0; y < hh; y++) {
+        const ym = Math.max(0, y - 1), yp = Math.min(hh - 1, y + 1);
+        for (let x = 0; x < hw; x++) {
+          const xm = Math.max(0, x - 1), xp = Math.min(hw - 1, x + 1);
+          const g = (x0, y0) => {
+            const i = (y0 * hw + x0) * 4;
+            return s[i] * 0.299 + s[i+1] * 0.587 + s[i+2] * 0.114;
+          };
+          lumArr[y * hw + x] = (
+            g(xm, ym) + 2*g(x, ym) + g(xp, ym) +
+            2*g(xm, y) + 4*g(x, y) + 2*g(xp, y) +
+            g(xm, yp) + 2*g(x, yp) + g(xp, yp)
+          ) * 0.0625;
+        }
+      }
+
+      const lineMask = new Uint8Array(hw * hh);
+      lineMask.fill(255);
+      const lowEdge = 48 - str * 14;
+      const highEdge = 135 - str * 30;
+
+      for (let y = 1; y < hh - 1; y++) {
+        for (let x = 1; x < hw - 1; x++) {
+          const p = y * hw + x;
+          const gx = (lumArr[(y-1)*hw + x+1] + 2*lumArr[y*hw + x+1] + lumArr[(y+1)*hw + x+1]) -
+                     (lumArr[(y-1)*hw + x-1] + 2*lumArr[y*hw + x-1] + lumArr[(y+1)*hw + x-1]);
+          const gy = (lumArr[(y+1)*hw + x-1] + 2*lumArr[(y+1)*hw + x] + lumArr[(y+1)*hw + x+1]) -
+                     (lumArr[(y-1)*hw + x-1] + 2*lumArr[(y-1)*hw + x] + lumArr[(y-1)*hw + x+1]);
+          const edge = Math.hypot(gx, gy) * 0.5;
+          if (edge > lowEdge) {
+            const t = Math.min(1, (edge - lowEdge) / Math.max(15, highEdge - lowEdge));
+            lineMask[p] = Math.round(255 - t * 230);
+          }
+        }
+      }
+
+      // 2. 2x2 連續性補強：避免縮小成預覽圖時細線斷裂或出現白點空隙
+      for (let y = 1; y < hh - 1; y++) {
+        for (let x = 1; x < hw - 1; x++) {
+          const p = y * hw + x;
+          const v = Math.min(
+            lineMask[p],
+            lineMask[p + 1],
+            lineMask[p + hw],
+            lineMask[p + hw + 1]
+          );
+          const idx = p * 4;
+          d[idx] = v; d[idx + 1] = v; d[idx + 2] = v; d[idx + 3] = 255;
+        }
+      }
+      hCtx.putImageData(imgData, 0, 0);
+
+      // 3. 高品質抗鋸齒縮小繪製至預覽框
+      const tCtx = targetCanvas.getContext("2d");
+      tCtx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+      tCtx.imageSmoothingEnabled = true;
+      tCtx.imageSmoothingQuality = "high";
+      tCtx.drawImage(previewSketchHiRes, 0, 0, targetCanvas.width, targetCanvas.height);
+    }
+
     function renderAllStylePreviews() {
       const strength = Number(document.getElementById("styleIntensitySlider")?.value || 70);
       const sketchCanvas = document.getElementById("prevSketch");
-      if (sketchCanvas) applyFilterTo(sketchCanvas, "sketch", strength);
+      if (sketchCanvas) renderCleanSketchPreview(sketchCanvas, strength);
       const colorCanvas = document.getElementById("prevColor");
       if (colorCanvas) applyFilterTo(colorCanvas, "color", strength);
     }
