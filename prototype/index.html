@@ -132,6 +132,23 @@
       opacity: 1 !important;
       transform: translateY(-50%) scale(1) !important;
     }
+
+    /* 实机导览高光光晕脉动动效 */
+    @keyframes tourPulseGlow {
+      0%, 100% {
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.95), 0 0 24px rgba(245, 158, 11, 0.55);
+        transform: scale(1);
+      }
+      50% {
+        box-shadow: 0 0 0 7px rgba(245, 158, 11, 1), 0 0 35px rgba(245, 158, 11, 0.75);
+        transform: scale(1.03);
+      }
+    }
+    .tour-highlight-pulse {
+      animation: tourPulseGlow 1.8s ease-in-out infinite !important;
+      position: relative !important;
+      z-index: 60 !important;
+    }
   </style>
 </head>
 <body class="text-stone-800 antialiased h-screen flex flex-col p-0 select-none relative overflow-hidden bg-white" style="height: 100dvh;">
@@ -140,7 +157,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext(); this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="轻点立即进入画室">
     <!-- 顶部居中极简版本编号 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.108 · Pro Edition
+      B.26.11.109 · Pro Edition
     </div>
 
     <!-- 中心纯净 KaiDraw Logo (纯白无界背景) -->
@@ -290,7 +307,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.108 · Pro Edition
+        B.26.11.109 · Pro Edition
       </div>
     </div>
 
@@ -1495,6 +1512,54 @@
         </button>
         <button id="btnDirectDownloadPhoto" class="px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-900 text-white font-bold text-xs active:scale-95 transition flex items-center gap-1">
           <span>💾</span> 下载档案
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 主动引导教学控制台与悬浮导引卡片 (每一步自动跳转并指向功能界面) ==================== -->
+  <div id="interactiveTourContainer" class="hidden fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-[75] max-w-sm sm:max-w-md w-[calc(100vw-2rem)] select-none pointer-events-none transition-all duration-300">
+    <!-- 导引主卡片 -->
+    <div id="tourStepCard" class="pointer-events-auto bg-white/95 backdrop-blur-2xl border-2 border-amber-400/90 rounded-3xl p-4 sm:p-5 shadow-[0_20px_60px_rgba(0,0,0,0.3)] flex flex-col gap-3 text-stone-800 transition-all duration-300">
+      <!-- 卡片顶栏 -->
+      <div class="flex items-center justify-between border-b border-stone-100 pb-2.5">
+        <div class="flex items-center gap-2">
+          <span id="tourStepNumberBadge" class="w-6 h-6 rounded-lg bg-amber-500 text-white text-xs font-black flex items-center justify-center shadow-xs">1</span>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <h3 id="tourStepTitle" class="text-xs sm:text-sm font-extrabold text-stone-900 tracking-tight">相片转换功能</h3>
+              <span id="tourStepBadge" class="text-[9px] px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-800 font-bold">📸 转换底图</span>
+            </div>
+            <div class="text-[10px] text-stone-400 font-medium">KaiDraw 沉浸导引教学 · <span id="tourStepProgress">1 / 7</span></div>
+          </div>
+        </div>
+        <button id="btnExitTour" class="px-2 py-1 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-800 text-[11px] font-bold transition active:scale-95 cursor-pointer flex items-center gap-0.5" title="退出教学流程">
+          <span>✕ 退出教学</span>
+        </button>
+      </div>
+
+      <!-- 教学说明正文 -->
+      <p id="tourStepDesc" class="text-xs text-stone-600 leading-relaxed font-normal">
+        进入之后可以使用「相片转换」功能，拍照或选取真实相片，智能将相片转换成绘制的底图或轮廓线稿进行描摹。
+      </p>
+
+      <!-- 实机联动状态提示 -->
+      <div class="flex items-center gap-1.5 p-2 rounded-xl bg-amber-50/80 border border-amber-200/60 text-[11px] text-amber-900 font-medium">
+        <span class="text-xs shrink-0">💡</span>
+        <span id="tourStepTipText" class="truncate">已自动开启该功能界面，介绍后可直接关闭或点击下一步。</span>
+      </div>
+
+      <!-- 导引底部操作栏 -->
+      <div class="flex items-center justify-between gap-2 pt-1">
+        <button id="btnTourPrev" class="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold transition active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+          ⬅ 上一步
+        </button>
+        <div id="tourDotsContainer" class="flex items-center gap-1 px-1">
+          <!-- 动态生成 7 个步进指示点 -->
+        </div>
+        <button id="btnTourNext" class="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold shadow-md shadow-amber-500/25 transition active:scale-95 cursor-pointer flex items-center gap-1">
+          <span id="btnTourNextText">下一步</span>
+          <span>➔</span>
         </button>
       </div>
     </div>
@@ -4794,6 +4859,7 @@
       drawer.classList.add('drawer-closed');
       const backdrop = document.getElementById('drawerBackdrop');
       if (backdrop) backdrop.classList.add('hidden');
+      if (typeof onTourTargetClosed === 'function') onTourTargetClosed(1);
     }
 
     document.getElementById('drawerBackdrop')?.addEventListener('click', closeDrawer);
@@ -5143,6 +5209,7 @@
     });
     document.getElementById('btnCloseCameraModal').addEventListener('click', () => {
       camModal.classList.add('hidden'); camModal.classList.remove('flex');
+      if (typeof onTourTargetClosed === 'function') onTourTargetClosed(0);
     });
 
     document.querySelectorAll('.cam-preset-btn').forEach(btn => {
@@ -5306,9 +5373,13 @@
 
     document.getElementById('btnClosePhotoAlbumModal')?.addEventListener('click', () => {
       photoAlbumModal.classList.add('hidden');
+      if (typeof onTourTargetClosed === 'function') onTourTargetClosed(6);
     });
     photoAlbumModal?.addEventListener('click', (e) => {
-      if (e.target === photoAlbumModal) photoAlbumModal.classList.add('hidden');
+      if (e.target === photoAlbumModal) {
+        photoAlbumModal.classList.add('hidden');
+        if (typeof onTourTargetClosed === 'function') onTourTargetClosed(6);
+      }
     });
 
     document.getElementById('btnShareToSystemAlbum')?.addEventListener('click', async () => {
@@ -5507,10 +5578,20 @@
 
     document.getElementById('btnCloseAiModal').addEventListener('click', () => {
       aiModal.classList.add('hidden');
+      if (typeof onTourTargetClosed === 'function') {
+        onTourTargetClosed(4);
+        onTourTargetClosed(5);
+      }
     });
 
     aiModal.addEventListener('click', (e) => {
-      if (e.target === aiModal) aiModal.classList.add('hidden');
+      if (e.target === aiModal) {
+        aiModal.classList.add('hidden');
+        if (typeof onTourTargetClosed === 'function') {
+          onTourTargetClosed(4);
+          onTourTargetClosed(5);
+        }
+      }
     });
 
     // Tab 切换逻辑 (4 大标签)
@@ -7374,12 +7455,14 @@
     document.getElementById('btnCloseMiniLayersStrip')?.addEventListener('click', (e) => {
       e.stopPropagation();
       document.getElementById('miniLayersStrip')?.classList.add('hidden');
+      if (typeof onTourTargetClosed === 'function') onTourTargetClosed(2);
     });
 
     // 紧凑型画纸浮窗按键控制
     document.getElementById('btnClosePaperHistoryPopover')?.addEventListener('click', (e) => {
       e.stopPropagation();
       document.getElementById('compactPaperHistoryPopover')?.classList.add('hidden');
+      if (typeof onTourTargetClosed === 'function') onTourTargetClosed(3);
     });
 
     document.getElementById('popoverBtnNewCanvas')?.addEventListener('click', (e) => {
@@ -7388,14 +7471,326 @@
       renderCompactPaperPopover();
     });
 
-    // 教学引导弹窗控制
-    const tutorialModal = document.getElementById('tutorialModal');
+    /********************************************************************
+     * 17. 主动引导实机导览教学引擎 (Interactive Guided Walkthrough Tour Engine)
+     ********************************************************************/
+    let isTourActive = false;
+    let currentTourStepIndex = 0;
+
+    const INTERACTIVE_TOUR_STEPS = [
+      {
+        step: 1,
+        title: '相片转换功能',
+        badge: '📸 转换绘制底图',
+        desc: '进入之后可以使用「相片转换」功能，拍照或选取真实相片，智能将相片转换成绘制的底图或轮廓线稿进行描摹。点击左侧常用工具中的眼睛「👁️」可随时显示或隐藏底图。',
+        tipText: '已为您自动打开「相片转换实验室」，介绍后可直接关闭或点击下一步。',
+        targetSelector: '#cameraModal',
+        highlightEl: '#btnOpenCameraModal',
+        onEnter: () => {
+          closeAllTourPanels();
+          const cam = document.getElementById('cameraModal');
+          if (cam) {
+            cam.classList.remove('hidden');
+            cam.classList.add('flex');
+            if (typeof renderAllStylePreviews === 'function') renderAllStylePreviews();
+          }
+        },
+        onLeave: () => {
+          const cam = document.getElementById('cameraModal');
+          if (cam) {
+            cam.classList.add('hidden');
+            cam.classList.remove('flex');
+          }
+        }
+      },
+      {
+        step: 2,
+        title: '绘制选择各种画笔',
+        badge: '🖌️ 水彩 / 毛笔 / 蜡笔 / 马克笔',
+        desc: '绘制时可以选择各种不同的画笔：湿画水彩笔、书法毛笔、油画蜡笔、双头马克笔（斜切/圆头/软尖）与精密喷笔。左侧常用工具栏下方实时展示笔头示范与调色，并随绘制速度呈现真实触纸音效。',
+        tipText: '已为您展开「画具工坊抽屉」，可自由选笔并查看笔头示范。',
+        targetSelector: '#drawer',
+        highlightEl: '#btnOpenStyleSelector',
+        onEnter: () => {
+          closeAllTourPanels();
+          openDrawer();
+          switchBrushMedium('watercolor');
+        },
+        onLeave: () => {
+          closeDrawer();
+        }
+      },
+      {
+        step: 3,
+        title: '增加图层分层创作',
+        badge: '📑 独立图层系统',
+        desc: '可以增加图层，去进行不同图层的使用！点击左侧常用工具中的「增加图层」快捷键，或右侧下方的图层圆形按钮，自由新建、切换、上下排序或调整透明度，线稿与色彩分层更从容。',
+        tipText: '已为您展开图层管理器与「增加图层」快捷键，分层涂绘互不干扰。',
+        targetSelector: '#miniLayersStrip',
+        highlightEl: '#btnDockAddLayer',
+        onEnter: () => {
+          closeAllTourPanels();
+          const mini = document.getElementById('miniLayersStrip');
+          if (mini) {
+            mini.classList.remove('hidden');
+            if (typeof renderMiniLayersStrip === 'function') renderMiniLayersStrip();
+          }
+        },
+        onLeave: () => {
+          document.getElementById('miniLayersStrip')?.classList.add('hidden');
+        }
+      },
+      {
+        step: 4,
+        title: '新增不同的画纸材质',
+        badge: '📜 天然材质与翻纸声',
+        desc: '可以新增不同的画纸！点击右侧画纸圆形按钮，可选择细纹平滑印刷纸、棉浆冷压水彩纸、粗糙宣纸等天然材质，滑动自由切换历史画纸，伴随真实轻微的翻纸与翻书音效。',
+        tipText: '已为您展开「直式画纸面板」，上下滑动即可轻松选择与新增画纸。',
+        targetSelector: '#compactPaperHistoryPopover',
+        highlightEl: '#btnFloatingPaperHistory',
+        onEnter: () => {
+          closeAllTourPanels();
+          const popover = document.getElementById('compactPaperHistoryPopover');
+          if (popover) {
+            popover.classList.remove('hidden');
+            if (typeof renderCompactPaperPopover === 'function') renderCompactPaperPopover();
+          }
+        },
+        onLeave: () => {
+          document.getElementById('compactPaperHistoryPopover')?.classList.add('hidden');
+        }
+      },
+      {
+        step: 5,
+        title: '使用 AI 的魔法进行辅助',
+        badge: '🪄 智能构图与线稿上色',
+        desc: '使用 AI 的魔法进行辅助！在 AI 魔法工坊中，支持智能线稿上色、风格重绘与光影渲染，既保留您亲手绘制的线条灵魂，又赋予大师级的绚丽质感。',
+        tipText: '已为您打开「AI 魔法工坊 · 图生图优化」，可一键上色与风格优化。',
+        targetSelector: '#aiModal',
+        highlightEl: '#btnFloatingAiMagic',
+        onEnter: () => {
+          closeAllTourPanels();
+          const ai = document.getElementById('aiModal');
+          if (ai) {
+            ai.classList.remove('hidden');
+            if (typeof switchAiTab === 'function') switchAiTab('polish');
+          }
+        },
+        onLeave: () => {
+          document.getElementById('aiModal')?.classList.add('hidden');
+        }
+      },
+      {
+        step: 6,
+        title: '让最后的图片变成动画',
+        badge: '🎬 2~3秒以图生动画微电影',
+        desc: '可以让最后的图片变成动画！在 AI 魔法工坊切换至「让画动起来」，一键为您刚完成的手绘作品注入微风与运镜呼吸感，生成流畅的 2~3 秒动态微电影或延时摄影，跃然纸上！',
+        tipText: '已为您切换至「以图生动画微电影」功能，体验静态画作焕发新生。',
+        targetSelector: '#aiModal',
+        highlightEl: '#tabBtnVideo',
+        onEnter: () => {
+          closeAllTourPanels();
+          const ai = document.getElementById('aiModal');
+          if (ai) {
+            ai.classList.remove('hidden');
+            if (typeof switchAiTab === 'function') switchAiTab('video');
+          }
+        },
+        onLeave: () => {
+          document.getElementById('aiModal')?.classList.add('hidden');
+        }
+      },
+      {
+        step: 7,
+        title: '储存到电脑或平板项目中',
+        badge: '💾 完整工程与高清留存',
+        desc: '可以把这些做成的图片或动画储存到电脑当中或平板的项目当中！轻点「存相簿」拍照生成实体相框照片存入 iPad 相册，或直接下载高清晰度无损文件随时留存与分享。',
+        tipText: '已为您打开「存入相簿与导出」相框预览，随时保存您的心血结晶！',
+        targetSelector: '#photoAlbumModal',
+        highlightEl: '#btnExport',
+        onEnter: () => {
+          closeAllTourPanels();
+          const album = document.getElementById('photoAlbumModal');
+          if (album) {
+            album.classList.remove('hidden');
+            const photoImg = document.getElementById('photoAlbumFramedImg');
+            if (photoImg && typeof getComposedCanvas === 'function') {
+              try {
+                photoImg.src = getComposedCanvas(true).toDataURL('image/png');
+              } catch(e) {}
+            }
+          }
+        },
+        onLeave: () => {
+          document.getElementById('photoAlbumModal')?.classList.add('hidden');
+        }
+      }
+    ];
+
+    function closeAllTourPanels() {
+      const cam = document.getElementById('cameraModal');
+      if (cam) {
+        cam.classList.add('hidden');
+        cam.classList.remove('flex');
+      }
+      closeDrawer();
+      document.getElementById('miniLayersStrip')?.classList.add('hidden');
+      document.getElementById('compactPaperHistoryPopover')?.classList.add('hidden');
+      document.getElementById('aiModal')?.classList.add('hidden');
+      document.getElementById('photoAlbumModal')?.classList.add('hidden');
+      document.getElementById('tutorialModal')?.classList.add('hidden');
+      document.querySelectorAll('.tour-highlight-pulse').forEach(el => el.classList.remove('tour-highlight-pulse'));
+    }
+
+    function renderTourDots(currentIndex) {
+      const dotsContainer = document.getElementById('tourDotsContainer');
+      if (!dotsContainer) return;
+      dotsContainer.innerHTML = '';
+      INTERACTIVE_TOUR_STEPS.forEach((s, idx) => {
+        const dot = document.createElement('button');
+        dot.className = `h-2 rounded-full transition-all cursor-pointer ${idx === currentIndex ? 'w-5 bg-amber-500' : 'w-2 bg-stone-300 hover:bg-stone-400'}`;
+        dot.title = `跳转至步骤 ${s.step}：${s.title}`;
+        dot.addEventListener('click', (e) => {
+          e.stopPropagation();
+          goToTourStep(idx);
+        });
+        dotsContainer.appendChild(dot);
+      });
+    }
+
+    function goToTourStep(index) {
+      if (index < 0 || index >= INTERACTIVE_TOUR_STEPS.length) return;
+      
+      // 先清理上一步的面板与高光
+      if (isTourActive && typeof currentTourStepIndex === 'number' && INTERACTIVE_TOUR_STEPS[currentTourStepIndex]) {
+        try {
+          INTERACTIVE_TOUR_STEPS[currentTourStepIndex].onLeave();
+        } catch(e) {
+          console.warn('onLeave error:', e);
+        }
+      }
+
+      currentTourStepIndex = index;
+      const stepData = INTERACTIVE_TOUR_STEPS[index];
+
+      // 激活当前步骤对应的界面与功能
+      try {
+        stepData.onEnter();
+      } catch(e) {
+        console.warn('onEnter error:', e);
+      }
+
+      // 给对应的功能入口添加高光光晕脉动
+      if (stepData.highlightEl) {
+        const target = document.querySelector(stepData.highlightEl);
+        if (target) target.classList.add('tour-highlight-pulse');
+      }
+
+      // 实时更新导览卡片内容
+      const numBadge = document.getElementById('tourStepNumberBadge');
+      const titleEl = document.getElementById('tourStepTitle');
+      const badgeEl = document.getElementById('tourStepBadge');
+      const progressEl = document.getElementById('tourStepProgress');
+      const descEl = document.getElementById('tourStepDesc');
+      const tipEl = document.getElementById('tourStepTipText');
+      const prevBtn = document.getElementById('btnTourPrev');
+      const nextBtnText = document.getElementById('btnTourNextText');
+
+      if (numBadge) numBadge.textContent = stepData.step;
+      if (titleEl) titleEl.textContent = stepData.title;
+      if (badgeEl) badgeEl.textContent = stepData.badge;
+      if (progressEl) progressEl.textContent = `${stepData.step} / ${INTERACTIVE_TOUR_STEPS.length}`;
+      if (descEl) descEl.textContent = stepData.desc;
+      if (tipEl) tipEl.textContent = stepData.tipText;
+
+      if (prevBtn) {
+        prevBtn.disabled = (index === 0);
+      }
+      if (nextBtnText) {
+        nextBtnText.textContent = (index === INTERACTIVE_TOUR_STEPS.length - 1) ? '完成教学 🎉' : '下一步';
+      }
+
+      renderTourDots(index);
+      if (typeof playSuctionPopSound === 'function') {
+        playSuctionPopSound(440 + index * 40, 0.08);
+      }
+    }
+
+    function nextTourStep() {
+      if (!isTourActive) return;
+      if (currentTourStepIndex < INTERACTIVE_TOUR_STEPS.length - 1) {
+        goToTourStep(currentTourStepIndex + 1);
+      } else {
+        finishInteractiveTour();
+      }
+    }
+
+    function prevTourStep() {
+      if (!isTourActive) return;
+      if (currentTourStepIndex > 0) {
+        goToTourStep(currentTourStepIndex - 1);
+      }
+    }
+
+    function onTourTargetClosed(stepIndex) {
+      if (isTourActive && currentTourStepIndex === stepIndex) {
+        setTimeout(() => {
+          if (isTourActive && currentTourStepIndex === stepIndex) {
+            nextTourStep();
+          }
+        }, 150);
+      }
+    }
+
+    function startInteractiveTour(startStep = 0) {
+      isTourActive = true;
+      if (typeof toggleTopToolbar === 'function') toggleTopToolbar(false);
+      closeAllTourPanels();
+      const container = document.getElementById('interactiveTourContainer');
+      if (container) {
+        container.classList.remove('hidden');
+      }
+      goToTourStep(startStep);
+      showToast('🚀 已启动 KaiDraw 互动实机导览教学！');
+    }
+
+    function finishInteractiveTour() {
+      isTourActive = false;
+      closeAllTourPanels();
+      document.getElementById('interactiveTourContainer')?.classList.add('hidden');
+      if (typeof playSuctionPopSound === 'function') playSuctionPopSound(720, 0.12);
+      showToast('🎉 恭喜完成 KaiDraw 创作实机导览教学！随时可在顶栏「教学」重新回顾。');
+    }
+
+    function exitInteractiveTour() {
+      isTourActive = false;
+      closeAllTourPanels();
+      document.getElementById('interactiveTourContainer')?.classList.add('hidden');
+      if (typeof playSuctionPopSound === 'function') playSuctionPopSound(400, 0.08);
+      showToast('已退出实机教学，随时可在顶栏「教学」重新开启。');
+    }
+
+    // 导览卡片按键事件监听
+    document.getElementById('btnTourNext')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      nextTourStep();
+    });
+    document.getElementById('btnTourPrev')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      prevTourStep();
+    });
+    document.getElementById('btnExitTour')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      exitInteractiveTour();
+    });
+
+    // 顶栏「教学」按键：直接启动沉浸实机导览教学
     document.getElementById('btnOpenTutorialModal')?.addEventListener('click', (e) => {
       e.stopPropagation();
-      playPaperRustleSound();
-      tutorialModal?.classList.remove('hidden');
-      toggleTopToolbar(false);
+      startInteractiveTour(0);
     });
+
+    const tutorialModal = document.getElementById('tutorialModal');
     const closeTutorial = () => {
       playSuctionPopSound(480, 0.08);
       tutorialModal?.classList.add('hidden');
