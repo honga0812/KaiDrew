@@ -140,7 +140,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext(); this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="轻点立即进入画室">
     <!-- 顶部居中极简版本编号 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.103 · Pro Edition
+      B.26.11.104 · Pro Edition
     </div>
 
     <!-- 中心纯净 KaiDraw Logo (纯白无界背景) -->
@@ -290,7 +290,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.103 · Pro Edition
+        B.26.11.104 · Pro Edition
       </div>
     </div>
 
@@ -1068,40 +1068,49 @@
     </div>
   </aside>
 
-  <!-- ==================== 紧凑型画纸版本与画质预览浮窗 (替代全屏大弹窗，轻巧呈现预览与材质) ==================== -->
-  <aside id="compactPaperHistoryPopover" class="hidden fixed right-16 top-1/2 -translate-y-1/2 z-40 w-76 max-w-[90vw] bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl p-3 shadow-[0_20px_50px_rgba(0,0,0,0.18)] flex flex-col gap-2.5 text-stone-800 select-none transition-all">
-    <!-- 顶栏：标题与快速新建 -->
+  <!-- ==================== 直式紧凑画纸版本与画质抽屉 (直式上下滑动，呈现 3~4 张画纸缩略图与极简材质缩图) ==================== -->
+  <aside id="compactPaperHistoryPopover" class="hidden fixed right-16 top-1/2 -translate-y-1/2 z-40 w-52 sm:w-56 max-w-[85vw] bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl p-2.5 shadow-[0_16px_40px_rgba(0,0,0,0.18)] flex flex-col gap-2 text-stone-800 select-none transition-all">
+    <!-- 顶栏：标题、版本计数与快速新建 -->
     <div class="flex items-center justify-between pb-1.5 border-b border-stone-100">
-      <div class="flex items-center gap-1.5">
-        <span class="text-sm">📄</span>
-        <div class="flex flex-col">
-          <span class="text-xs font-bold text-stone-900">画纸版本与画质</span>
-          <span id="popoverPaperCountSub" class="text-[9px] text-stone-400">已建 1 / 最多 10 张</span>
+      <div class="flex items-center gap-1.5 min-w-0">
+        <span class="text-xs">📄</span>
+        <div class="flex flex-col min-w-0">
+          <span class="text-xs font-bold text-stone-900 truncate">画纸与材质</span>
+          <span id="popoverPaperCountSub" class="text-[8.5px] text-stone-400 font-mono">已建 1 / 10 张</span>
         </div>
       </div>
-      <div class="flex items-center gap-1">
-        <button id="popoverBtnNewCanvas" class="px-2 py-1 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold flex items-center gap-1 shadow-2xs active:scale-95 transition cursor-pointer" title="翻开全新空白画纸">
-          <span>➕</span> 新画纸
+      <div class="flex items-center gap-1 shrink-0">
+        <button id="popoverBtnNewCanvas" class="px-2 py-0.8 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[9.5px] font-bold flex items-center gap-0.5 shadow-2xs active:scale-95 transition cursor-pointer" title="翻开全新空白画纸">
+          <span>➕</span>
+          <span>新纸</span>
         </button>
-        <button id="btnClosePaperHistoryPopover" class="w-6 h-6 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-700 text-xs font-bold flex items-center justify-center active:scale-95 transition cursor-pointer">
+        <button id="btnClosePaperHistoryPopover" class="w-5 h-5 rounded-md hover:bg-stone-100 text-stone-400 hover:text-stone-700 text-xs font-bold flex items-center justify-center active:scale-95 transition cursor-pointer" title="关闭画纸选单">
           ✕
         </button>
       </div>
     </div>
 
-    <!-- 区块 1：当前已建画纸缩略图与版本切换 (最多 10 张，横向滑动) -->
+    <!-- 区块 1：当前已建画纸垂直列表 (默认可见约 3~4 个，上下滑动/滚动切换) -->
     <div class="flex flex-col gap-1">
-      <span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider font-mono">画纸版本历史预览 (点击切换)</span>
-      <div id="popoverCanvasSlotsRow" class="flex items-center gap-2 overflow-x-auto py-1 pr-1" style="scrollbar-width: thin;">
-        <!-- 动态生成 1~10 张画纸缩略图小卡片 -->
+      <div class="flex items-center justify-between px-0.5">
+        <span class="text-[8px] font-bold text-stone-400 uppercase tracking-wider font-mono">画纸版本 (上下滑动)</span>
+        <span class="text-[8px] text-stone-400 font-mono">点选切换</span>
+      </div>
+      <!-- 垂直上下滑动滚动区，高度适中刚好容纳 3~4 个卡片 -->
+      <div id="popoverCanvasSlotsCol" class="flex flex-col gap-1.5 overflow-y-auto max-h-[195px] pr-0.5 py-0.5" style="scrollbar-width: thin;">
+        <!-- 动态生成 1~10 张画纸缩略图垂直列表条目 -->
       </div>
     </div>
 
-    <!-- 区块 2：5 种物理画纸材质预览选择 -->
+    <!-- 区块 2：物理画纸材质选择 (缩图 + 最简易描述，极简紧凑) -->
     <div class="flex flex-col gap-1 pt-1.5 border-t border-stone-100">
-      <span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider font-mono">不同物理画纸材质 (点击即换)</span>
-      <div id="popoverPaperTexturesGrid" class="grid grid-cols-2 gap-1.5 max-h-36 overflow-y-auto pr-0.5">
-        <!-- 动态生成 5 款纸张预览胶囊 -->
+      <div class="flex items-center justify-between px-0.5">
+        <span class="text-[8px] font-bold text-stone-400 uppercase tracking-wider font-mono">画纸材质 (缩图即换)</span>
+        <span id="popoverActivePaperName" class="text-[8px] font-bold text-amber-700 truncate max-w-[80px]">平滑印刷纸</span>
+      </div>
+      <!-- 材质缩图简易列表 -->
+      <div id="popoverPaperTexturesList" class="flex flex-col gap-1 max-h-[135px] overflow-y-auto pr-0.5" style="scrollbar-width: thin;">
+        <!-- 动态生成 5 款纸张缩图小胶囊 -->
       </div>
     </div>
   </aside>
@@ -6381,7 +6390,7 @@
         slotIndex: canvasSlots.length,
         title: `画纸 ${totalCanvasesCreatedCount}`,
         isCreated: true,
-        paperId: 'plain',
+        paperId: currentPaperId || 'plain',
         layersData: [],
         activeLayerIdx: 0,
         thumbDataUrl: '',
@@ -6390,9 +6399,10 @@
       canvasSlots.push(newSlot);
       activeSlotIndex = canvasSlots.length - 1;
 
-      resetCanvasStateForNewPaper();
+      resetCanvasStateForNewPaper(newSlot.paperId);
       saveCurrentSlotSnapshot(true);
       renderCanvasVersionsDrawer();
+      renderCompactPaperPopover();
 
       document.getElementById('evictionPromptModal')?.classList.add('hidden');
       showToast(saveFile 
@@ -6400,13 +6410,13 @@
         : `✨ 已开立全新【${newSlot.title}】(已堆叠移除最旧画纸)`);
     }
 
-    function resetCanvasStateForNewPaper() {
+    function resetCanvasStateForNewPaper(paperId = currentPaperId || 'plain') {
       layersCanvasContainer.innerHTML = '';
       layers.length = 0;
       activeLayerIndex = 0;
       createLayer('图层 1 (手绘原作)');
       paintCtx.clearRect(0, 0, W, H);
-      drawPaperTexture('plain');
+      drawPaperTexture(paperId);
       updateUndoRedoUI();
       renderLayersUI();
     }
@@ -6425,13 +6435,13 @@
       // 完整封存当前正在绘制的画作现场
       saveCurrentSlotSnapshot(false);
 
-      // 新增画纸
+      // 新增画纸 (继承当前选定的材质)
       totalCanvasesCreatedCount++;
       const newSlot = {
         slotIndex: canvasSlots.length,
         title: `画纸 ${totalCanvasesCreatedCount}`,
         isCreated: true,
-        paperId: 'plain',
+        paperId: currentPaperId || 'plain',
         layersData: [],
         activeLayerIdx: 0,
         thumbDataUrl: '',
@@ -6440,9 +6450,40 @@
       canvasSlots.push(newSlot);
       activeSlotIndex = canvasSlots.length - 1;
 
-      resetCanvasStateForNewPaper();
+      resetCanvasStateForNewPaper(newSlot.paperId);
       saveCurrentSlotSnapshot(true);
       renderCanvasVersionsDrawer();
+      renderCompactPaperPopover();
+    }
+
+    function openNewCanvasInHistory() {
+      if (canvasSlots.length >= TOTAL_CANVAS_SLOTS) {
+        document.getElementById('artworkHistoryModal')?.classList.add('hidden');
+        showEvictionPromptModal();
+        return;
+      }
+
+      playBookPageFlipSound();
+      saveCurrentSlotSnapshot(false);
+
+      totalCanvasesCreatedCount++;
+      const newSlot = {
+        slotIndex: canvasSlots.length,
+        title: `画纸 ${totalCanvasesCreatedCount}`,
+        isCreated: true,
+        paperId: currentPaperId || 'plain',
+        layersData: [],
+        activeLayerIdx: 0,
+        thumbDataUrl: '',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      canvasSlots.push(newSlot);
+      activeSlotIndex = canvasSlots.length - 1;
+
+      resetCanvasStateForNewPaper(newSlot.paperId);
+      saveCurrentSlotSnapshot(true);
+      renderCanvasVersionsDrawer();
+      renderCompactPaperPopover();
 
       document.getElementById('artworkHistoryModal')?.classList.add('hidden');
       showToast(`✨ 已开立全新【${newSlot.title}】，可点击右下角版本抽屉随时切换！`);
@@ -6494,14 +6535,15 @@
       }
 
       paintCtx.clearRect(0, 0, W, H);
-      if (target.paperId) {
-        drawPaperTexture(target.paperId);
-      }
+      const targetPaperId = target.paperId || 'plain';
+      currentPaperId = targetPaperId;
+      drawPaperTexture(targetPaperId);
 
       updateUndoRedoUI();
       renderLayersUI();
       renderCanvasVersionsDrawer();
       renderArtworkHistoryUI();
+      renderCompactPaperPopover();
       document.getElementById('artworkHistoryModal')?.classList.add('hidden');
       showToast(`已切换至【${target.title}】继续创作`);
     }
@@ -6948,43 +6990,77 @@
       } catch (_) {}
     }
 
-    // 紧凑型画纸版本与画质浮窗渲染与控制
+    function selectPaperTexture(paperId) {
+      const p = PAPER_TYPES.find(x => x.id === paperId) || PAPER_TYPES[0];
+      currentPaperId = p.id;
+      drawPaperTexture(p.id);
+
+      // 同步当前活跃画纸插槽
+      if (activeSlotIndex >= 0 && activeSlotIndex < canvasSlots.length) {
+        canvasSlots[activeSlotIndex].paperId = p.id;
+      }
+
+      // 同步顶部或全局徽章 (若存在)
+      const curBadge = document.getElementById('currentPaperBadge');
+      if (curBadge) curBadge.textContent = `${p.icon} ${p.name}`;
+
+      const activeNameEl = document.getElementById('popoverActivePaperName');
+      if (activeNameEl) activeNameEl.textContent = p.name.split(' ')[0];
+
+      renderCompactPaperPopover();
+    }
+
+    // 紧凑直式画纸版本与画质浮窗渲染与控制
     function renderCompactPaperPopover() {
       const popover = document.getElementById('compactPaperHistoryPopover');
       if (!popover) return;
       const subTitle = document.getElementById('popoverPaperCountSub');
       const floatingBadge = document.getElementById('floatingPaperCountBadge');
-      if (subTitle) subTitle.textContent = `已建 ${canvasSlots.length} / 最多 ${TOTAL_CANVAS_SLOTS} 张`;
+      const activeNameEl = document.getElementById('popoverActivePaperName');
+
+      if (subTitle) subTitle.textContent = `已建 ${canvasSlots.length} / 10 张`;
       if (floatingBadge) floatingBadge.textContent = `${activeSlotIndex + 1}/${canvasSlots.length}`;
 
-      // 1. 渲染画纸版本缩略图卡片行 (popoverCanvasSlotsRow)
-      const slotsRow = document.getElementById('popoverCanvasSlotsRow');
-      if (slotsRow) {
-        slotsRow.innerHTML = '';
+      const curP = PAPER_TYPES.find(x => x.id === currentPaperId) || PAPER_TYPES[0];
+      if (activeNameEl) activeNameEl.textContent = curP.name.split(' ')[0];
+
+      // 1. 渲染画纸版本缩略图垂直列表 (popoverCanvasSlotsCol, 默认呈现约 3~4 张，上下滑动)
+      const slotsCol = document.getElementById('popoverCanvasSlotsCol');
+      if (slotsCol) {
+        slotsCol.innerHTML = '';
         canvasSlots.forEach((slot, idx) => {
           const isActive = (idx === activeSlotIndex);
-          const card = document.createElement('div');
-          card.className = `flex flex-col items-center gap-1 p-1.5 rounded-xl border cursor-pointer shrink-0 transition ${
-            isActive 
-              ? 'bg-amber-50 border-amber-500 ring-2 ring-amber-400 shadow-sm' 
-              : 'bg-stone-50 border-stone-200 hover:border-amber-300'
-          }`;
-          card.style.width = '78px';
+          const slotPaper = PAPER_TYPES.find(x => x.id === slot.paperId) || PAPER_TYPES[0];
 
-          card.innerHTML = `
-            <div class="w-full h-12 rounded-lg bg-white border border-stone-200 overflow-hidden shadow-2xs relative flex items-center justify-center">
+          const item = document.createElement('div');
+          item.className = `flex items-center gap-2 p-1.5 rounded-xl border cursor-pointer transition select-none ${
+            isActive 
+              ? 'bg-amber-50/90 border-amber-500 ring-1 ring-amber-400 shadow-2xs' 
+              : 'bg-stone-50/80 border-stone-200/80 hover:bg-amber-50/40 hover:border-amber-300'
+          }`;
+
+          item.innerHTML = `
+            <div class="w-12 h-9 rounded-lg bg-white border border-stone-200/90 overflow-hidden shadow-2xs relative shrink-0 flex items-center justify-center">
               ${slot.thumbDataUrl 
                 ? `<img src="${slot.thumbDataUrl}" class="w-full h-full object-cover" alt="${slot.title}">` 
-                : `<span class="text-xs text-stone-300">空白</span>`}
-              ${isActive ? `<span class="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-amber-500 ring-1 ring-white"></span>` : ''}
+                : `<span class="text-[9px] text-stone-300 font-medium">空白</span>`}
+              ${isActive ? `<span class="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-amber-500 ring-1 ring-white"></span>` : ''}
             </div>
-            <div class="flex items-center justify-between w-full px-0.5">
-              <span class="text-[9px] font-bold truncate ${isActive ? 'text-amber-900' : 'text-stone-700'}">${slot.title}</span>
-              ${isActive ? `<span class="text-[8px] font-bold text-amber-600">当前</span>` : ''}
+            <div class="flex flex-col min-w-0 flex-1">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-[10px] font-bold truncate ${isActive ? 'text-amber-950 font-extrabold' : 'text-stone-800'}">${slot.title}</span>
+                ${isActive ? `<span class="text-[7.5px] font-bold px-1 py-0.2 rounded bg-amber-500 text-white shrink-0">当前</span>` : ''}
+              </div>
+              <div class="flex items-center gap-1 text-[8px] text-stone-400 truncate mt-0.5">
+                <span>${slotPaper.icon}</span>
+                <span class="truncate">${slotPaper.name.split(' ')[0]}</span>
+                <span class="font-mono text-stone-300">·</span>
+                <span class="font-mono">${slot.timestamp || ''}</span>
+              </div>
             </div>
           `;
 
-          card.addEventListener('click', () => {
+          item.addEventListener('click', () => {
             if (idx !== activeSlotIndex) {
               playBookPageFlipSound();
               switchToSlot(idx);
@@ -6993,38 +7069,48 @@
             }
           });
 
-          slotsRow.appendChild(card);
+          slotsCol.appendChild(item);
         });
       }
 
-      // 2. 渲染 5 种物理画纸材质预览选择 (popoverPaperTexturesGrid)
-      const texturesGrid = document.getElementById('popoverPaperTexturesGrid');
-      if (texturesGrid) {
-        texturesGrid.innerHTML = '';
+      // 2. 渲染 5 种物理画纸材质极简缩图列表 (popoverPaperTexturesList)
+      const texturesList = document.getElementById('popoverPaperTexturesList');
+      if (texturesList) {
+        texturesList.innerHTML = '';
         PAPER_TYPES.forEach(pt => {
           const isSelected = (pt.id === currentPaperId);
           const item = document.createElement('div');
-          item.className = `flex items-center gap-1.5 p-1.5 rounded-xl border cursor-pointer transition ${
+          item.className = `flex items-center justify-between gap-1.5 px-2 py-1.2 rounded-lg border cursor-pointer transition select-none ${
             isSelected 
               ? 'bg-amber-100/80 border-amber-500 shadow-2xs ring-1 ring-amber-400' 
-              : 'bg-white border-stone-200 hover:bg-stone-50'
+              : 'bg-white border-stone-200/80 hover:bg-stone-50'
           }`;
 
+          let briefDesc = '80g纯白';
+          if (pt.id === 'coldpress') briefDesc = '300g粗棉絮';
+          else if (pt.id === 'xuan') briefDesc = '熟宣金箔微墨';
+          else if (pt.id === 'cloud') briefDesc = '棉絮粉彩';
+          else if (pt.id === 'toned') briefDesc = '暖灰细纹';
+
           item.innerHTML = `
-            <span class="text-sm shrink-0">${pt.icon}</span>
-            <div class="flex flex-col min-w-0">
-              <span class="text-[10px] font-bold truncate ${isSelected ? 'text-amber-950 font-extrabold' : 'text-stone-700'}">${pt.name.split(' ')[0]}</span>
-              <span class="text-[8px] text-stone-400 truncate">${pt.desc.slice(0, 10)}...</span>
+            <div class="flex items-center gap-1.5 min-w-0">
+              <div class="w-4 h-4 rounded border border-stone-300 shadow-2xs shrink-0 flex items-center justify-center text-[9px]" style="background-color: ${pt.bg};">
+                <span>${pt.icon}</span>
+              </div>
+              <div class="flex items-center gap-1 min-w-0">
+                <span class="text-[9.5px] font-bold truncate ${isSelected ? 'text-amber-950 font-extrabold' : 'text-stone-700'}">${pt.name.split(' ')[0]}</span>
+                <span class="text-[8px] text-stone-400 truncate">· ${briefDesc}</span>
+              </div>
             </div>
+            ${isSelected ? `<span class="text-[9px] font-bold text-amber-600 shrink-0">✓</span>` : ''}
           `;
 
           item.addEventListener('click', () => {
             selectPaperTexture(pt.id);
-            renderCompactPaperPopover();
-            showToast(`📜 已更换画纸材质为【${pt.name}】`);
+            showToast(`📜 已换材质：${pt.name.split(' ')[0]}`);
           });
 
-          texturesGrid.appendChild(item);
+          texturesList.appendChild(item);
         });
       }
     }
