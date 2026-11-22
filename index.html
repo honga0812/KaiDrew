@@ -140,7 +140,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext(); this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="轻点立即进入画室">
     <!-- 顶部居中极简版本编号 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.102 · Pro Edition
+      B.26.11.103 · Pro Edition
     </div>
 
     <!-- 中心纯净 KaiDraw Logo (纯白无界背景) -->
@@ -290,7 +290,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.102 · Pro Edition
+        B.26.11.103 · Pro Edition
       </div>
     </div>
 
@@ -449,20 +449,13 @@
         </div>
       </div>
 
-      <!-- 笔头图示展示区 (在常用色下方展示当前画笔笔头形象，支持自定义生成图片与高精度矢量笔头) -->
-      <div id="dockBrushTipContainer" class="flex flex-col items-center gap-0.5 pt-1 border-t border-stone-100 w-full" title="当前画笔笔头示范 (可在 images/ 替换图片)">
-        <span class="text-[7.5px] font-bold text-stone-400 text-center font-mono">笔头示范</span>
-        <div class="w-full flex flex-col items-center p-1 rounded-xl bg-stone-50/90 border border-stone-200/60 shadow-2xs">
-          <div class="relative w-8 h-8 flex items-center justify-center">
-            <!-- 优先载入用户自定义生成的笔头图片 images/brush_${medium}.png -->
-            <img id="dockBrushTipCustomImg" src="images/brush_watercolor.png" alt="Brush Tip" class="hidden w-7 h-7 object-contain drop-shadow-xs" />
-            <!-- 矢量高质感后备图形 -->
-            <div id="dockBrushTipVector" class="w-7 h-7 flex items-center justify-center text-amber-600 transition-transform">
-              <!-- 动态注入 -->
-            </div>
-          </div>
-          <span id="dockBrushTipBadge" class="text-[8px] font-bold text-stone-700 tracking-tight mt-0.5 truncate max-w-[50px] text-center">水彩笔</span>
-        </div>
+      <!-- 笔头图示展示区 (在常用色下方展示当前画笔笔头形象，去除非必要文字与留白，放大质感，笔头随选中颜色动态变色) -->
+      <div id="dockBrushTipContainer" class="flex flex-col items-center pt-1 border-t border-stone-100 w-full" title="当前画笔笔头 (点选快速展开画笔与颜色设置)">
+        <button id="dockBrushTipBtn" class="w-full aspect-square rounded-xl bg-stone-50/90 hover:bg-stone-100/90 border border-stone-200/70 shadow-2xs flex items-center justify-center p-0.5 active:scale-95 transition cursor-pointer overflow-hidden relative group" title="点击展开画风与画具选择">
+          <canvas id="dockBrushTipCanvas" width="128" height="128" class="w-full h-full object-contain drop-shadow-xs transition-transform group-hover:scale-105 pointer-events-none"></canvas>
+          <img id="dockBrushTipCustomImg" src="images/brush_watercolor.png" alt="Brush Tip" class="hidden w-full h-full object-contain drop-shadow-xs pointer-events-none" />
+          <div id="dockBrushTipVector" class="hidden w-8 h-8 flex items-center justify-center text-amber-600"></div>
+        </button>
       </div>
 
       <!-- 快捷增加图层按键 -->
@@ -683,7 +676,8 @@
       <div id="drawerBrushTipPreviewCard" class="bg-gradient-to-r from-stone-50 via-amber-50/50 to-stone-50 p-2.5 rounded-2xl border border-amber-200/80 shadow-2xs flex items-center justify-between gap-2.5">
         <div class="flex items-center gap-2.5 min-w-0">
           <div class="w-12 h-12 rounded-xl bg-white border border-stone-200/90 p-1 flex items-center justify-center shadow-2xs shrink-0 overflow-hidden">
-            <img id="drawerBrushTipImg" src="images/brush_watercolor.png" alt="Brush Tip Preview" class="w-full h-full object-contain drop-shadow-xs" />
+            <canvas id="drawerBrushTipCanvas" width="128" height="128" class="w-full h-full object-contain drop-shadow-xs"></canvas>
+            <img id="drawerBrushTipImg" src="images/brush_watercolor.png" alt="Brush Tip Preview" class="hidden w-full h-full object-contain drop-shadow-xs" />
             <div id="drawerBrushTipVector" class="hidden w-8 h-8 flex items-center justify-center text-amber-600"></div>
           </div>
           <div class="flex flex-col min-w-0">
@@ -774,10 +768,11 @@
     <!-- 2. 蜡笔画室详细设置 -->
     <div id="drawerCrayonContent" class="hidden flex flex-col gap-3.5">
       <!-- 蜡笔笔头示范与质感预览卡片 (在选择颜色正上方呈现真实笔头与特性) -->
-      <div class="bg-gradient-to-r from-stone-50 via-orange-50/50 to-stone-50 p-2.5 rounded-2xl border border-amber-200/80 shadow-2xs flex items-center justify-between gap-2.5">
+      <div id="drawerCrayonTipPreviewCard" class="bg-gradient-to-r from-stone-50 via-orange-50/50 to-stone-50 p-2.5 rounded-2xl border border-amber-200/80 shadow-2xs flex items-center justify-between gap-2.5">
         <div class="flex items-center gap-2.5 min-w-0">
           <div class="w-12 h-12 rounded-xl bg-white border border-stone-200/90 p-1 flex items-center justify-center shadow-2xs shrink-0 overflow-hidden">
-            <img src="images/brush_crayon.png" alt="Crayon Tip Preview" class="w-full h-full object-contain drop-shadow-xs" />
+            <canvas id="drawerBrushTipCanvas_crayon" width="128" height="128" class="w-full h-full object-contain drop-shadow-xs"></canvas>
+            <img src="images/brush_crayon.png" alt="Crayon Tip Preview" class="hidden w-full h-full object-contain drop-shadow-xs" />
           </div>
           <div class="flex flex-col min-w-0">
             <div class="flex items-center gap-1.5">
@@ -831,10 +826,11 @@
     <!-- 3. 马克笔画室详细设置 -->
     <div id="drawerMarkerContent" class="hidden flex flex-col gap-3.5">
       <!-- 马克笔笔头示范与质感预览卡片 (在选择颜色正上方呈现真实笔头与特性) -->
-      <div class="bg-gradient-to-r from-stone-50 via-indigo-50/50 to-stone-50 p-2.5 rounded-2xl border border-indigo-200/80 shadow-2xs flex items-center justify-between gap-2.5">
+      <div id="drawerMarkerTipPreviewCard" class="bg-gradient-to-r from-stone-50 via-indigo-50/50 to-stone-50 p-2.5 rounded-2xl border border-indigo-200/80 shadow-2xs flex items-center justify-between gap-2.5">
         <div class="flex items-center gap-2.5 min-w-0">
           <div class="w-12 h-12 rounded-xl bg-white border border-stone-200/90 p-1 flex items-center justify-center shadow-2xs shrink-0 overflow-hidden">
-            <img src="images/brush_marker.png" alt="Marker Tip Preview" class="w-full h-full object-contain drop-shadow-xs" />
+            <canvas id="drawerBrushTipCanvas_marker" width="128" height="128" class="w-full h-full object-contain drop-shadow-xs"></canvas>
+            <img src="images/brush_marker.png" alt="Marker Tip Preview" class="hidden w-full h-full object-contain drop-shadow-xs" />
           </div>
           <div class="flex flex-col min-w-0">
             <div class="flex items-center gap-1.5">
@@ -3401,6 +3397,143 @@
       return currentBrushMedium || 'watercolor';
     }
 
+    // ==================== 笔头动态着色与高清渲染引擎 ====================
+    const brushTipImageCache = {};
+    const brushTipOffscreenCanvas = document.createElement('canvas');
+    brushTipOffscreenCanvas.width = 128;
+    brushTipOffscreenCanvas.height = 128;
+    const brushTipOffscreenCtx = brushTipOffscreenCanvas.getContext('2d', { willReadFrequently: true });
+
+    function loadBrushTipImage(key, callback) {
+      if (brushTipImageCache[key]) {
+        if (brushTipImageCache[key].complete && brushTipImageCache[key].naturalWidth > 0) {
+          return callback(brushTipImageCache[key]);
+        }
+        brushTipImageCache[key].addEventListener('load', () => callback(brushTipImageCache[key]), { once: true });
+        return;
+      }
+      const img = new Image();
+      img.onload = () => {
+        brushTipImageCache[key] = img;
+        callback(img);
+      };
+      img.onerror = () => {
+        callback(null);
+      };
+      img.src = `images/brush_${key}.png`;
+    }
+
+    function rgbToHsv(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, v = max;
+      const d = max - min;
+      s = max === 0 ? 0 : d / max;
+      if (max === min) {
+        h = 0;
+      } else {
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return [h, s, v];
+    }
+
+    function hsvToRgb(h, s, v) {
+      let r, g, b;
+      const i = Math.floor(h * 6);
+      const f = h * 6 - i;
+      const p = v * (1 - s);
+      const q = v * (1 - f * s);
+      const t = v * (1 - (1 - f) * s);
+      switch (i % 6) {
+        case 0: r = v; g = t; b = p; break;
+        case 1: r = q; g = v; b = p; break;
+        case 2: r = p; g = v; b = t; break;
+        case 3: r = p; g = q; b = v; break;
+        case 4: r = t; g = p; b = v; break;
+        case 5: r = v; g = p; b = q; break;
+      }
+      return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+
+    function renderTintedBrushTip(key, rgb, targetCanvases) {
+      loadBrushTipImage(key, (img) => {
+        if (!img) return;
+        const w = 128, h = 128;
+        brushTipOffscreenCanvas.width = w;
+        brushTipOffscreenCanvas.height = h;
+        brushTipOffscreenCtx.clearRect(0, 0, w, h);
+        brushTipOffscreenCtx.drawImage(img, 0, 0, w, h);
+
+        // 如果是蜡笔或马克笔，动态将笔尖染上用户选定的画笔颜色，保留原有立体光影与颗粒质感
+        if (key === 'crayon' || key === 'marker') {
+          const imgData = brushTipOffscreenCtx.getImageData(0, 0, w, h);
+          const data = imgData.data;
+          const [targetH, targetS, targetV] = rgbToHsv(rgb[0], rgb[1], rgb[2]);
+
+          for (let i = 0; i < data.length; i += 4) {
+            const a = data[i + 3];
+            if (a < 20) continue;
+            const r = data[i], g = data[i + 1], b = data[i + 2];
+
+            if (key === 'crayon') {
+              // 蜡笔卷纸区域保持纸张原本米白与印刷质感，仅将外露蜡体进行动态着色
+              const isPaper = (Math.abs(r - g) < 28 && Math.abs(g - b) < 28) || (r > 185 && g > 175 && b > 165 && (r - b) < 45);
+              const isWax = (r > g + 25) && (r > b + 35) && !isPaper;
+              if (isWax) {
+                const [oh, os, ov] = rgbToHsv(r, g, b);
+                if (targetS < 0.08) {
+                  const newV = Math.max(0.12, ov * Math.max(0.2, targetV));
+                  data[i] = Math.round(newV * 255);
+                  data[i + 1] = Math.round(newV * 255);
+                  data[i + 2] = Math.round(newV * 255);
+                } else {
+                  const newS = Math.max(targetS, 0.45);
+                  const newV = ov * (0.35 + 0.65 * targetV);
+                  const [nr, ng, nb] = hsvToRgb(targetH, newS, Math.min(1.0, newV));
+                  data[i] = nr;
+                  data[i + 1] = ng;
+                  data[i + 2] = nb;
+                }
+              }
+            } else if (key === 'marker') {
+              // 马克笔黑色笔身与套筒保持黑色，仅将斜角凿形笔尖进行动态着色
+              const isChisel = (b > r + 15) && (b > g + 10) && (r + g + b > 50);
+              if (isChisel) {
+                const [oh, os, ov] = rgbToHsv(r, g, b);
+                if (targetS < 0.08) {
+                  const newV = Math.max(0.1, ov * Math.max(0.2, targetV));
+                  data[i] = Math.round(newV * 255);
+                  data[i + 1] = Math.round(newV * 255);
+                  data[i + 2] = Math.round(newV * 255);
+                } else {
+                  const newS = Math.max(targetS, 0.6);
+                  const newV = Math.min(1.0, ov * 1.35) * Math.max(0.4, targetV);
+                  const [nr, ng, nb] = hsvToRgb(targetH, newS, Math.min(1.0, newV));
+                  data[i] = nr;
+                  data[i + 1] = ng;
+                  data[i + 2] = nb;
+                }
+              }
+            }
+          }
+          brushTipOffscreenCtx.putImageData(imgData, 0, 0);
+        }
+
+        // 分发到目标 canvas 节点进行高分辨率绘制
+        targetCanvases.forEach(cvs => {
+          if (!cvs) return;
+          const ctx = cvs.getContext('2d');
+          ctx.clearRect(0, 0, cvs.width, cvs.height);
+          ctx.drawImage(brushTipOffscreenCanvas, 0, 0, cvs.width, cvs.height);
+        });
+      });
+    }
+
     function updateBrushTipDemo() {
       const isEraser = currentTool === 'eraser';
       const key = getEffectiveBrushKey();
@@ -3409,47 +3542,26 @@
       const currentColorHex = `rgb(${activeBrushRGB[0]}, ${activeBrushRGB[1]}, ${activeBrushRGB[2]})`;
 
       // 1. 优先更新常用工具坞中的笔头图示卡片 (dockBrushTipContainer)
+      const dockCanvas = document.getElementById('dockBrushTipCanvas');
       const dockImg = document.getElementById('dockBrushTipCustomImg');
       const dockVector = document.getElementById('dockBrushTipVector');
-      const dockBadge = document.getElementById('dockBrushTipBadge');
-
-      if (dockBadge) {
-        if (isEraser) dockBadge.textContent = '橡皮擦';
-        else if (key === 'chinese-brush') dockBadge.textContent = '毛笔';
-        else if (key === 'airbrush') dockBadge.textContent = '喷笔';
-        else if (key === 'watercolor') dockBadge.textContent = '水彩笔';
-        else if (key === 'crayon') dockBadge.textContent = '蜡笔';
-        else if (key === 'marker') dockBadge.textContent = '马克笔';
-        else dockBadge.textContent = info.name.slice(0, 3);
-      }
 
       if (dockVector) {
         dockVector.innerHTML = svg;
         dockVector.style.color = isEraser ? '#E11D48' : currentColorHex;
       }
 
-      if (dockImg) {
-        const candidateSrc = `images/brush_${key}.png`;
-        const testImg = new Image();
-        testImg.onload = () => {
-          dockImg.src = candidateSrc;
-          dockImg.classList.remove('hidden');
-          if (dockVector) dockVector.classList.add('hidden');
-        };
-        testImg.onerror = () => {
-          dockImg.classList.add('hidden');
-          if (dockVector) dockVector.classList.remove('hidden');
-        };
-        testImg.src = candidateSrc;
-      }
-
       // 2. 更新画具工坊抽屉内的画笔笔头预览卡片 (drawerBrushTipPreviewCard)
+      const drawerCanvas = document.getElementById('drawerBrushTipCanvas');
       const drawerImg = document.getElementById('drawerBrushTipImg');
       const drawerVector = document.getElementById('drawerBrushTipVector');
       const drawerName = document.getElementById('drawerBrushTipName');
       const drawerBadge = document.getElementById('drawerBrushTipBadge');
       const drawerDesc = document.getElementById('drawerBrushTipDesc');
       const drawerDot = document.getElementById('drawerActiveColorDot');
+
+      const drawerCrayonCanvas = document.getElementById('drawerBrushTipCanvas_crayon');
+      const drawerMarkerCanvas = document.getElementById('drawerBrushTipCanvas_marker');
 
       if (drawerName) drawerName.textContent = info.name;
       if (drawerBadge) drawerBadge.textContent = info.badge || '画具预览';
@@ -3465,22 +3577,30 @@
         drawerVector.style.color = isEraser ? '#E11D48' : currentColorHex;
       }
 
-      if (drawerImg) {
-        const candidateSrc = `images/brush_${key}.png`;
-        const testImg = new Image();
-        testImg.onload = () => {
-          drawerImg.src = candidateSrc;
-          drawerImg.classList.remove('hidden');
-          if (drawerVector) drawerVector.classList.add('hidden');
-        };
-        testImg.onerror = () => {
-          drawerImg.classList.add('hidden');
-          if (drawerVector) drawerVector.classList.remove('hidden');
-        };
-        testImg.src = candidateSrc;
+      // 3. 动态使用笔头着色渲染引擎 (常用工具坞与抽屉卡片)
+      const targetCanvases = [];
+      if (dockCanvas) targetCanvases.push(dockCanvas);
+      if (key === 'watercolor' || key === 'chinese-brush' || key === 'airbrush') {
+        if (drawerCanvas) targetCanvases.push(drawerCanvas);
+      }
+      if (key === 'crayon' && drawerCrayonCanvas) {
+        targetCanvases.push(drawerCrayonCanvas);
+      }
+      if (key === 'marker' && drawerMarkerCanvas) {
+        targetCanvases.push(drawerMarkerCanvas);
       }
 
-      // 3. 同步音频引擎配置
+      // 无论当前选用何种画笔，抽屉里的蜡笔与马克笔预览卡片均随当前选择颜色动态变色
+      if (drawerCrayonCanvas && key !== 'crayon') {
+        renderTintedBrushTip('crayon', activeBrushRGB, [drawerCrayonCanvas]);
+      }
+      if (drawerMarkerCanvas && key !== 'marker') {
+        renderTintedBrushTip('marker', activeBrushRGB, [drawerMarkerCanvas]);
+      }
+
+      renderTintedBrushTip(key, activeBrushRGB, targetCanvases);
+
+      // 4. 同步音频引擎配置
       if (typeof BrushAudioEngine !== 'undefined' && BrushAudioEngine.updateConfig) {
         BrushAudioEngine.updateConfig(currentTool, key);
       }
@@ -6111,6 +6231,11 @@
     document.getElementById('leftDockMediumBtn')?.addEventListener('click', (e) => {
       e.stopPropagation();
       openDrawer();
+    });
+
+    document.getElementById('dockBrushTipBtn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openDrawer(currentBrushMedium);
     });
 
     document.getElementById('leftDockActiveColor')?.addEventListener('click', (e) => {
