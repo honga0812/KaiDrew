@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.140 · Pro Edition
+      B.26.11.141 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -246,8 +246,8 @@
         <div class="pointer-events-none absolute inset-0 z-20" style="box-shadow: inset 0 0 24px 8px #ffffff;"></div>
       </div>
 
-      <!-- 底部固定絕對定位插槽：進度條與圓形光波播放鍵於原位平滑淡入淡出切換，確保上方 Logo 影片座標完全重疊、零跳動 -->
-      <div class="absolute top-full -mt-1 sm:-mt-2 left-1/2 -translate-x-1/2 flex items-center justify-center w-48 h-24">
+      <!-- 底部固定絕對定位插槽 (z-40 最頂層)：確保圓形光波播放鍵永遠位於最上層，不被上方 Logo 影片或羽化遮罩壓到 -->
+      <div class="absolute top-full -mt-1 sm:-mt-2 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center w-48 h-24">
         <!-- 10 秒動態進度光條 -->
         <div id="splashProgressTrack" class="w-48 h-1.5 bg-stone-100 rounded-full overflow-hidden relative shadow-inner transition-opacity duration-300 opacity-100">
           <div id="splashProgressFill" class="h-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 rounded-full transition-all duration-100" style="width: 0%;"></div>
@@ -416,7 +416,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.140 · Pro Edition
+        B.26.11.141 · Pro Edition
       </div>
     </div>
 
