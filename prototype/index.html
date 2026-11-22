@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.136 · Pro Edition
+      B.26.11.137 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -411,7 +411,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.136 · Pro Edition
+        B.26.11.137 · Pro Edition
       </div>
     </div>
 
@@ -1391,8 +1391,6 @@
       <div class="flex items-center gap-2 border-b border-stone-200 pb-2 flex-wrap">
         <button id="tabBtnPolish" class="ai-tab-btn active px-3.5 py-1.5 rounded-xl text-xs font-bold bg-purple-600 text-white shadow-sm transition">✨ 魔法畫作最佳化</button>
         <button id="tabBtnVideo" class="ai-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition">🎬 2~3秒讓畫動起來</button>
-        <button id="tabBtnSettings" class="ai-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition">⚙️ 雲端 API 引擎配置</button>
-        <button id="tabBtnCloud" class="ai-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition">☁️ 商業與成本規劃</button>
       </div>
 
       <!-- 彈窗主體容器 -->
@@ -1492,8 +1490,9 @@
                 <span id="aiStrengthLabel" class="text-xs font-mono font-bold text-purple-700">70%</span>
               </div>
               <div class="flex items-center gap-2">
-                <button id="btnRunAiPolish" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white font-bold text-xs shadow-md shadow-purple-500/25 active:scale-95 transition">
-                  🚀 施展以圖生圖魔法
+                <button id="btnRunAiPolish" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white font-bold text-xs shadow-md shadow-purple-500/25 active:scale-95 transition flex items-center gap-1.5 cursor-pointer">
+                  <span>🚀 施展以圖生圖魔法</span>
+                  <span class="px-1.5 py-0.5 rounded-full bg-amber-300 text-amber-950 text-[10px] font-black shadow-2xs flex items-center gap-0.5">🚧 開發中</span>
                 </button>
                 <button id="btnApplyAiToNewLayer" class="hidden px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white font-bold text-xs active:scale-95 transition shadow-md shadow-indigo-500/20">
                   📥 存為新圖層 (繼續修改)
@@ -1560,130 +1559,14 @@
               </div>
 
               <div class="flex items-center justify-between pt-2">
-                <button id="btnGenerateVideo" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white font-bold text-xs shadow-md shadow-amber-500/25 active:scale-95 transition">
-                  🎬 生成 2.5 秒微電影
+                <button id="btnGenerateVideo" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white font-bold text-xs shadow-md shadow-amber-500/25 active:scale-95 transition flex items-center gap-1.5 cursor-pointer">
+                  <span>🎬 生成 2.5 秒微電影</span>
+                  <span class="px-1.5 py-0.5 rounded-full bg-white text-amber-900 text-[10px] font-black shadow-2xs flex items-center gap-0.5">🚧 開發中</span>
                 </button>
                 <button id="btnDownloadVideo" class="hidden px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs active:scale-95 transition">
                   📥 下載影片 (MP4/WebM)
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab 3: 雲端與本地 ComfyUI API 引擎配置 -->
-        <div id="aiTabSettings" class="hidden flex flex-col gap-3">
-          <div class="bg-stone-50 border border-stone-200 rounded-2xl p-4 flex flex-col gap-3">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="text-xs font-bold text-stone-900 flex items-center gap-1.5">
-                  <span>⚙️</span> 地端 ComfyUI 與雲端生成式 AI 引擎配置
-                </h3>
-                <p class="text-[11px] text-stone-500">支援連線本機/區域網 ComfyUI (:8188)、本地閘道器 (:8765) 或雲端 Serverless GPU</p>
-              </div>
-              <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">安全儲存在本地</span>
-            </div>
-
-            <div class="flex flex-col gap-2">
-              <label class="text-xs font-bold text-stone-700">選擇推理引擎架構:</label>
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <label class="p-2.5 rounded-xl bg-white border border-stone-200 cursor-pointer flex flex-col gap-1 hover:border-purple-400">
-                  <div class="flex items-center gap-1.5 font-bold text-xs text-stone-800">
-                    <input type="radio" name="apiProvider" value="local" checked class="accent-purple-600">
-                    <span>🧠 本地雙核引擎</span>
-                  </div>
-                  <span class="text-[10px] text-stone-500">內建多維重構 + Python Pillow 濾波</span>
-                </label>
-                <label class="p-2.5 rounded-xl bg-white border border-stone-200 cursor-pointer flex flex-col gap-1 hover:border-purple-400">
-                  <div class="flex items-center gap-1.5 font-bold text-xs text-stone-800">
-                    <input type="radio" name="apiProvider" value="comfyui" class="accent-purple-600">
-                    <span>🖥️ 地端 ComfyUI</span>
-                  </div>
-                  <span class="text-[10px] text-stone-500">連線 Mac/PC 本地 ComfyUI (:8188)</span>
-                </label>
-                <label class="p-2.5 rounded-xl bg-white border border-stone-200 cursor-pointer flex flex-col gap-1 hover:border-purple-400">
-                  <div class="flex items-center gap-1.5 font-bold text-xs text-stone-800">
-                    <input type="radio" name="apiProvider" value="fal" class="accent-purple-600">
-                    <span>⚡ Fal.ai 雲端</span>
-                  </div>
-                  <span class="text-[10px] text-stone-500">Flux ControlNet + CogVideoX 極速 GPU</span>
-                </label>
-                <label class="p-2.5 rounded-xl bg-white border border-stone-200 cursor-pointer flex flex-col gap-1 hover:border-purple-400">
-                  <div class="flex items-center gap-1.5 font-bold text-xs text-stone-800">
-                    <input type="radio" name="apiProvider" value="modal" class="accent-purple-600">
-                    <span>🚀 Modal / Replicate</span>
-                  </div>
-                  <span class="text-[10px] text-stone-500">雲端託管 ComfyUI 容器按秒計費</span>
-                </label>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div class="flex flex-col gap-1">
-                <label class="text-xs font-bold text-stone-700">API Key / Token:</label>
-                <input id="apiConfigKey" type="password" placeholder="測試 Key: kaidraw-test-key-2026" class="px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs font-mono text-stone-800 outline-none focus:border-purple-500">
-              </div>
-              <div class="flex flex-col gap-1">
-                <label class="text-xs font-bold text-stone-700">地端 ComfyUI 地址 (選填):</label>
-                <input id="apiConfigComfyUrl" type="text" placeholder="http://127.0.0.1:8188 (需開啟 --enable-cors-header)" class="px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs font-mono text-stone-800 outline-none focus:border-purple-500">
-              </div>
-            </div>
-
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-bold text-stone-700">API 閘道器 Endpoint:</label>
-              <input id="apiConfigEndpoint" type="text" placeholder="http://127.0.0.1:8765/api/ai/image-to-video" class="px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs font-mono text-stone-800 outline-none focus:border-purple-500">
-            </div>
-
-            <!-- 一鍵填入本地 API 與下載 ComfyUI 工作流 -->
-            <div class="bg-purple-50/80 border border-purple-200 rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-2.5">
-              <div>
-                <div class="text-xs font-bold text-purple-900">⚡ 本地 AI 閘道器 (:8765) & ComfyUI 標準工作流</div>
-                <div class="text-[10px] text-purple-700">可一鍵連線本機 API 測試，或下載標準 ControlNet LineArt 工作流匯入您的 ComfyUI！</div>
-              </div>
-              <div class="flex items-center gap-1.5 shrink-0">
-                <button id="btnDownloadComfyWorkflow" type="button" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-purple-100 text-purple-800 border border-purple-300 font-bold text-xs shadow-2xs active:scale-95 transition">
-                  📥 下載 ComfyUI 工作流
-                </button>
-                <button id="btnUseLocalTestApi" type="button" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm active:scale-95 transition">
-                  ⚡ 一鍵填入本地 API
-                </button>
-              </div>
-            </div>
-
-            <button id="btnSaveApiConfig" class="self-end px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs active:scale-95 transition">
-              💾 儲存 API 配置
-            </button>
-          </div>
-        </div>
-
-        <!-- Tab 4: ComfyUI 地端 vs iPad vs 雲端架構深度解析 -->
-        <div id="aiTabCloud" class="hidden flex flex-col gap-3">
-          <div class="bg-stone-50 border border-stone-200 rounded-2xl p-3.5 flex flex-col gap-2.5">
-            <h3 class="text-xs font-bold text-stone-800 flex items-center gap-1.5">
-              <span>🧭</span> 核心技術解答：是否需要在 iPad 或本地端部署 ComfyUI？
-            </h3>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-              <div class="bg-white p-2.5 rounded-xl border border-red-200">
-                <span class="font-bold text-red-700 block mb-1">1️⃣ 直接在 iPad 內跑 ComfyUI？(不可行)</span>
-                <span class="text-stone-600 text-[11px] leading-relaxed">
-                  iOS 沙盒嚴格禁止執行 Python/CUDA 程序。且 SDXL/Flux + ControlNet 需 8~16GB 視訊記憶體與高功耗，iPad 本地強跑會導致發燙降頻、記憶體崩潰閃退 (OOM)，且 4GB 模型包無法透過正常體驗下載。
-                </span>
-              </div>
-              <div class="bg-white p-2.5 rounded-xl border border-amber-200">
-                <span class="font-bold text-amber-700 block mb-1">2️⃣ 在電腦(Mac/PC)跑地端 ComfyUI？(適合內測)</span>
-                <span class="text-stone-600 text-[11px] leading-relaxed">
-                  在您的 Mac (M系列晶片) 或 RTX 顯示卡 PC 上部署 ComfyUI，啟動時加 <code class="bg-stone-100 px-1 rounded">--listen 0.0.0.0 --enable-cors-header</code>，iPad 在同個 Wi-Fi 下即可呼叫電腦顯示卡做真正的以圖生圖！
-                </span>
-              </div>
-              <div class="bg-white p-2.5 rounded-xl border border-emerald-200">
-                <span class="font-bold text-emerald-700 block mb-1">3️⃣ App Store 上架商業方案？(雲端 ComfyUI API)</span>
-                <span class="text-stone-600 text-[11px] leading-relaxed">
-                  所有商業上架 App 均將打包好的 <strong>ComfyUI 工作流部署在雲端 Serverless GPU</strong> (如 Modal / Fal.ai / RunPod)。iPad 僅發圖片與引數，雲端 A100 顯示卡 1.5 秒返回真 AI 圖生圖結果，單張成本僅 \$0.005！
-                </span>
-              </div>
-            </div>
-            <div class="text-[11px] text-stone-500 bg-amber-50/80 p-2 rounded-xl border border-amber-200/80">
-              📌 <strong>總結建議：</strong>開發測試期可用「本機/區域網 ComfyUI」，正式上架 Apple Store 時切換為「雲端 Serverless ComfyUI API」，前端程式碼完全通用！
             </div>
           </div>
         </div>
@@ -6947,17 +6830,16 @@
       }
     });
 
-    // Tab 切換邏輯 (4 大標籤)
+    // Tab 切換邏輯 (2 大標籤：魔法畫作最佳化 & 讓畫動起來)
     const aiTabs = {
       polish: { btn: document.getElementById('tabBtnPolish'), content: document.getElementById('aiTabPolish') },
-      video: { btn: document.getElementById('tabBtnVideo'), content: document.getElementById('aiTabVideo') },
-      settings: { btn: document.getElementById('tabBtnSettings'), content: document.getElementById('aiTabSettings') },
-      cloud: { btn: document.getElementById('tabBtnCloud'), content: document.getElementById('aiTabCloud') }
+      video: { btn: document.getElementById('tabBtnVideo'), content: document.getElementById('aiTabVideo') }
     };
 
     function switchAiTab(tabKey) {
       Object.keys(aiTabs).forEach(k => {
         const item = aiTabs[k];
+        if (!item || !item.btn || !item.content) return;
         if (k === tabKey) {
           item.btn.className = 'ai-tab-btn active px-3.5 py-1.5 rounded-xl text-xs font-bold bg-purple-600 text-white shadow-sm transition';
           item.content.classList.remove('hidden');
@@ -6968,10 +6850,8 @@
       });
     }
 
-    document.getElementById('tabBtnPolish').addEventListener('click', () => switchAiTab('polish'));
-    document.getElementById('tabBtnVideo').addEventListener('click', () => switchAiTab('video'));
-    document.getElementById('tabBtnSettings').addEventListener('click', () => switchAiTab('settings'));
-    document.getElementById('tabBtnCloud').addEventListener('click', () => switchAiTab('cloud'));
+    document.getElementById('tabBtnPolish')?.addEventListener('click', () => switchAiTab('polish'));
+    document.getElementById('tabBtnVideo')?.addEventListener('click', () => switchAiTab('video'));
 
     // API 配置儲存與恢復
     const radioProviders = document.querySelectorAll('input[name="apiProvider"]');
@@ -7012,7 +6892,7 @@
     }
     updateEngineBadge();
 
-    document.getElementById('btnSaveApiConfig').addEventListener('click', () => {
+    document.getElementById('btnSaveApiConfig')?.addEventListener('click', () => {
       apiConfig.key = keyInput.value.trim();
       apiConfig.endpoint = endpointInput.value.trim();
       if (comfyUrlInput) apiConfig.comfyUrl = comfyUrlInput.value.trim();
