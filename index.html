@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.121 · Pro Edition
+      B.26.11.122 · Pro Edition
     </div>
 
     <!-- 左上角聲音切換按鍵 -->
@@ -405,7 +405,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.121 · Pro Edition
+        B.26.11.122 · Pro Edition
       </div>
     </div>
 
@@ -734,7 +734,7 @@
 
     <!-- 3 大純粹繪畫風格快捷切換標籤 (明亮分體式卡片) -->
     <div class="grid grid-cols-3 gap-1.5 p-1 bg-stone-100/90 rounded-2xl border border-stone-200/80">
-      <button data-modetab="watercolor" class="medium-tab-btn py-2 rounded-xl text-xs font-bold transition flex flex-col items-center gap-0.5 bg-white text-stone-900 shadow-sm border border-stone-200/60">
+      <button data-modetab="watercolor" class="medium-tab-btn py-2 rounded-xl text-xs font-semibold text-stone-500 hover:text-stone-900 hover:bg-white/60 transition flex flex-col items-center gap-0.5">
         <span class="text-lg">🖌️</span>
         <span class="text-[11px]">水彩</span>
       </button>
@@ -742,7 +742,7 @@
         <span class="text-lg">🖍️</span>
         <span class="text-[11px]">蠟筆</span>
       </button>
-      <button data-modetab="marker" class="medium-tab-btn py-2 rounded-xl text-xs font-semibold text-stone-500 hover:text-stone-900 hover:bg-white/60 transition flex flex-col items-center gap-0.5">
+      <button data-modetab="marker" class="medium-tab-btn py-2 rounded-xl text-xs font-bold transition flex flex-col items-center gap-0.5 bg-white text-stone-900 shadow-sm border border-stone-200/60">
         <span class="text-lg">🖊️</span>
         <span class="text-[11px]">馬克筆</span>
       </button>
@@ -956,8 +956,8 @@
           <span class="text-[10px] text-stone-400 font-normal">點選即刻換頭與預染</span>
         </div>
         <div class="grid grid-cols-3 gap-1.5 text-xs">
-          <button data-tip="chisel" class="tip-btn py-2 rounded-xl border-2 border-indigo-500 bg-indigo-50 text-indigo-900 font-bold active:scale-95 transition shadow-2xs">📐 斜切頭</button>
-          <button data-tip="round" class="tip-btn py-2 rounded-xl border border-stone-200 bg-white text-stone-700 font-semibold active:scale-95 transition shadow-2xs">⏺️ 圓頭</button>
+          <button data-tip="chisel" class="tip-btn py-2 rounded-xl border border-stone-200 bg-white text-stone-700 font-semibold active:scale-95 transition shadow-2xs">📐 斜切頭</button>
+          <button data-tip="round" class="tip-btn py-2 rounded-xl border-2 border-indigo-500 bg-indigo-50 text-indigo-900 font-bold active:scale-95 transition shadow-2xs">⏺️ 圓頭</button>
           <button data-tip="brush" class="tip-btn py-2 rounded-xl border border-stone-200 bg-white text-stone-700 font-semibold active:scale-95 transition shadow-2xs">🖌️ 軟尖頭</button>
         </div>
       </div>
@@ -2227,9 +2227,9 @@
     const wrapper = document.getElementById('transformCanvasWrapper');
     const viewportContainer = document.getElementById('viewportContainer');
 
-    let currentBrushMedium = 'watercolor';
-    let activeBrushRGB = [20, 85, 210];
-    let brushRadius = 36;
+    let currentBrushMedium = 'marker'; // 預設馬克筆
+    let activeBrushRGB = [240, 50, 70]; // 預設經典馬克筆活潑紅
+    let brushRadius = 32;
     let brushDilution = 1.0;
     let isDrawing = false;
     let lastX = 0, lastY = 0;
@@ -2238,7 +2238,7 @@
     let watercolorBrushType = 'watercolor_round'; // 'watercolor_round' | 'calligraphy_brush' | 'airbrush'
     let crayonTipMode = 'tip';
     let crayonRoughness = 65;
-    let markerTip = 'chisel'; // 'chisel' | 'round' | 'brush'
+    let markerTip = 'round'; // 預設圓頭馬克筆 ('round' | 'chisel' | 'brush')
 
     let refVisible = false;
     let refOpacity = 60;
@@ -4573,6 +4573,7 @@
 
     function updateBrushSize(val) {
       brushRadius = Math.max(1, Math.min(180, parseInt(val, 10)));
+      saveLastBrushState();
       if (sizeSlider) sizeSlider.value = brushRadius;
       if (dockVerticalSlider) dockVerticalSlider.value = brushRadius;
       if (sizeLabel) sizeLabel.textContent = `${brushRadius}px`;
@@ -4890,7 +4891,43 @@
       });
     }
 
+    /********************************************************************
+     * 10.9 畫筆狀態持久化記憶 (記錄最後一次使用的畫筆工具、筆頭造型與顏色)
+     ********************************************************************/
+    const STORAGE_KEY_LAST_BRUSH = 'kaidraw_last_brush_state_v1';
+
+    function saveLastBrushState() {
+      try {
+        const state = {
+          medium: currentBrushMedium || 'marker',
+          color: activeBrushRGB || [240, 50, 70],
+          markerTip: (typeof markerTip !== 'undefined' ? markerTip : 'round'),
+          watercolorBrushType: (typeof watercolorBrushType !== 'undefined' ? watercolorBrushType : 'watercolor_round'),
+          crayonTipMode: (typeof crayonTipMode !== 'undefined' ? crayonTipMode : 'tip'),
+          size: (typeof brushRadius !== 'undefined' ? brushRadius : 32)
+        };
+        localStorage.setItem(STORAGE_KEY_LAST_BRUSH, JSON.stringify(state));
+      } catch (_) {}
+    }
+
+    function loadLastBrushState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_LAST_BRUSH);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            return parsed;
+          }
+        }
+      } catch (_) {}
+      return null;
+    }
+
+    window.addEventListener('beforeunload', saveLastBrushState);
+    window.addEventListener('pagehide', saveLastBrushState);
+
     function applyBrushColor(rgb, isFromRecent = false, triggerAudio = true) {
+      saveLastBrushState();
       activeBrushRGB = [...rgb];
       if (triggerAudio) {
         playSuctionPopSound(500, 0.08);
@@ -5112,6 +5149,13 @@
         const dockIcon = document.getElementById('dockBrushIcon');
         if (dockIcon) dockIcon.textContent = sub.icon;
         if (leftDockIcon) leftDockIcon.textContent = sub.icon;
+      } else if (currentBrushMedium === 'marker') {
+        const tipLabel = markerTip === 'round' ? '圓頭馬克筆' : (markerTip === 'brush' ? '軟尖馬克筆' : '斜切馬克筆');
+        if (currentMediumIcon) currentMediumIcon.textContent = '🖊️';
+        if (currentMediumName) currentMediumName.textContent = tipLabel;
+        const dockIcon = document.getElementById('dockBrushIcon');
+        if (dockIcon) dockIcon.textContent = '🖊️';
+        if (leftDockIcon) leftDockIcon.textContent = '🖊️';
       } else {
         if (currentMediumIcon) currentMediumIcon.textContent = MEDIUM_INFO[currentBrushMedium].icon;
         if (currentMediumName) currentMediumName.textContent = MEDIUM_INFO[currentBrushMedium].name;
@@ -5124,6 +5168,7 @@
     function switchBrushMedium(medium) {
       currentBrushMedium = medium;
       activeMediumTab = medium;
+      saveLastBrushState();
       playSuctionPopSound(470, 0.09);
       BrushAudioEngine.updateConfig(currentTool, medium);
       updateTopMediumButtonDisplay();
@@ -5203,6 +5248,7 @@
         const activeSub = btn.querySelector('span:last-child');
         if (activeSub) activeSub.className = 'text-[9px] text-amber-700/80 font-normal';
 
+        saveLastBrushState();
         const subInfo = WATERCOLOR_SUBBRUSH_INFO[watercolorBrushType];
         const hintEl = document.getElementById('watercolorSubBrushHint');
         if (hintEl && subInfo) hintEl.textContent = subInfo.hint;
@@ -5246,6 +5292,7 @@
         });
         btn.className = 'crayon-tip-btn py-2 rounded-xl border-2 border-amber-500 bg-amber-50 text-amber-900 font-bold active:scale-95 transition shadow-2xs';
         crayonTipMode = btn.dataset.crayontip;
+        saveLastBrushState();
         showToast(`已選擇蠟筆造型：${btn.textContent.trim()}`);
       });
     });
@@ -5261,6 +5308,8 @@
         });
         btn.className = 'tip-btn py-2 rounded-xl border-2 border-indigo-500 bg-indigo-50 text-indigo-900 font-bold active:scale-95 transition shadow-2xs';
         markerTip = btn.dataset.tip;
+        updateTopMediumButtonDisplay();
+        saveLastBrushState();
         if (typeof updateBrushTipDemo === 'function') updateBrushTipDemo();
         showToast(`已切換馬克筆筆頭：${btn.textContent.trim()}`);
       });
@@ -8166,7 +8215,7 @@
     const playPaperFlipSound = playBookPageFlipSound;
 
     /********************************************************************
-     * 沉浸畫室背景樂控制器 (多曲目隨機隨選 bgm.mp3 ~ bgm8.mp3，預設自動播放，音量設定為 30%)
+     * 沉浸畫室背景樂控制器 (多曲目隨機隨選 bgm.mp3 ~ bgm8.mp3，預設自動播放，音量設定為 20%)
      ********************************************************************/
     const StudioBgmEngine = (() => {
       let isPlaying = false;
@@ -8193,13 +8242,13 @@
           
           bgmAudioEl = new Audio(selectedTrack);
           bgmAudioEl.loop = true;
-          bgmAudioEl.volume = 0.30; // 背景音樂音量調整為 30%
+          bgmAudioEl.volume = 0.20; // 背景音樂音量調整為 20%
         }
       }
 
       function autoPlay() {
         initAudio();
-        bgmAudioEl.volume = 0.30;
+        bgmAudioEl.volume = 0.20;
         const p = bgmAudioEl.play();
         if (p !== undefined) {
           p.then(() => {
@@ -8232,13 +8281,13 @@
           updateUI();
           showToast('已暫停畫室背景伴奏');
         } else {
-          bgmAudioEl.volume = 0.30;
+          bgmAudioEl.volume = 0.20;
           const p = bgmAudioEl.play();
           if (p !== undefined) {
             p.then(() => {
               isPlaying = true;
               updateUI();
-              showToast('🎶 已開啟畫室背景伴奏 (音量 30%)');
+              showToast('🎶 已開啟畫室背景伴奏 (音量 20%)');
             }).catch((err) => {
               console.warn('BGM play error:', err);
               updateUI();
@@ -9239,10 +9288,32 @@
     renderPaperModalCards();
     initPorcelainPalette();
     drawPresetPhoto('lion');
-    applyBrushColor([20, 85, 210]);
+    // 恢復最後一次使用的畫筆工具、筆頭造型與色彩 (新使用者/未設定時預設為圓頭馬克筆)
+    const savedBrush = loadLastBrushState();
+    const initMedium = savedBrush?.medium || 'marker';
+    const initColor = (Array.isArray(savedBrush?.color) && savedBrush.color.length === 3) ? savedBrush.color : [240, 50, 70];
+    const initMarkerTip = savedBrush?.markerTip || 'round';
+    const initWcBrush = savedBrush?.watercolorBrushType || 'watercolor_round';
+    const initCrayonTip = savedBrush?.crayonTipMode || 'tip';
+    const initSize = typeof savedBrush?.size === 'number' ? savedBrush.size : 32;
+
+    markerTip = initMarkerTip;
+    watercolorBrushType = initWcBrush;
+    crayonTipMode = initCrayonTip;
+
+    // 同步抽屜筆頭選取按鈕高亮狀態
+    document.querySelectorAll('.tip-btn').forEach(b => {
+      if (b.dataset.tip === markerTip) {
+        b.className = 'tip-btn py-2 rounded-xl border-2 border-indigo-500 bg-indigo-50 text-indigo-900 font-bold active:scale-95 transition shadow-2xs';
+      } else {
+        b.className = 'tip-btn py-2 rounded-xl border border-stone-200 bg-white text-stone-700 font-semibold active:scale-95 transition shadow-2xs';
+      }
+    });
+
+    applyBrushColor(initColor, false, false);
     renderRecentColorsUI();
-    switchBrushMedium('watercolor');
-    updateBrushSize(36);
+    switchBrushMedium(initMedium);
+    updateBrushSize(initSize);
     if (typeof updateBrushTipDemo === 'function') updateBrushTipDemo();
     fitCanvasToScreen();
     saveCurrentSlotSnapshot(true);
