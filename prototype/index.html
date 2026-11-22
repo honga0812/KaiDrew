@@ -56,14 +56,14 @@
     }
     .studio-toolbar-collapsed {
       opacity: 0 !important;
-      transform: translateY(-10px) scale(0.96) !important;
+      transform: translate(-50%, -10px) scale(0.96) !important;
       pointer-events: none !important;
       visibility: hidden !important;
       transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.28s;
     }
     .studio-toolbar-expanded {
       opacity: 1 !important;
-      transform: translateY(0) scale(1) !important;
+      transform: translate(-50%, 0) scale(1) !important;
       pointer-events: auto !important;
       visibility: visible !important;
       transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1), transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.32s;
@@ -140,7 +140,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext(); this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="轻点立即进入画室">
     <!-- 顶部居中极简版本编号 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.100 · Pro Edition
+      B.26.11.101 · Pro Edition
     </div>
 
     <!-- 中心纯净 KaiDraw Logo (纯白无界背景) -->
@@ -149,13 +149,8 @@
     </div>
   </div>
 
-  <!-- ==================== 自由拖移 KaiDraw Logo 主控制 (纯净圆形无边框，轻点平滑展开工具箱) ==================== -->
-  <button id="btnMainLogoMenu" class="fixed left-3 top-3 z-50 group w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.18)] hover:scale-105 active:scale-95 transition-all cursor-pointer p-0 bg-white select-none touch-none flex items-center justify-center border-0 ring-0 outline-none" style="touch-action: none;" title="KaiDraw 极简工具箱：轻点展开/收起画具与画风选单">
-    <img src="images/logo button_v2_.png" alt="KaiDraw Logo Menu" class="w-full h-full object-cover rounded-full pointer-events-none select-none transition-transform group-hover:scale-105" />
-  </button>
-
-  <!-- ==================== 顶部悬浮展开式工具栏 (点击 LogoButton 平滑展开/收起，分类归类清晰) ==================== -->
-  <div id="fullTopToolbar" class="studio-toolbar-collapsed fixed top-3 left-16 sm:left-18 z-50 max-w-[calc(100vw-5rem)] bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl px-3 py-2 shadow-[0_12px_36px_rgba(0,0,0,0.15)] flex flex-wrap items-center gap-2.5 select-none transition-all">
+  <!-- ==================== 顶部悬浮展开式工具栏 (点击 LogoButton 平滑展开/收起，分类归类清晰，顶部居中) ==================== -->
+  <div id="fullTopToolbar" class="studio-toolbar-collapsed fixed top-3 left-1/2 z-50 max-w-[calc(100vw-2rem)] bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl px-3 py-2 shadow-[0_12px_36px_rgba(0,0,0,0.15)] flex flex-wrap items-center justify-center gap-2 select-none transition-all">
     
     <!-- 分类 1：画种与媒介 -->
     <div class="flex items-center gap-1.5 pr-2 border-r border-stone-200/80">
@@ -295,7 +290,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.100 · Pro Edition
+        B.26.11.101 · Pro Edition
       </div>
     </div>
 
@@ -605,10 +600,27 @@
     </div>
   </div>
 
-  <!-- ==================== 悬浮可拖移 AI 魔法圆形按钮 (星光与 AI 标志，支持手指与触控笔自由拖移至画面各处，轻点开启 AI 魔法工坊) ==================== -->
-  <button id="btnFloatingAiMagic" class="fixed right-2.5 top-1/2 -translate-y-1/2 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 border border-white/90 shadow-[0_6px_20px_rgba(168,85,247,0.4)] hover:shadow-[0_10px_25px_rgba(168,85,247,0.6)] hover:scale-105 active:scale-95 transition-shadow flex flex-col items-center justify-center text-white cursor-move select-none touch-none group" style="touch-action: none;" title="AI 魔法：可自由拖移至屏幕任意位置，轻点开启以图生图与动画魔法">
+  <!-- ==================== 1. 悬浮自由拖移 KaiDraw Logo 菜单按钮 (预设位于 AI 按键上方，轻点平滑展开顶栏选单) ==================== -->
+  <button id="btnMainLogoMenu" class="stagger-init-right fixed right-2.5 top-[calc(50%-85px)] z-40 group w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.18)] hover:scale-105 active:scale-95 transition-all cursor-move p-0 bg-white select-none touch-none flex items-center justify-center border-0 ring-0 outline-none" style="touch-action: none;" title="KaiDraw 极简工具箱：可自由拖移至屏幕任意位置，轻点展开/收起画具与画风选单">
+    <img src="images/logo button_v2_.png" alt="KaiDraw Logo Menu" class="w-full h-full object-cover rounded-full pointer-events-none select-none transition-transform group-hover:scale-105" />
+  </button>
+
+  <!-- ==================== 2. 悬浮自由拖移 AI 魔法圆形按钮 (可自由拖移，轻点开启 AI 魔法工坊) ==================== -->
+  <button id="btnFloatingAiMagic" class="stagger-init-right fixed right-2.5 top-1/2 -translate-y-1/2 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 border border-white/90 shadow-[0_6px_20px_rgba(168,85,247,0.4)] hover:shadow-[0_10px_25px_rgba(168,85,247,0.6)] hover:scale-105 active:scale-95 transition-shadow flex flex-col items-center justify-center text-white cursor-move select-none touch-none group" style="touch-action: none;" title="AI 魔法：可自由拖移至屏幕任意位置，轻点开启以图生图与动画魔法">
     <span class="text-base sm:text-lg leading-none filter drop-shadow-sm pointer-events-none group-hover:scale-110 transition-transform">✨</span>
     <span class="text-[8px] sm:text-[9px] font-black tracking-widest uppercase font-mono leading-none mt-0.5 filter drop-shadow-sm pointer-events-none">AI</span>
+  </button>
+
+  <!-- ==================== 3. 悬浮自由拖移 画纸与画质版本圆形按钮 (位于 AI 按键下方，轻点唤起紧凑画纸版本与材质预览) ==================== -->
+  <button id="btnFloatingPaperHistory" class="stagger-init-right fixed right-2.5 top-[calc(50%+85px)] z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/95 backdrop-blur-xl border border-amber-300/80 shadow-[0_4px_16px_rgba(217,119,6,0.18)] hover:shadow-[0_8px_24px_rgba(217,119,6,0.28)] hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center text-stone-800 cursor-move select-none touch-none group" style="touch-action: none;" title="画纸与材质：可自由拖移，轻点查看画纸版本与物理画质预览">
+    <span class="text-base sm:text-lg leading-none filter drop-shadow-2xs pointer-events-none group-hover:scale-110 transition-transform">📄</span>
+    <span id="floatingPaperCountBadge" class="text-[8px] font-bold text-amber-700 font-mono leading-none mt-0.5 pointer-events-none">1/10</span>
+  </button>
+
+  <!-- ==================== 4. 悬浮自由拖移 图层管理器圆形按钮 (位于右侧下方，轻点唤起迷你长条图层条) ==================== -->
+  <button id="btnFloatingLayersManager" class="stagger-init-right fixed right-2.5 top-[calc(50%+160px)] z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/95 backdrop-blur-xl border border-indigo-300/80 shadow-[0_4px_16px_rgba(99,102,241,0.18)] hover:shadow-[0_8px_24px_rgba(99,102,241,0.28)] hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center text-stone-800 cursor-move select-none touch-none group" style="touch-action: none;" title="图层管理器：可自由拖移，轻点展开图层迷你条与管理器">
+    <span class="text-base sm:text-lg leading-none filter drop-shadow-2xs pointer-events-none group-hover:scale-110 transition-transform">📑</span>
+    <span id="floatingLayerCountBadge" class="text-[8px] font-bold text-indigo-700 font-mono leading-none mt-0.5 pointer-events-none">1层</span>
   </button>
 
   <!-- ==================== 抽屉背景点击遮罩 (点击画布或空白处立即轻柔关闭抽屉，绝不遮挡画纸) ==================== -->
@@ -927,17 +939,20 @@
     </div>
   </div>
 
-  <!-- ==================== 浮动抽屉：多图层系统 (分层创作、AI 优化生成新图层) ==================== -->
-  <aside id="layersPanel" class="hidden fixed right-3 top-24 lg:top-16 w-84 max-w-[92vw] bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-3xl p-4 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18)] z-35 flex flex-col gap-3 text-stone-800">
+  <!-- ==================== 浮动抽屉：完整版多图层系统 (含不透明度调节与高级管理) ==================== -->
+  <aside id="layersPanel" class="hidden fixed right-3 top-24 lg:top-16 w-84 max-w-[92vw] bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-3xl p-4 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18)] z-40 flex flex-col gap-3 text-stone-800">
     <div class="flex items-center justify-between border-b border-stone-100 pb-2.5">
       <div class="flex items-center gap-2">
         <span class="text-lg">📑</span>
         <div>
           <h3 class="text-sm font-extrabold text-stone-900">图层管理器 (Layers)</h3>
-          <p class="text-[10px] text-stone-500">支持分层手绘、AI 优化逐层递进修改</p>
+          <p class="text-[10px] text-stone-500">支持分层手绘、透明度调节与 AI 优化</p>
         </div>
       </div>
-      <button id="btnCloseLayersPanel" class="w-7 h-7 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold flex items-center justify-center active:scale-95 transition">✕</button>
+      <div class="flex items-center gap-1">
+        <button id="btnShrinkToMiniLayers" class="w-7 h-7 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold flex items-center justify-center active:scale-95 transition cursor-pointer" title="缩小为迷你长条图层条">⤡</button>
+        <button id="btnCloseLayersPanel" class="w-7 h-7 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold flex items-center justify-center active:scale-95 transition cursor-pointer">✕</button>
+      </div>
     </div>
 
     <!-- 图层列表容器 (从上往下渲染，最顶层在最上) -->
@@ -945,12 +960,83 @@
 
     <!-- 底部新建与AI优化按钮 -->
     <div class="flex items-center gap-2 pt-2 border-t border-stone-100">
-      <button id="btnAddBlankLayer" class="flex-1 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold flex items-center justify-center gap-1 transition active:scale-95">
+      <button id="btnAddBlankLayer" class="flex-1 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer">
         <span>➕</span> 新建空白层
       </button>
-      <button id="btnQuickAiLayer" class="flex-1 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white text-xs font-bold flex items-center justify-center gap-1 shadow-md shadow-purple-500/20 active:scale-95 transition">
+      <button id="btnQuickAiLayer" class="flex-1 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white text-xs font-bold flex items-center justify-center gap-1 shadow-md shadow-purple-500/20 active:scale-95 transition cursor-pointer">
         <span>✨</span> AI 优化建层
       </button>
+    </div>
+  </aside>
+
+  <!-- ==================== 缩小版：迷你长条形图层预览条 (长条极简，包含图层1~4与快捷键，点击放大) ==================== -->
+  <aside id="miniLayersStrip" class="hidden fixed right-16 bottom-20 z-40 w-48 max-w-[85vw] bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl p-2.5 shadow-[0_16px_40px_rgba(0,0,0,0.16)] flex flex-col gap-1.5 text-stone-800 select-none transition-all">
+    <!-- 顶栏：图层数量与展开完整版按钮 -->
+    <div class="flex items-center justify-between pb-1.5 border-b border-stone-100">
+      <div class="flex items-center gap-1.5">
+        <span class="text-xs">📑</span>
+        <span class="text-[11px] font-bold text-stone-800">图层</span>
+        <span id="miniLayerCountBadge" class="text-[9px] font-mono px-1 rounded-full bg-indigo-100 text-indigo-700 font-bold">1</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <button id="btnExpandToFullLayers" class="px-1.5 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[10px] font-bold flex items-center gap-0.5 active:scale-90 transition cursor-pointer" title="展开完整图层管理器 (含不透明度调节)">
+          <span>⤢</span> 展开
+        </button>
+        <button id="btnCloseMiniLayersStrip" class="w-5 h-5 rounded-md hover:bg-stone-100 text-stone-400 hover:text-stone-700 flex items-center justify-center text-[10px] active:scale-90 transition cursor-pointer" title="关闭迷你图层条">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- 迷你图层列表容器 (只含 图层1/2/3/4、排序上下键、显示与删除快捷键，无透明度与文字说明) -->
+    <div id="miniLayersListContainer" class="flex flex-col gap-1 max-h-52 overflow-y-auto pr-0.5"></div>
+
+    <!-- 底部快捷新建按键 -->
+    <div class="flex items-center justify-between pt-1 border-t border-stone-100 gap-1.5">
+      <button id="miniBtnAddLayer" class="flex-1 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold flex items-center justify-center gap-1 active:scale-95 transition shadow-2xs cursor-pointer" title="快捷新建图层">
+        <span>➕</span> 增图层
+      </button>
+      <button id="miniBtnOpenFull" class="px-2 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-600 text-[10px] font-medium active:scale-95 transition cursor-pointer" title="查看完整详情与透明度">
+        透明度/进阶
+      </button>
+    </div>
+  </aside>
+
+  <!-- ==================== 紧凑型画纸版本与画质预览浮窗 (替代全屏大弹窗，轻巧呈现预览与材质) ==================== -->
+  <aside id="compactPaperHistoryPopover" class="hidden fixed right-16 top-1/2 -translate-y-1/2 z-40 w-76 max-w-[90vw] bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl p-3 shadow-[0_20px_50px_rgba(0,0,0,0.18)] flex flex-col gap-2.5 text-stone-800 select-none transition-all">
+    <!-- 顶栏：标题与快速新建 -->
+    <div class="flex items-center justify-between pb-1.5 border-b border-stone-100">
+      <div class="flex items-center gap-1.5">
+        <span class="text-sm">📄</span>
+        <div class="flex flex-col">
+          <span class="text-xs font-bold text-stone-900">画纸版本与画质</span>
+          <span id="popoverPaperCountSub" class="text-[9px] text-stone-400">已建 1 / 最多 10 张</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-1">
+        <button id="popoverBtnNewCanvas" class="px-2 py-1 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold flex items-center gap-1 shadow-2xs active:scale-95 transition cursor-pointer" title="翻开全新空白画纸">
+          <span>➕</span> 新画纸
+        </button>
+        <button id="btnClosePaperHistoryPopover" class="w-6 h-6 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-700 text-xs font-bold flex items-center justify-center active:scale-95 transition cursor-pointer">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- 区块 1：当前已建画纸缩略图与版本切换 (最多 10 张，横向滑动) -->
+    <div class="flex flex-col gap-1">
+      <span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider font-mono">画纸版本历史预览 (点击切换)</span>
+      <div id="popoverCanvasSlotsRow" class="flex items-center gap-2 overflow-x-auto py-1 pr-1" style="scrollbar-width: thin;">
+        <!-- 动态生成 1~10 张画纸缩略图小卡片 -->
+      </div>
+    </div>
+
+    <!-- 区块 2：5 种物理画纸材质预览选择 -->
+    <div class="flex flex-col gap-1 pt-1.5 border-t border-stone-100">
+      <span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider font-mono">不同物理画纸材质 (点击即换)</span>
+      <div id="popoverPaperTexturesGrid" class="grid grid-cols-2 gap-1.5 max-h-36 overflow-y-auto pr-0.5">
+        <!-- 动态生成 5 款纸张预览胶囊 -->
+      </div>
     </div>
   </aside>
 
@@ -1347,7 +1433,7 @@
   </div>
 
   <!-- ==================== 弹窗：新手操作引导与功能教学 (1~7 核心功能全景引导) ==================== -->
-  <div id="tutorialModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-5">
+  <div id="tutorialModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-md z-[60] flex items-center justify-center p-3 sm:p-5">
     <div class="bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-3xl p-5 sm:p-6 max-w-2xl w-full shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] flex flex-col gap-4 max-h-[90vh] overflow-hidden text-stone-800">
       
       <!-- 弹窗顶栏 -->
@@ -1831,101 +1917,178 @@
     function renderLayersUI() {
       const container = document.getElementById('layersListContainer');
       const badge = document.getElementById('layerCountBadge');
-      if (!container) return;
+      const miniBadge = document.getElementById('miniLayerCountBadge');
+      const floatingLayerBadge = document.getElementById('floatingLayerCountBadge');
       if (badge) badge.textContent = layers.length;
-      container.innerHTML = '';
+      if (miniBadge) miniBadge.textContent = layers.length;
+      if (floatingLayerBadge) floatingLayerBadge.textContent = `${layers.length}层`;
 
-      for (let i = layers.length - 1; i >= 0; i--) {
-        const l = layers[i];
-        const isActive = (i === activeLayerIndex);
-        const isTop = (i === layers.length - 1);
-        const isBottom = (i === 0);
+      if (container) {
+        container.innerHTML = '';
+        for (let i = layers.length - 1; i >= 0; i--) {
+          const l = layers[i];
+          const isActive = (i === activeLayerIndex);
+          const isTop = (i === layers.length - 1);
+          const isBottom = (i === 0);
 
-        const card = document.createElement('div');
-        card.className = `p-2.5 rounded-2xl border transition flex flex-col gap-2 ${
-          isActive 
-            ? 'bg-indigo-50/90 border-indigo-300 shadow-sm ring-1 ring-indigo-400' 
-            : 'bg-stone-50 border-stone-200/80 hover:bg-stone-100/70'
-        }`;
+          const card = document.createElement('div');
+          card.className = `p-2.5 rounded-2xl border transition flex flex-col gap-2 ${
+            isActive 
+              ? 'bg-indigo-50/90 border-indigo-300 shadow-sm ring-1 ring-indigo-400' 
+              : 'bg-stone-50 border-stone-200/80 hover:bg-stone-100/70'
+          }`;
 
-        card.innerHTML = `
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer layer-select-target">
-              <span class="text-sm">${l.isAi ? '✨' : '🎨'}</span>
-              <div class="flex flex-col min-w-0">
-                <span class="text-xs font-bold truncate ${isActive ? 'text-indigo-900' : 'text-stone-700'}">${l.name}</span>
-                <span class="text-[10px] ${isActive ? 'text-indigo-600 font-semibold' : 'text-stone-400'}">${isActive ? '✏️ 当前画笔绘制层' : '点击切换为绘制层'}</span>
+          card.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 flex-1 min-w-0 cursor-pointer layer-select-target">
+                <span class="text-sm">${l.isAi ? '✨' : '🎨'}</span>
+                <div class="flex flex-col min-w-0">
+                  <span class="text-xs font-bold truncate ${isActive ? 'text-indigo-900' : 'text-stone-700'}">${l.name}</span>
+                  <span class="text-[10px] ${isActive ? 'text-indigo-600 font-semibold' : 'text-stone-400'}">${isActive ? '✏️ 当前画笔绘制层' : '点击切换为绘制层'}</span>
+                </div>
+              </div>
+              <!-- 图层上下移动排序与显示/删除控件 -->
+              <div class="flex items-center gap-0.5 shrink-0">
+                <button class="btn-layer-up p-1.5 rounded-lg hover:bg-stone-200 text-xs text-stone-700 transition ${isTop ? 'opacity-30 cursor-not-allowed' : 'active:scale-90'}" title="图层向上移动 (覆盖在上方)" ${isTop ? 'disabled' : ''}>
+                  ⬆️
+                </button>
+                <button class="btn-layer-down p-1.5 rounded-lg hover:bg-stone-200 text-xs text-stone-700 transition ${isBottom ? 'opacity-30 cursor-not-allowed' : 'active:scale-90'}" title="图层向下移动 (压在下方)" ${isBottom ? 'disabled' : ''}>
+                  ⬇️
+                </button>
+                <button class="btn-toggle-eye p-1.5 rounded-lg hover:bg-stone-200 text-xs text-stone-600" title="${l.visible ? '隐藏此图层' : '显示此图层'}">
+                  ${l.visible ? '👁️' : '🚫'}
+                </button>
+                ${layers.length > 1 ? `
+                  <button class="btn-del-layer p-1.5 rounded-lg hover:bg-rose-100 text-xs text-rose-600" title="删除此图层">
+                    🗑️
+                  </button>
+                ` : ''}
               </div>
             </div>
-            <!-- 图层上下移动排序与显示/删除控件 -->
+            <div class="flex items-center gap-2 pt-1 border-t border-stone-200/50">
+              <span class="text-[10px] text-stone-500 font-medium">不透明度</span>
+              <input type="range" min="10" max="100" value="${Math.round(l.opacity * 100)}" class="layer-opacity-slider flex-1 h-1.5 accent-indigo-600 cursor-pointer">
+              <span class="text-[10px] font-mono text-stone-600 w-7 text-right">${Math.round(l.opacity * 100)}%</span>
+            </div>
+          `;
+
+          card.querySelector('.layer-select-target').addEventListener('click', () => {
+            setActiveLayer(i);
+          });
+
+          const upBtn = card.querySelector('.btn-layer-up');
+          if (upBtn && !isTop) {
+            upBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              moveLayer(i, i + 1);
+            });
+          }
+
+          const downBtn = card.querySelector('.btn-layer-down');
+          if (downBtn && !isBottom) {
+            downBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              moveLayer(i, i - 1);
+            });
+          }
+
+          card.querySelector('.btn-toggle-eye').addEventListener('click', (e) => {
+            e.stopPropagation();
+            l.visible = !l.visible;
+            l.canvas.style.display = l.visible ? 'block' : 'none';
+            renderLayersUI();
+          });
+
+          const delBtn = card.querySelector('.btn-del-layer');
+          if (delBtn) {
+            delBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              deleteLayer(i);
+            });
+          }
+
+          const opSlider = card.querySelector('.layer-opacity-slider');
+          opSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value, 10) / 100;
+            l.opacity = val;
+            l.canvas.style.opacity = val;
+            card.querySelector('.text-right').textContent = `${Math.round(val * 100)}%`;
+          });
+
+          container.appendChild(card);
+        }
+      }
+
+      // 同时也同步渲染缩小版长形迷你图层预览条 (miniLayersListContainer)
+      const miniContainer = document.getElementById('miniLayersListContainer');
+      if (miniContainer) {
+        miniContainer.innerHTML = '';
+        for (let i = layers.length - 1; i >= 0; i--) {
+          const l = layers[i];
+          const isActive = (i === activeLayerIndex);
+          const isTop = (i === layers.length - 1);
+          const isBottom = (i === 0);
+
+          const row = document.createElement('div');
+          row.className = `flex items-center justify-between p-1.5 rounded-xl border text-xs cursor-pointer transition ${
+            isActive 
+              ? 'bg-indigo-50/90 border-indigo-300 shadow-2xs font-bold text-indigo-950 ring-1 ring-indigo-400/50' 
+              : 'bg-stone-50/80 border-stone-200/70 hover:bg-stone-100/70 text-stone-700'
+          }`;
+
+          row.innerHTML = `
+            <div class="flex items-center gap-1.5 flex-1 min-w-0 mini-layer-select-target">
+              <span class="text-[11px]">${l.isAi ? '✨' : '🎨'}</span>
+              <span class="text-[10.5px] truncate">${l.name}</span>
+            </div>
             <div class="flex items-center gap-0.5 shrink-0">
-              <button class="btn-layer-up p-1.5 rounded-lg hover:bg-stone-200 text-xs text-stone-700 transition ${isTop ? 'opacity-30 cursor-not-allowed' : 'active:scale-90'}" title="图层向上移动 (覆盖在上方)" ${isTop ? 'disabled' : ''}>
-                ⬆️
-              </button>
-              <button class="btn-layer-down p-1.5 rounded-lg hover:bg-stone-200 text-xs text-stone-700 transition ${isBottom ? 'opacity-30 cursor-not-allowed' : 'active:scale-90'}" title="图层向下移动 (压在下方)" ${isBottom ? 'disabled' : ''}>
-                ⬇️
-              </button>
-              <button class="btn-toggle-eye p-1.5 rounded-lg hover:bg-stone-200 text-xs text-stone-600" title="${l.visible ? '隐藏此图层' : '显示此图层'}">
-                ${l.visible ? '👁️' : '🚫'}
-              </button>
+              <button class="btn-mini-up w-5 h-5 rounded hover:bg-stone-200 flex items-center justify-center text-[10px] text-stone-600 ${isTop ? 'opacity-20 cursor-not-allowed' : 'active:scale-90'}" ${isTop ? 'disabled' : ''} title="向上移动">⬆️</button>
+              <button class="btn-mini-down w-5 h-5 rounded hover:bg-stone-200 flex items-center justify-center text-[10px] text-stone-600 ${isBottom ? 'opacity-20 cursor-not-allowed' : 'active:scale-90'}" ${isBottom ? 'disabled' : ''} title="向下移动">⬇️</button>
+              <button class="btn-mini-eye w-5 h-5 rounded hover:bg-stone-200 flex items-center justify-center text-[10px] text-stone-600" title="${l.visible ? '隐藏图层' : '显示图层'}">${l.visible ? '👁️' : '🚫'}</button>
               ${layers.length > 1 ? `
-                <button class="btn-del-layer p-1.5 rounded-lg hover:bg-rose-100 text-xs text-rose-600" title="删除此图层">
-                  🗑️
-                </button>
+                <button class="btn-mini-del w-5 h-5 rounded hover:bg-rose-100 flex items-center justify-center text-[10px] text-rose-600" title="删除图层">🗑️</button>
               ` : ''}
             </div>
-          </div>
-          <div class="flex items-center gap-2 pt-1 border-t border-stone-200/50">
-            <span class="text-[10px] text-stone-500 font-medium">不透明度</span>
-            <input type="range" min="10" max="100" value="${Math.round(l.opacity * 100)}" class="layer-opacity-slider flex-1 h-1.5 accent-indigo-600 cursor-pointer">
-            <span class="text-[10px] font-mono text-stone-600 w-7 text-right">${Math.round(l.opacity * 100)}%</span>
-          </div>
-        `;
+          `;
 
-        card.querySelector('.layer-select-target').addEventListener('click', () => {
-          setActiveLayer(i);
-        });
-
-        const upBtn = card.querySelector('.btn-layer-up');
-        if (upBtn && !isTop) {
-          upBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            moveLayer(i, i + 1);
+          row.querySelector('.mini-layer-select-target').addEventListener('click', () => {
+            setActiveLayer(i);
           });
-        }
 
-        const downBtn = card.querySelector('.btn-layer-down');
-        if (downBtn && !isBottom) {
-          downBtn.addEventListener('click', (e) => {
+          const upBtn = row.querySelector('.btn-mini-up');
+          if (upBtn && !isTop) {
+            upBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              moveLayer(i, i + 1);
+            });
+          }
+
+          const downBtn = row.querySelector('.btn-mini-down');
+          if (downBtn && !isBottom) {
+            downBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              moveLayer(i, i - 1);
+            });
+          }
+
+          const eyeBtn = row.querySelector('.btn-mini-eye');
+          eyeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            moveLayer(i, i - 1);
+            l.visible = !l.visible;
+            l.canvas.style.display = l.visible ? 'block' : 'none';
+            renderLayersUI();
           });
+
+          const delBtn = row.querySelector('.btn-mini-del');
+          if (delBtn) {
+            delBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              deleteLayer(i);
+            });
+          }
+
+          miniContainer.appendChild(row);
         }
-
-        card.querySelector('.btn-toggle-eye').addEventListener('click', (e) => {
-          e.stopPropagation();
-          l.visible = !l.visible;
-          l.canvas.style.display = l.visible ? 'block' : 'none';
-          renderLayersUI();
-        });
-
-        const delBtn = card.querySelector('.btn-del-layer');
-        if (delBtn) {
-          delBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            deleteLayer(i);
-          });
-        }
-
-        const opSlider = card.querySelector('.layer-opacity-slider');
-        opSlider.addEventListener('input', (e) => {
-          const val = parseInt(e.target.value, 10) / 100;
-          l.opacity = val;
-          l.canvas.style.opacity = val;
-          card.querySelector('.text-right').textContent = `${Math.round(val * 100)}%`;
-        });
-
-        container.appendChild(card);
       }
     }
 
@@ -5502,30 +5665,32 @@
 
         const wrapper = document.getElementById('transformCanvasWrapper');
         const header = document.getElementById('mainAppHeader');
-        const logoBtn = document.getElementById('btnMainLogoMenu');
         const leftDock = document.getElementById('leftPrimaryDock');
+        const logoBtn = document.getElementById('btnMainLogoMenu');
         const aiBtn = document.getElementById('btnFloatingAiMagic');
+        const paperBtn = document.getElementById('btnFloatingPaperHistory');
+        const layersBtn = document.getElementById('btnFloatingLayersManager');
         const pageFlip = document.getElementById('pageFlipDogEar');
 
         // 主要功能渐渐地一个一个跑出来，让使用者开始创作
         setTimeout(() => wrapper?.classList.add('stagger-visible'), 100);
-        setTimeout(() => {
-          header?.classList.add('stagger-visible');
-          logoBtn?.classList.add('stagger-visible');
-        }, 260);
-        setTimeout(() => leftDock?.classList.add('stagger-visible'), 420);
-        setTimeout(() => aiBtn?.classList.add('stagger-visible-right'), 580);
-        setTimeout(() => pageFlip?.classList.add('stagger-visible'), 720);
+        setTimeout(() => header?.classList.add('stagger-visible'), 240);
+        setTimeout(() => leftDock?.classList.add('stagger-visible'), 380);
+        setTimeout(() => logoBtn?.classList.add('stagger-visible'), 500);
+        setTimeout(() => aiBtn?.classList.add('stagger-visible'), 600);
+        setTimeout(() => paperBtn?.classList.add('stagger-visible'), 700);
+        setTimeout(() => layersBtn?.classList.add('stagger-visible'), 800);
+        setTimeout(() => pageFlip?.classList.add('stagger-visible'), 920);
 
         setTimeout(() => {
           splashEl.remove();
           // 清理初始化过渡类，确保后续拖动、缩放、平移手势不受 CSS 干扰
-          [wrapper, header, logoBtn, leftDock, aiBtn, pageFlip].forEach(el => {
+          [wrapper, header, leftDock, logoBtn, aiBtn, paperBtn, layersBtn, pageFlip].forEach(el => {
             if (el) {
               el.classList.remove('stagger-init-top', 'stagger-init-left', 'stagger-init-right', 'stagger-init-scale', 'stagger-init-fade', 'stagger-visible', 'stagger-visible-right');
             }
           });
-        }, 1100);
+        }, 1250);
       };
 
       splashEl.addEventListener('click', dismissSplash);
@@ -5644,17 +5809,8 @@
     const logoMenuToggleArrow = document.getElementById('logoMenuToggleArrow');
     const fullToolbarArrow = document.getElementById('fullToolbarArrow');
 
-    // 初始化 Logo 按钮位置与顶栏锚点对齐
-    const logoMenuAnchor = document.getElementById('logoMenuAnchor');
-    if (logoMenuAnchor && btnMainLogoMenu) {
-      setTimeout(() => {
-        const rect = logoMenuAnchor.getBoundingClientRect();
-        if (rect.width > 0) {
-          btnMainLogoMenu.style.left = `${rect.left}px`;
-          btnMainLogoMenu.style.top = `${rect.top}px`;
-        }
-      }, 50);
-    }
+    const btnFloatingPaperHistory = document.getElementById('btnFloatingPaperHistory');
+    const btnFloatingLayersManager = document.getElementById('btnFloatingLayersManager');
 
     function toggleTopToolbar(forceOpen = null) {
       if (!fullTopToolbar) return;
@@ -5674,14 +5830,14 @@
       }
     }
 
-    // 绑定 Logo 拖动与轻点展开功能
+    // 绑定 1. Logo 拖动与轻点展开功能 (位于 AI 上方，纯净圆形)
     if (btnMainLogoMenu) {
       makeElementDraggable(btnMainLogoMenu, () => {
         toggleTopToolbar();
       });
     }
 
-    // 绑定悬浮 AI 魔法圆形按钮拖动与轻点开启工坊
+    // 绑定 2. 悬浮 AI 魔法圆形按钮拖动与轻点开启工坊 (居中)
     if (btnFloatingAiMagic) {
       makeElementDraggable(btnFloatingAiMagic, () => {
         const btnOpenAiModal = document.getElementById('btnOpenAiModal');
@@ -5689,9 +5845,23 @@
       });
     }
 
-    // 屏幕尺寸变化时校准悬浮按钮不超出视口
+    // 绑定 3. 悬浮画纸与画质版本圆形按钮拖动与轻点开启紧凑预览 (位于 AI 下方)
+    if (btnFloatingPaperHistory) {
+      makeElementDraggable(btnFloatingPaperHistory, () => {
+        toggleCompactPaperPopover();
+      });
+    }
+
+    // 绑定 4. 悬浮图层管理器圆形按钮拖动与轻点开启迷你图层条 (位于右侧下方)
+    if (btnFloatingLayersManager) {
+      makeElementDraggable(btnFloatingLayersManager, () => {
+        toggleMiniLayersStrip();
+      });
+    }
+
+    // 屏幕尺寸变化时校准 4 个悬浮圆形按钮不超出视口
     window.addEventListener('resize', () => {
-      [btnMainLogoMenu, btnFloatingAiMagic].forEach((el) => {
+      [btnMainLogoMenu, btnFloatingAiMagic, btnFloatingPaperHistory, btnFloatingLayersManager].forEach((el) => {
         if (!el) return;
         const rect = el.getBoundingClientRect();
         const minX = 6;
@@ -5723,14 +5893,34 @@
       });
     }
 
-    // 点击外部区域或画布时平滑收拢顶部工具栏
+    // 点击外部区域或画布时平滑收拢顶部工具栏与浮窗
     document.addEventListener('pointerdown', (e) => {
-      if (!fullTopToolbar || !fullTopToolbar.classList.contains('studio-toolbar-expanded')) return;
-      if (!fullTopToolbar.contains(e.target) && 
-          !btnMainLogoMenu?.contains(e.target) && 
-          !document.getElementById('mainDrawer')?.contains(e.target) &&
-          !e.target.closest?.('#paperTextureModal, #styleModal, #cameraModal, #layersPanel, #artworkHistoryModal, #evictionPromptModal, #aiModal, #photoAlbumModal, #tutorialModal, #vipModal')) {
-        toggleTopToolbar(false);
+      if (fullTopToolbar && fullTopToolbar.classList.contains('studio-toolbar-expanded')) {
+        if (!fullTopToolbar.contains(e.target) && 
+            !btnMainLogoMenu?.contains(e.target) && 
+            !document.getElementById('mainDrawer')?.contains(e.target) &&
+            !e.target.closest?.('#paperTextureModal, #styleModal, #cameraModal, #layersPanel, #miniLayersStrip, #compactPaperHistoryPopover, #artworkHistoryModal, #evictionPromptModal, #aiModal, #photoAlbumModal, #tutorialModal, #vipModal')) {
+          toggleTopToolbar(false);
+        }
+      }
+
+      // 画纸版本紧凑浮窗点击外部关闭
+      const paperPopover = document.getElementById('compactPaperHistoryPopover');
+      if (paperPopover && !paperPopover.classList.contains('hidden')) {
+        if (!paperPopover.contains(e.target) && !btnFloatingPaperHistory?.contains(e.target)) {
+          paperPopover.classList.add('hidden');
+        }
+      }
+
+      // 迷你图层条点击外部关闭
+      const miniStrip = document.getElementById('miniLayersStrip');
+      if (miniStrip && !miniStrip.classList.contains('hidden')) {
+        if (!miniStrip.contains(e.target) && 
+            !btnFloatingLayersManager?.contains(e.target) && 
+            !document.getElementById('dockBtnAddLayer')?.contains(e.target) && 
+            !document.getElementById('layersPanel')?.contains(e.target)) {
+          miniStrip.classList.add('hidden');
+        }
       }
     });
 
@@ -5841,6 +6031,7 @@
       if (triggerUI) {
         renderCanvasVersionsDrawer();
         renderArtworkHistoryUI();
+        if (typeof renderCompactPaperPopover === 'function') renderCompactPaperPopover();
       }
     }
 
@@ -6466,12 +6657,179 @@
       document.getElementById('evictionPromptModal')?.classList.add('hidden');
     });
 
-    // 常用工具坞：快捷增加图层按键绑定
+    function playPaperRustleSound() {
+      try {
+        if (typeof playBookPageFlipSound === 'function') {
+          playBookPageFlipSound();
+        } else if (typeof playSuctionPopSound === 'function') {
+          playSuctionPopSound(480, 0.08);
+        }
+      } catch (_) {}
+    }
+
+    // 紧凑型画纸版本与画质浮窗渲染与控制
+    function renderCompactPaperPopover() {
+      const popover = document.getElementById('compactPaperHistoryPopover');
+      if (!popover) return;
+      const subTitle = document.getElementById('popoverPaperCountSub');
+      const floatingBadge = document.getElementById('floatingPaperCountBadge');
+      if (subTitle) subTitle.textContent = `已建 ${canvasSlots.length} / 最多 ${TOTAL_CANVAS_SLOTS} 张`;
+      if (floatingBadge) floatingBadge.textContent = `${activeSlotIndex + 1}/${canvasSlots.length}`;
+
+      // 1. 渲染画纸版本缩略图卡片行 (popoverCanvasSlotsRow)
+      const slotsRow = document.getElementById('popoverCanvasSlotsRow');
+      if (slotsRow) {
+        slotsRow.innerHTML = '';
+        canvasSlots.forEach((slot, idx) => {
+          const isActive = (idx === activeSlotIndex);
+          const card = document.createElement('div');
+          card.className = `flex flex-col items-center gap-1 p-1.5 rounded-xl border cursor-pointer shrink-0 transition ${
+            isActive 
+              ? 'bg-amber-50 border-amber-500 ring-2 ring-amber-400 shadow-sm' 
+              : 'bg-stone-50 border-stone-200 hover:border-amber-300'
+          }`;
+          card.style.width = '78px';
+
+          card.innerHTML = `
+            <div class="w-full h-12 rounded-lg bg-white border border-stone-200 overflow-hidden shadow-2xs relative flex items-center justify-center">
+              ${slot.thumbDataUrl 
+                ? `<img src="${slot.thumbDataUrl}" class="w-full h-full object-cover" alt="${slot.title}">` 
+                : `<span class="text-xs text-stone-300">空白</span>`}
+              ${isActive ? `<span class="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-amber-500 ring-1 ring-white"></span>` : ''}
+            </div>
+            <div class="flex items-center justify-between w-full px-0.5">
+              <span class="text-[9px] font-bold truncate ${isActive ? 'text-amber-900' : 'text-stone-700'}">${slot.title}</span>
+              ${isActive ? `<span class="text-[8px] font-bold text-amber-600">当前</span>` : ''}
+            </div>
+          `;
+
+          card.addEventListener('click', () => {
+            if (idx !== activeSlotIndex) {
+              playBookPageFlipSound();
+              switchToSlot(idx);
+              renderCompactPaperPopover();
+              showToast(`📄 已切换至【${slot.title}】`);
+            }
+          });
+
+          slotsRow.appendChild(card);
+        });
+      }
+
+      // 2. 渲染 5 种物理画纸材质预览选择 (popoverPaperTexturesGrid)
+      const texturesGrid = document.getElementById('popoverPaperTexturesGrid');
+      if (texturesGrid) {
+        texturesGrid.innerHTML = '';
+        PAPER_TYPES.forEach(pt => {
+          const isSelected = (pt.id === currentPaperId);
+          const item = document.createElement('div');
+          item.className = `flex items-center gap-1.5 p-1.5 rounded-xl border cursor-pointer transition ${
+            isSelected 
+              ? 'bg-amber-100/80 border-amber-500 shadow-2xs ring-1 ring-amber-400' 
+              : 'bg-white border-stone-200 hover:bg-stone-50'
+          }`;
+
+          item.innerHTML = `
+            <span class="text-sm shrink-0">${pt.icon}</span>
+            <div class="flex flex-col min-w-0">
+              <span class="text-[10px] font-bold truncate ${isSelected ? 'text-amber-950 font-extrabold' : 'text-stone-700'}">${pt.name.split(' ')[0]}</span>
+              <span class="text-[8px] text-stone-400 truncate">${pt.desc.slice(0, 10)}...</span>
+            </div>
+          `;
+
+          item.addEventListener('click', () => {
+            selectPaperTexture(pt.id);
+            renderCompactPaperPopover();
+            showToast(`📜 已更换画纸材质为【${pt.name}】`);
+          });
+
+          texturesGrid.appendChild(item);
+        });
+      }
+    }
+
+    function toggleCompactPaperPopover(force = null) {
+      const popover = document.getElementById('compactPaperHistoryPopover');
+      if (!popover) return;
+      const isOpen = !popover.classList.contains('hidden');
+      const shouldOpen = (force !== null) ? force : !isOpen;
+      if (shouldOpen) {
+        renderCompactPaperPopover();
+        popover.classList.remove('hidden');
+        playSuctionPopSound(500, 0.08);
+      } else {
+        popover.classList.add('hidden');
+      }
+    }
+
+    function toggleMiniLayersStrip(force = null) {
+      const miniStrip = document.getElementById('miniLayersStrip');
+      if (!miniStrip) return;
+      const isOpen = !miniStrip.classList.contains('hidden');
+      const shouldOpen = (force !== null) ? force : !isOpen;
+      if (shouldOpen) {
+        renderLayersUI();
+        miniStrip.classList.remove('hidden');
+        playSuctionPopSound(520, 0.08);
+      } else {
+        miniStrip.classList.add('hidden');
+      }
+    }
+
+    // 常用工具坞：快捷增加图层按键绑定 (调出缩小版迷你长形图层条)
     document.getElementById('dockBtnAddLayer')?.addEventListener('click', (e) => {
       e.stopPropagation();
       createLayer();
       playSuctionPopSound(520, 0.09);
+      toggleMiniLayersStrip(true);
       showToast(`📑 已增加【图层 ${layers.length}】`);
+    });
+
+    // 迷你图层条内按键控制
+    document.getElementById('miniBtnAddLayer')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      createLayer();
+      playSuctionPopSound(520, 0.09);
+      showToast(`📑 已增加【图层 ${layers.length}】`);
+    });
+
+    const expandToFullLayers = () => {
+      document.getElementById('miniLayersStrip')?.classList.add('hidden');
+      document.getElementById('layersPanel')?.classList.remove('hidden');
+      playSuctionPopSound(560, 0.08);
+    };
+
+    document.getElementById('btnExpandToFullLayers')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      expandToFullLayers();
+    });
+
+    document.getElementById('miniBtnOpenFull')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      expandToFullLayers();
+    });
+
+    document.getElementById('btnShrinkToMiniLayers')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('layersPanel')?.classList.add('hidden');
+      toggleMiniLayersStrip(true);
+    });
+
+    document.getElementById('btnCloseMiniLayersStrip')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('miniLayersStrip')?.classList.add('hidden');
+    });
+
+    // 紧凑型画纸浮窗按键控制
+    document.getElementById('btnClosePaperHistoryPopover')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('compactPaperHistoryPopover')?.classList.add('hidden');
+    });
+
+    document.getElementById('popoverBtnNewCanvas')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerPageFlipNewCanvas();
+      renderCompactPaperPopover();
     });
 
     // 教学引导弹窗控制
@@ -6566,6 +6924,7 @@
     if (typeof updateBrushTipDemo === 'function') updateBrushTipDemo();
     fitCanvasToScreen();
     saveCurrentSlotSnapshot(true);
+    if (typeof renderCompactPaperPopover === 'function') renderCompactPaperPopover();
   </script>
 </body>
 </html>
