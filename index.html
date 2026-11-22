@@ -224,14 +224,8 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.122 · Pro Edition
+      B.26.11.123 · Pro Edition
     </div>
-
-    <!-- 左上角聲音切換按鍵 -->
-    <button id="btnToggleSplashSound" class="absolute top-5 left-5 z-20 px-3.5 py-1.5 rounded-full bg-stone-100/90 hover:bg-stone-200 text-stone-700 text-xs font-bold shadow-xs active:scale-95 transition flex items-center gap-1.5 cursor-pointer backdrop-blur-md" title="切換 Logo 動畫音效">
-      <span id="splashSoundIcon">🔊</span>
-      <span id="splashSoundLabel">動畫聲音已開啟</span>
-    </button>
 
     <!-- 右上角跳過按鍵 -->
     <button id="btnSkipSplashIntro" class="absolute top-5 right-5 z-20 px-3.5 py-1.5 rounded-full bg-stone-100/90 hover:bg-stone-200 text-stone-700 text-xs font-bold shadow-xs active:scale-95 transition flex items-center gap-1 cursor-pointer backdrop-blur-md" title="跳過開場動畫，直接進入畫室">
@@ -244,10 +238,7 @@
       <!-- 10 秒反向播放的高畫質 Logo 影片 (純白融底 mix-blend-multiply，完全與背景融合一體) -->
       <video id="splashLogoVideo" src="images/logo_video_reversed.mp4" autoplay playsinline class="relative z-10 w-full max-w-md sm:max-w-lg md:max-w-2xl aspect-video object-contain pointer-events-none mix-blend-multiply bg-white"></video>
 
-      <!-- 品牌標語 -->
-      <div class="relative z-10 mt-3 text-xs sm:text-sm font-bold text-stone-600 tracking-wider text-center">
-        純粹3大畫種 · 讓孩子的奇思妙想躍然紙上
-      </div>
+
 
       <!-- 10 秒動態進度光條 -->
       <div class="w-48 h-1.5 bg-stone-100 rounded-full mt-3 overflow-hidden relative shadow-inner">
@@ -405,7 +396,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.122 · Pro Edition
+        B.26.11.123 · Pro Edition
       </div>
     </div>
 
@@ -997,7 +988,7 @@
 
   <!-- ==================== 彈窗：相片轉畫風與黑白描摹草稿實驗室 (明亮現代設計) ==================== -->
   <div id="cameraModal" class="fixed inset-0 bg-stone-900/40 backdrop-blur-md z-50 hidden items-center justify-center p-3">
-    <div class="bg-white/95 backdrop-blur-3xl border border-stone-200/90 rounded-3xl max-w-4xl w-full p-5 shadow-2xl flex flex-col gap-3.5 max-h-[94vh] overflow-y-auto text-stone-800">
+    <div class="bg-white/95 backdrop-blur-3xl border border-stone-200/90 rounded-3xl max-w-4xl w-full p-3 sm:p-4 shadow-2xl flex flex-col gap-2.5 max-h-[96vh] overflow-y-auto text-stone-800">
       <div class="flex items-center justify-between border-b border-stone-100 pb-2.5 gap-2 flex-wrap">
         <div class="flex items-center gap-2 font-bold text-sm sm:text-base text-stone-800">
           <span>📸</span> <span>相片智慧轉畫風與黑白描摹草稿實驗室</span>
@@ -1013,7 +1004,7 @@
         </div>
       </div>
 
-      <div class="bg-gradient-to-r from-amber-50/90 via-emerald-50/80 to-sky-50/80 border border-amber-200/90 rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+      <div class="bg-gradient-to-r from-amber-50/90 via-emerald-50/80 to-sky-50/80 border border-amber-200/90 rounded-2xl p-2.5 flex flex-wrap items-center justify-between gap-2 shadow-xs">
         <div>
           <div class="text-xs sm:text-sm font-extrabold text-stone-900 flex items-center gap-1.5">
             <span>✨ 想先拍照臨摹，還是直接開始畫畫？</span>
@@ -1041,187 +1032,103 @@
       </div>
 
       <!-- 左右分欄：左邊 16 格小朋友最愛線稿範例 (4x4 純線圖直覺選取)，右邊 2 大選項 (黑白線條草稿 vs 彩色完成樣貌) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch min-h-0">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-2.5 items-stretch min-h-0">
         
         <!-- 左欄：16 格兒童繪畫啟蒙範例 (4x4 純線稿圖示，無多餘文字) -->
-        <div class="lg:col-span-7 flex flex-col gap-2 bg-stone-50/80 p-3 rounded-2xl border border-stone-200/80">
+        <div class="lg:col-span-7 flex flex-col gap-1.5 bg-stone-50/80 p-2 rounded-2xl border border-stone-200/80">
           <div class="flex items-center justify-between">
             <span class="text-xs font-black text-stone-800 flex items-center gap-1.5">
-              <span>🎨</span> <span>小朋友繪畫啟蒙範例 (純線圖直覺點選)</span>
+              <span>🎨</span> <span>小朋友繪畫啟蒙範例 (彩色示範點選)</span>
             </span>
             <span class="text-[10px] text-stone-500 font-medium">16 款最受歡迎主題</span>
           </div>
 
-          <!-- 4x4 網格 (16格純線圖卡片，不帶文字，點選立即選取) -->
-          <div id="camera16PresetsGrid" class="grid grid-cols-4 gap-2 flex-1">
+          <!-- 4x4 緊密精緻網格 (16格全彩示範卡片，緊密排列免上下滾動) -->
+          <div id="camera16PresetsGrid" class="grid grid-cols-4 gap-1.5 flex-1">
             <!-- 1. 獅子 -->
-            <button data-camerapreset="lion" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-amber-500 bg-amber-50/70 ring-2 ring-amber-400/50 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="獅子">
-              <svg class="w-full h-full text-amber-900 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="24" cy="24" r="11" />
-                <path d="M24 7a5 5 0 0 1 5 5M29 12a5 5 0 0 1 6 3M35 15a5 5 0 0 1 4 6M39 21a5 5 0 0 1 0 7M39 28a5 5 0 0 1-4 6M35 34a5 5 0 0 1-6 3M29 37a5 5 0 0 1-5 5M24 42a5 5 0 0 1-5-5M19 37a5 5 0 0 1-6-3M13 34a5 5 0 0 1-4-6M9 28a5 5 0 0 1 0-7M9 21a5 5 0 0 1 4-6M13 15a5 5 0 0 1 6-3M19 12a5 5 0 0 1 5-5" />
-                <circle cx="20" cy="22" r="1.5" fill="currentColor" />
-                <circle cx="28" cy="22" r="1.5" fill="currentColor" />
-                <path d="M22 26l2 2 2-2M24 28v2" />
-              </svg>
+            <button data-camerapreset="lion" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-amber-500 bg-amber-50/70 ring-2 ring-amber-400/50 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="獅子">
+              <img src="images/Lion.jpeg" alt="獅子" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 2. 老虎 -->
-            <button data-camerapreset="tiger" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="老虎">
-              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="24" cy="26" r="13" />
-                <path d="M13 16l4 3M35 16l-4 3" />
-                <path d="M21 16l3 4 3-4M24 20v3" />
-                <circle cx="19" cy="25" r="1.5" fill="currentColor" />
-                <circle cx="29" cy="25" r="1.5" fill="currentColor" />
-                <path d="M22 29l2 2 2-2M15 28h3M30 28h3" />
-                <path d="M12 18a4 4 0 0 0-3-4 4 4 0 0 0 4 3M36 18a4 4 0 0 1 3-4 4 4 0 0 1-4 3" />
-              </svg>
+            <button data-camerapreset="tiger" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="老虎">
+              <img src="images/Tiger.jpeg" alt="老虎" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 3. 鱷魚 -->
-            <button data-camerapreset="croc" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="鱷魚">
-              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M8 26c0-6 6-9 16-9h16l-4 5 4 5H24c-8 0-16-2-16-1" />
-                <circle cx="16" cy="18" r="3" />
-                <circle cx="16" cy="18" r="1" fill="currentColor" />
-                <path d="M22 27l2-3 2 3 2-3 2 3M18 31c4 2 12 2 16 0" />
-                <path d="M14 15l2-3 3 2M22 17l2-3 3 2M30 17l2-3 3 2" />
-              </svg>
+            <button data-camerapreset="croc" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="鱷魚">
+              <img src="images/Crocodile.jpeg" alt="鱷魚" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 4. 熊 -->
-            <button data-camerapreset="bear" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="熊">
-              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="24" cy="26" r="13" />
-                <circle cx="14" cy="16" r="4.5" />
-                <circle cx="34" cy="16" r="4.5" />
-                <circle cx="19" cy="24" r="1.5" fill="currentColor" />
-                <circle cx="29" cy="24" r="1.5" fill="currentColor" />
-                <ellipse cx="24" cy="30" rx="4.5" ry="3.5" />
-                <path d="M22.5 29h3M24 30v2" />
-              </svg>
+            <button data-camerapreset="bear" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="熊熊">
+              <img src="images/Bear.jpeg" alt="熊熊" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 5. 貓咪 -->
-            <button data-camerapreset="cat" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="貓咪">
-              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 17l4 7h12l4-7-2 16c0 6-5 9-10 9s-10-3-10-9z" />
-                <circle cx="19" cy="27" r="1.5" fill="currentColor" />
-                <circle cx="29" cy="27" r="1.5" fill="currentColor" />
-                <path d="M24 29l-1.5 2h3zM12 28h5M12 31h5M31 28h5M31 31h5" />
-              </svg>
+            <button data-camerapreset="cat" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="貓咪">
+              <img src="images/Cat.jpeg" alt="貓咪" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
-            <!-- 6. 小狗 -->
-            <button data-camerapreset="dog" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="狗狗">
-              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="24" cy="25" r="12" />
-                <path d="M12 20c-3 4-4 10-1 12s5-3 5-7M36 20c3 4 4 10 1 12s-5-3-5-7" />
-                <circle cx="20" cy="23" r="1.5" fill="currentColor" />
-                <circle cx="28" cy="23" r="1.5" fill="currentColor" />
-                <ellipse cx="24" cy="27" rx="3" ry="2" fill="currentColor" />
-                <path d="M22 29c1 3 3 3 4 0M24 30v3" />
-              </svg>
+            <!-- 6. 狗狗 -->
+            <button data-camerapreset="dog" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="狗狗">
+              <img src="images/Dog.jpeg" alt="狗狗" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 7. 火箭 -->
-            <button data-camerapreset="rocket" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="火箭">
-              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M24 8c-6 6-7 18-7 24h14c0-6-1-18-7-24z" />
-                <circle cx="24" cy="20" r="3" />
-                <path d="M17 26l-6 6v3h6M31 26l6 6v3h-6M20 32l-2 6 6-2 6 2-2-6" />
-              </svg>
+            <button data-camerapreset="rocket" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="火箭">
+              <img src="images/Rocket.jpeg" alt="火箭" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 8. 房子 -->
-            <button data-camerapreset="house" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="房子">
-              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22l12-10 12 10v16H12z" />
-                <path d="M21 38v-8h6v8M19 14v-4h4v1M27 22h4v4h-4z" />
-              </svg>
+            <button data-camerapreset="house" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="房子">
+              <img src="images/House.jpeg" alt="房子" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 9. 樹木 -->
-            <button data-camerapreset="tree" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="樹木">
-              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 28v12h6V28" />
-                <path d="M16 28a7 7 0 0 1-3-11 7 7 0 0 1 11-6 8 8 0 0 1 12 3 7 7 0 0 1-1 14h-19z" />
-              </svg>
+            <button data-camerapreset="tree" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="樹木">
+              <img src="images/Tree.jpeg" alt="樹木" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 10. 帆船 -->
-            <button data-camerapreset="boat" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="帆船">
-              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10 32l4 6h20l4-6z" />
-                <path d="M24 10v22M24 12l10 16H24M24 16l-8 12h8" />
-                <path d="M8 41c4 1 8-1 12 0s8 1 12 0 8-1 8 0" />
-              </svg>
+            <button data-camerapreset="boat" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="帆船">
+              <img src="images/Boat.jpeg" alt="帆船" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 11. 恐龍 -->
-            <button data-camerapreset="dino" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="恐龍">
-              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M16 14c4 0 6 2 6 8l4 2c6 0 12 4 12 10 0 0-4 4-10 1l-2 5h-4l1-5h-4l-1 5h-4l1-7c-5-2-7-6-7-10 0-6 4-9 8-9z" />
-                <circle cx="15" cy="17" r="1.5" fill="currentColor" />
-                <path d="M24 16l2 2M27 19l2 2M30 22l2 2" />
-              </svg>
+            <button data-camerapreset="dino" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="恐龍">
+              <img src="images/Dino.jpeg" alt="恐龍" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 12. 汽車 -->
-            <button data-camerapreset="car" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="汽車">
-              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M8 27l4-9h16l6 9h4a3 3 0 0 1 3 3v4H7v-4a3 3 0 0 1 3-3z" />
-                <circle cx="15" cy="34" r="3.5" />
-                <circle cx="33" cy="34" r="3.5" />
-                <path d="M14 20h7v6h-9zM25 20h6l3 6h-9z" />
-              </svg>
+            <button data-camerapreset="car" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="汽車">
+              <img src="images/Car.jpeg" alt="汽車" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 13. 飛機 -->
-            <button data-camerapreset="plane" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="飛機">
-              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M24 9c2 0 3 3 3 8l13 7v3l-13-3v8l4 4v2l-7-2-7 2v-2l4-4v-8l-13 3v-3l13-7c0-5 1-8 3-8z" />
-              </svg>
+            <button data-camerapreset="plane" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="飛機">
+              <img src="images/Plane.jpeg" alt="飛機" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 14. 花朵 -->
-            <button data-camerapreset="flower" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="花朵">
-              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="24" cy="20" r="5" />
-                <circle cx="24" cy="11" r="4" />
-                <circle cx="32" cy="16" r="4" />
-                <circle cx="32" cy="25" r="4" />
-                <circle cx="24" cy="29" r="4" />
-                <circle cx="16" cy="25" r="4" />
-                <circle cx="16" cy="16" r="4" />
-                <path d="M24 33v8M24 37c3-2 6-1 7 1M24 38c-3-2-6-1-7 1" />
-              </svg>
+            <button data-camerapreset="flower" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="花朵">
+              <img src="images/Flower.jpeg" alt="花朵" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 15. 太陽 -->
-            <button data-camerapreset="sun" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="太陽">
-              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="24" cy="24" r="8" />
-                <circle cx="21" cy="22" r="1" fill="currentColor" />
-                <circle cx="27" cy="22" r="1" fill="currentColor" />
-                <path d="M21 26c1 2 5 2 6 0" />
-                <path d="M24 9v4M24 35v4M9 24h4M35 24h4M13 13l3 3M32 32l3 3M13 35l3-3M32 16l3-3" />
-              </svg>
+            <button data-camerapreset="sun" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="太陽">
+              <img src="images/Sun.jpeg" alt="太陽" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 16. 蝴蝶 -->
-            <button data-camerapreset="butterfly" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="蝴蝶">
-              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M24 16v18M21 14l3 3 3-3" />
-                <path d="M24 18c-7-9-15-4-15 4 0 6 7 8 15 2zM24 18c7-9 15-4 15 4 0 6-7 8-15 2z" />
-                <path d="M24 24c-5 3-10 6-8 11 2 4 8 2 8-5zM24 24c5 3 10 6 8 11-2 4-8 2-8-5z" />
-              </svg>
+            <button data-camerapreset="butterfly" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="蝴蝶">
+              <img src="images/Butterfly.jpeg" alt="蝴蝶" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
           </div>
         </div>
 
         <!-- 右欄：二選一臨摹模式 (黑白線條草稿 vs 彩色完成樣貌) -->
-        <div class="lg:col-span-5 flex flex-col gap-3 bg-stone-50/90 border border-stone-200/90 rounded-2xl p-3.5">
+        <div class="lg:col-span-5 flex flex-col gap-2 bg-stone-50/90 border border-stone-200/90 rounded-2xl p-2.5">
           <div class="flex items-center justify-between border-b border-stone-200 pb-2">
             <span class="text-xs font-black text-stone-800 flex items-center gap-1.5">
               <span>✨</span> <span>選擇臨摹方式 (二選一)</span>
@@ -1230,7 +1137,7 @@
           </div>
 
           <!-- 選項 1：黑白線條草稿 -->
-          <div class="bg-white border-2 border-stone-200 hover:border-amber-400 rounded-2xl p-3 flex flex-col gap-2 shadow-xs transition group">
+          <div class="bg-white border-2 border-stone-200 hover:border-amber-400 rounded-2xl p-2 flex flex-col gap-1.5 shadow-xs transition group">
             <div class="flex items-center justify-between">
               <span class="text-xs font-extrabold text-stone-800 flex items-center gap-1">
                 <span>✏️</span> <span>黑白線條草稿</span>
@@ -1253,7 +1160,7 @@
           </div>
 
           <!-- 選項 2：彩色完成圖 (上色樣貌) -->
-          <div class="bg-white border-2 border-stone-200 hover:border-emerald-400 rounded-2xl p-3 flex flex-col gap-2 shadow-xs transition group">
+          <div class="bg-white border-2 border-stone-200 hover:border-emerald-400 rounded-2xl p-2 flex flex-col gap-1.5 shadow-xs transition group">
             <div class="flex items-center justify-between">
               <span class="text-xs font-extrabold text-emerald-950 flex items-center gap-1">
                 <span>🎨</span> <span>彩色完成圖 (上色成果)</span>
@@ -5385,7 +5292,7 @@
     const presetFileCandidates = {
       lion: ["images/Lion.jpeg", "images/lion.jpeg", "images/lion.png"],
       tiger: ["images/Tiger.jpeg", "images/tiger.jpeg", "images/tiger.png"],
-      croc: ["images/Croc.jpeg", "images/Crocodile.jpeg", "images/croc.png"],
+      croc: ["images/Crocodile.jpeg", "images/Croc.jpeg", "images/croc.png"],
       bear: ["images/Bear.jpeg", "images/bear.jpeg", "images/bear.png"],
       cat: ["images/Cat.jpeg", "images/cat.jpeg", "images/cat.png"],
       dog: ["images/Dog.jpeg", "images/dog.jpeg", "images/dog.png"],
@@ -7332,69 +7239,40 @@
         }, 1100);
       };
 
-      const btnToggleSplashSound = document.getElementById('btnToggleSplashSound');
-      const splashSoundIcon = document.getElementById('splashSoundIcon');
-      const splashSoundLabel = document.getElementById('splashSoundLabel');
-
-      // 點選背景處：若因瀏覽器政策被靜音，先解除靜音；若已在出聲則提前進入畫室
-      splashEl.addEventListener('click', (e) => {
-        if (e.target.closest('#btnToggleSplashSound') || e.target.closest('#btnSkipSplashIntro')) return;
-        if (splashVideo && splashVideo.muted) {
-          splashVideo.muted = false;
-          if (splashSoundIcon) splashSoundIcon.textContent = '🔊';
-          if (splashSoundLabel) splashSoundLabel.textContent = '動畫聲音已開啟';
-          return;
-        }
-        dismissSplashFn();
-      });
-
+      // 點選跳過按鍵直接進入畫室
       btnSkipIntro?.addEventListener('click', (e) => {
         e.stopPropagation();
         dismissSplashFn();
       });
 
-      btnToggleSplashSound?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (!splashVideo) return;
-        splashVideo.muted = !splashVideo.muted;
-        if (splashVideo.muted) {
-          if (splashSoundIcon) splashSoundIcon.textContent = '🔇';
-          if (splashSoundLabel) splashSoundLabel.textContent = '靜音 (點擊開啟)';
-        } else {
-          splashVideo.play().catch(() => {});
-          if (splashSoundIcon) splashSoundIcon.textContent = '🔊';
-          if (splashSoundLabel) splashSoundLabel.textContent = '動畫聲音已開啟';
-        }
+      // 點選開屏背景跳過進入
+      splashEl.addEventListener('click', (e) => {
+        if (e.target.closest('#btnSkipSplashIntro')) return;
+        dismissSplashFn();
       });
 
       if (splashVideo) {
+        // Logo 動畫預設直接開啟聲音
         splashVideo.volume = 1.0;
         splashVideo.muted = false;
 
-        // 嘗試有聲自動播放
         const p = splashVideo.play();
         if (p !== undefined) {
-          p.then(() => {
-            if (splashSoundIcon) splashSoundIcon.textContent = '🔊';
-            if (splashSoundLabel) splashSoundLabel.textContent = '動畫聲音已開啟';
-          }).catch(() => {
-            // 受限於瀏覽器自動播放策略時，先以靜音播放動態，等待手勢解除
+          p.catch(() => {
+            // 若受限於特定瀏覽器未互動政策，先以靜音播放，並在第一次觸控時自動出聲
             splashVideo.muted = true;
             splashVideo.play().catch(() => {});
-            if (splashSoundIcon) splashSoundIcon.textContent = '🔇';
-            if (splashSoundLabel) splashSoundLabel.textContent = '點擊開啟聲音';
           });
         }
 
-        // 第一次手勢互動自動解除靜音
+        // 任意手勢互動自動恢復出聲
         const unmuteOnUserGesture = () => {
           if (splashVideo && splashVideo.muted) {
             splashVideo.muted = false;
-            if (splashSoundIcon) splashSoundIcon.textContent = '🔊';
-            if (splashSoundLabel) splashSoundLabel.textContent = '動畫聲音已開啟';
           }
         };
         document.addEventListener('pointerdown', unmuteOnUserGesture, { once: true });
+        document.addEventListener('click', unmuteOnUserGesture, { once: true });
         document.addEventListener('keydown', unmuteOnUserGesture, { once: true });
 
         splashVideo.addEventListener('timeupdate', () => {
