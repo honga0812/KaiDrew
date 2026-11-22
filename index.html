@@ -157,7 +157,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext(); this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="輕點立即進入畫室">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.114 · Pro Edition
+      B.26.11.115 · Pro Edition
     </div>
 
     <!-- 中心純淨 KaiDraw Logo (純白無界背景) -->
@@ -307,7 +307,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.114 · Pro Edition
+        B.26.11.115 · Pro Edition
       </div>
     </div>
 
@@ -3209,25 +3209,26 @@
       }
     }, { once: false, passive: true });
 
-    // 1. 微小吸盤觸覺音效 (切換筆刷、顏色或工具時的細膩微小反饋)
+    // 1. 微小吸盤觸覺音效 (切換筆刷、顏色或工具時的細膩微小反饋，音量提升 30%)
     let cachedSuctionPopAudio = null;
     function playSuctionPopSound(freq = 460, volume = 0.09) {
       try {
+        const effectiveVolume = Math.min(1.0, volume * 1.30); // 點擊筆的功能及換色等聲音提升 30%
         if (!cachedSuctionPopAudio) {
           cachedSuctionPopAudio = new Audio('images/suction_pop.wav');
-          cachedSuctionPopAudio.volume = volume;
+          cachedSuctionPopAudio.volume = effectiveVolume;
         } else {
           cachedSuctionPopAudio.currentTime = 0;
-          cachedSuctionPopAudio.volume = volume;
+          cachedSuctionPopAudio.volume = effectiveVolume;
         }
         const promise = cachedSuctionPopAudio.play();
         if (promise !== undefined) {
           promise.catch(() => {
-            playAcousticSuctionPopFallback(freq, volume);
+            playAcousticSuctionPopFallback(freq, effectiveVolume);
           });
         }
       } catch (_) {
-        playAcousticSuctionPopFallback(freq, volume);
+        playAcousticSuctionPopFallback(freq, Math.min(1.0, volume * 1.30));
       }
     }
 
@@ -3251,7 +3252,7 @@
     }
 
     // 2. 真實畫筆物理接觸紙張聲學引擎 (Real-time Brush Paper Friction Acoustics)
-    // 依據繪畫速度閾值響應：接觸紙張瞬間提供輕微觸紙微音，划動時呈現擬真質物質感；音量提升 30%
+    // 依據繪畫速度閾值響應：接觸紙張瞬間提供輕微觸紙微音，划動時呈現擬真質物質感；筆觸音效提升 10%
     const BrushAudioEngine = (() => {
       let isInitialized = false;
       let isPlaying = false;
@@ -3260,7 +3261,7 @@
       let filterNode = null;
       let gainNode = null;
       let targetGain = 0;
-      const BRUSH_VOLUME_SCALAR = 1.30; // 畫筆接觸紙張音效提升 30% (+30%)
+      const BRUSH_VOLUME_SCALAR = 1.43; // 筆觸與紙張摩擦音效提升 10% (1.30 * 1.10 = 1.43)
 
       function init() {
         if (isInitialized) return;
@@ -6960,7 +6961,7 @@
       playAcousticGentlePaperFlip();
     }
 
-    // Web Audio 實時輕微紙張翻動合成 (僅輕微柔和的紙纖維拂擦，時長 0.18s，無厚重雜音)
+    // Web Audio 實時輕微紙張翻動合成 (僅輕微柔和的紙纖維拂擦，時長 0.18s，無厚重雜音；音效提升 10%)
     function playAcousticGentlePaperFlip() {
       try {
         const ctx = getSharedAudioContext();
@@ -6973,7 +6974,7 @@
         for (let i = 0; i < bufferSize; i++) {
           const t = i / ctx.sampleRate;
           const env = (t < 0.02) ? (t / 0.02) : Math.exp(-(t - 0.02) * 18);
-          data[i] = (Math.random() * 2 - 1) * env * 0.12;
+          data[i] = (Math.random() * 2 - 1) * env * 0.132; // 0.12 * 1.10 = 0.132 (提升 10%)
         }
         const src = ctx.createBufferSource();
         src.buffer = buffer;
@@ -6983,7 +6984,7 @@
         filter.frequency.exponentialRampToValueAtTime(650, now + dur);
         filter.Q.value = 1.0;
         const gain = ctx.createGain();
-        gain.gain.setValueAtTime(0.16, now);
+        gain.gain.setValueAtTime(0.176, now); // 0.16 * 1.10 = 0.176 (提升 10%)
         gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
         src.connect(filter);
         filter.connect(gain);
@@ -6995,7 +6996,7 @@
     const playPaperFlipSound = playBookPageFlipSound;
 
     /********************************************************************
-     * 沉浸畫室背景樂控制器 (已載入專屬音軌 images/bgm.mp3，音量設定為 50%)
+     * 沉浸畫室背景樂控制器 (已載入專屬音軌 images/bgm.mp3，音量設定為 40%)
      ********************************************************************/
     const StudioBgmEngine = (() => {
       let isPlaying = false;
@@ -7005,7 +7006,7 @@
         if (!bgmAudioEl) {
           bgmAudioEl = new Audio('images/bgm.mp3');
           bgmAudioEl.loop = true;
-          bgmAudioEl.volume = 0.50; // 設定音量為 50%
+          bgmAudioEl.volume = 0.40; // 設定音量為 40%
         }
       }
 
@@ -7018,13 +7019,13 @@
           updateUI();
           showToast('已暫停畫室背景伴奏');
         } else {
-          bgmAudioEl.volume = 0.50;
+          bgmAudioEl.volume = 0.40;
           const p = bgmAudioEl.play();
           if (p !== undefined) {
             p.then(() => {
               isPlaying = true;
               updateUI();
-              showToast('🎶 已開啟畫室背景伴奏 (音量 50%)');
+              showToast('🎶 已開啟畫室背景伴奏 (音量 40%)');
             }).catch((err) => {
               console.warn('BGM play error:', err);
               updateUI();
