@@ -157,7 +157,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext(); this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="轻点立即进入画室">
     <!-- 顶部居中极简版本编号 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.110 · Pro Edition
+      B.26.11.111 · Pro Edition
     </div>
 
     <!-- 中心纯净 KaiDraw Logo (纯白无界背景) -->
@@ -307,7 +307,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.110 · Pro Edition
+        B.26.11.111 · Pro Edition
       </div>
     </div>
 
@@ -1517,12 +1517,17 @@
     </div>
   </div>
 
-  <!-- ==================== 主动引导教学控制台与悬浮导引卡片 (每一步自动跳转并指向功能界面) ==================== -->
-  <div id="interactiveTourContainer" class="hidden fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-[75] max-w-sm sm:max-w-md w-[calc(100vw-2rem)] select-none pointer-events-none transition-all duration-300">
-    <!-- 导引主卡片 -->
-    <div id="tourStepCard" class="pointer-events-auto bg-white/95 backdrop-blur-2xl border-2 border-amber-400/90 rounded-3xl p-4 sm:p-5 shadow-[0_20px_60px_rgba(0,0,0,0.3)] flex flex-col gap-3 text-stone-800 transition-all duration-300">
+  <!-- ==================== 主动引导教学控制台与悬浮导引卡片 (支持全屏自由拖移位置) ==================== -->
+  <div id="interactiveTourContainer" class="hidden fixed z-[75] max-w-sm sm:max-w-md w-[calc(100vw-2rem)] select-none touch-none transition-shadow" style="touch-action: none; left: 24px; bottom: 24px;">
+    <!-- 导引主卡片 (可按住拖拽至屏幕任意位置) -->
+    <div id="tourStepCard" class="bg-white/95 backdrop-blur-2xl border-2 border-amber-400/90 rounded-3xl p-4 sm:p-5 shadow-[0_20px_60px_rgba(0,0,0,0.35)] flex flex-col gap-2.5 text-stone-800">
+      <!-- 顶部拖移把手 (按住可任意拖移窗口，防止遮挡操作) -->
+      <div id="tourDragHandle" class="w-full flex items-center justify-center -mt-2 pb-1 cursor-grab active:cursor-grabbing select-none group" title="按住可将教学窗口拖移至屏幕任意位置">
+        <div class="w-14 h-1.5 bg-stone-300/80 rounded-full group-hover:bg-amber-500 transition-colors"></div>
+      </div>
+
       <!-- 卡片顶栏 -->
-      <div class="flex items-center justify-between border-b border-stone-100 pb-2.5">
+      <div class="flex items-center justify-between border-b border-stone-100 pb-2.5 cursor-grab active:cursor-grabbing" id="tourCardHeader">
         <div class="flex items-center gap-2">
           <span id="tourStepNumberBadge" class="w-6 h-6 rounded-lg bg-amber-500 text-white text-xs font-black flex items-center justify-center shadow-xs">1</span>
           <div>
@@ -1530,7 +1535,7 @@
               <h3 id="tourStepTitle" class="text-xs sm:text-sm font-extrabold text-stone-900 tracking-tight">相片转换功能</h3>
               <span id="tourStepBadge" class="text-[9px] px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-800 font-bold">📸 转换底图</span>
             </div>
-            <div class="text-[10px] text-stone-400 font-medium">KaiDraw 沉浸导引教学 · <span id="tourStepProgress">1 / 7</span></div>
+            <div class="text-[10px] text-stone-400 font-medium">KaiDraw 沉浸导引 · <span id="tourStepProgress">1 / 7</span> <span class="text-stone-300 font-normal">· 可拖移窗口</span></div>
           </div>
         </div>
         <button id="btnExitTour" class="px-2 py-1 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-500 hover:text-stone-800 text-[11px] font-bold transition active:scale-95 cursor-pointer flex items-center gap-0.5" title="退出教学流程">
@@ -6959,37 +6964,48 @@
     const playPaperFlipSound = playBookPageFlipSound;
 
     /********************************************************************
-     * 沉浸画室背景乐控制器 (等待载入确认音轨，独立通道绝不影响绘画与触觉音效)
+     * 沉浸画室背景乐控制器 (已载入专属音轨 images/bgm.mp3，音量精准设定为 70%)
      ********************************************************************/
     const StudioBgmEngine = (() => {
       let isPlaying = false;
       let bgmAudioEl = null;
 
-      function toggle() {
+      function initAudio() {
         if (!bgmAudioEl) {
           bgmAudioEl = new Audio('images/bgm.mp3');
           bgmAudioEl.loop = true;
-          bgmAudioEl.volume = 0.35;
+          bgmAudioEl.volume = 0.70; // 设定音量为 70%
         }
+      }
+
+      function toggle() {
+        initAudio();
 
         if (isPlaying) {
           isPlaying = false;
           bgmAudioEl.pause();
           updateUI();
-          showToast('已暂停画室背景音乐');
+          showToast('已暂停画室背景伴奏');
         } else {
+          bgmAudioEl.volume = 0.70;
           const p = bgmAudioEl.play();
           if (p !== undefined) {
             p.then(() => {
               isPlaying = true;
               updateUI();
-              showToast('🎶 已开启画室背景伴奏');
-            }).catch(() => {
+              showToast('🎶 已开启画室背景伴奏 (音量 70%)');
+            }).catch((err) => {
+              console.warn('BGM play error:', err);
               updateUI();
-              showToast('🎶 背景乐准备就绪，待您放入专属音轨 (images/bgm.mp3) 即可自动播放');
+              showToast('🎶 背景伴奏已就绪，轻点屏幕即可播放');
             });
           }
         }
+      }
+
+      function setVolume(val) {
+        initAudio();
+        bgmAudioEl.volume = Math.max(0, Math.min(1.0, val));
       }
 
       function updateUI() {
@@ -7007,6 +7023,8 @@
 
       return {
         toggle,
+        setVolume,
+        initAudio,
         get isPlaying() { return isPlaying; }
       };
     })();
@@ -7787,6 +7805,105 @@
       e.stopPropagation();
       exitInteractiveTour();
     });
+
+    /********************************************************************
+     * 导览卡片自由拖拽机制 (Touch / Mouse / Apple Pencil 自由定位防遮挡)
+     ********************************************************************/
+    function initTourDraggable() {
+      const container = document.getElementById('interactiveTourContainer');
+      const card = document.getElementById('tourStepCard');
+      if (!container || !card) return;
+
+      let isDragging = false;
+      let startPointerX = 0;
+      let startPointerY = 0;
+      let startLeft = 0;
+      let startTop = 0;
+      let hasCustomPos = false;
+
+      function onPointerDown(e) {
+        // 忽略交互按钮点击（如 下一步、上一步、退出、小圆点）
+        if (e.target.closest('button') || e.target.closest('.tour-dot')) {
+          return;
+        }
+
+        isDragging = true;
+        const rect = container.getBoundingClientRect();
+        
+        // 首次拖拽时，将 CSS bottom/left 转换为绝对像素 top/left，防止脱离或跳动
+        if (!hasCustomPos) {
+          container.style.bottom = 'auto';
+          container.style.right = 'auto';
+          container.style.left = `${rect.left}px`;
+          container.style.top = `${rect.top}px`;
+          hasCustomPos = true;
+        }
+
+        startPointerX = e.clientX;
+        startPointerY = e.clientY;
+        startLeft = container.offsetLeft;
+        startTop = container.offsetTop;
+
+        container.style.transition = 'none';
+        card.classList.add('shadow-[0_25px_70px_rgba(0,0,0,0.45)]', 'scale-[1.01]');
+
+        try {
+          container.setPointerCapture(e.pointerId);
+        } catch (err) {}
+
+        e.stopPropagation();
+      }
+
+      function onPointerMove(e) {
+        if (!isDragging) return;
+        const dx = e.clientX - startPointerX;
+        const dy = e.clientY - startPointerY;
+
+        let newLeft = startLeft + dx;
+        let newTop = startTop + dy;
+
+        // 视口安全边界限制 (四周保留至少 8px)
+        const maxLeft = Math.max(8, window.innerWidth - container.offsetWidth - 8);
+        const maxTop = Math.max(8, window.innerHeight - container.offsetHeight - 8);
+
+        newLeft = Math.max(8, Math.min(maxLeft, newLeft));
+        newTop = Math.max(8, Math.min(maxTop, newTop));
+
+        container.style.left = `${newLeft}px`;
+        container.style.top = `${newTop}px`;
+      }
+
+      function onPointerUp(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        container.style.transition = '';
+        card.classList.remove('shadow-[0_25px_70px_rgba(0,0,0,0.45)]', 'scale-[1.01]');
+
+        try {
+          container.releasePointerCapture(e.pointerId);
+        } catch (err) {}
+      }
+
+      // 绑定 Pointer 事件，天然跨桌面鼠标与 iPad 触控 / Apple Pencil
+      container.addEventListener('pointerdown', onPointerDown);
+      container.addEventListener('pointermove', onPointerMove);
+      container.addEventListener('pointerup', onPointerUp);
+      container.addEventListener('pointercancel', onPointerUp);
+
+      // 视口尺寸变化时自适应修正位置
+      window.addEventListener('resize', () => {
+        if (!hasCustomPos) return;
+        const rect = container.getBoundingClientRect();
+        const maxLeft = Math.max(8, window.innerWidth - container.offsetWidth - 8);
+        const maxTop = Math.max(8, window.innerHeight - container.offsetHeight - 8);
+        const curLeft = Math.max(8, Math.min(maxLeft, rect.left));
+        const curTop = Math.max(8, Math.min(maxTop, rect.top));
+        container.style.left = `${curLeft}px`;
+        container.style.top = `${curTop}px`;
+      });
+    }
+
+    initTourDraggable();
 
     // 顶栏「教学」按键：直接启动沉浸实机导览教学
     document.getElementById('btnOpenTutorialModal')?.addEventListener('click', (e) => {
