@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.135 · Pro Edition
+      B.26.11.136 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -411,7 +411,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.135 · Pro Edition
+        B.26.11.136 · Pro Edition
       </div>
     </div>
 
@@ -1152,7 +1152,7 @@
             </div>
             
             <div class="w-full h-32 sm:h-36 rounded-lg bg-white border border-stone-200 shadow-inner flex items-center justify-center overflow-hidden">
-              <canvas id="prevSketch" width="320" height="240" class="w-full h-full object-cover"></canvas>
+              <canvas id="prevSketch" width="960" height="720" class="w-full h-full object-cover"></canvas>
             </div>
 
             <div class="grid grid-cols-2 gap-1.5">
@@ -1175,7 +1175,7 @@
             </div>
 
             <div class="w-full h-32 sm:h-36 rounded-lg bg-white border border-stone-200 shadow-inner flex items-center justify-center overflow-hidden">
-              <canvas id="prevColor" width="320" height="240" class="w-full h-full object-cover"></canvas>
+              <canvas id="prevColor" width="960" height="720" class="w-full h-full object-cover"></canvas>
             </div>
 
             <button id="btnSetColorUnderlay" class="w-full py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition cursor-pointer flex items-center justify-center gap-1" title="將彩色圖片設為半透明底圖">
@@ -6264,6 +6264,8 @@
       const tw = targetCanvas.width, th = targetCanvas.height;
       const tCtx = targetCanvas.getContext("2d");
       tCtx.clearRect(0, 0, tw, th);
+      tCtx.imageSmoothingEnabled = true;
+      tCtx.imageSmoothingQuality = "high";
       tCtx.drawImage(sourcePhotoCanvas, 0, 0, tw, th);
 
       if (styleType === "color") {
@@ -6305,16 +6307,18 @@
       tCtx.putImageData(imgData, 0, 0);
     }
 
-    // 預覽框專用：先於 640x480 高解析度萃取均勻乾淨線條，再強化連續性並平滑縮小至 320x240，徹底消除縮圖破碎感
+    // 預覽框專用：於 960x720 Retina 超清解析度萃取平滑抗鋸齒均勻線條，徹底消除預覽鋸齒感
     const previewSketchHiRes = document.createElement("canvas");
-    previewSketchHiRes.width = 640;
-    previewSketchHiRes.height = 480;
+    previewSketchHiRes.width = 960;
+    previewSketchHiRes.height = 720;
 
     function renderCleanSketchPreview(targetCanvas, strengthVal) {
       if (!targetCanvas) return;
       const hw = previewSketchHiRes.width, hh = previewSketchHiRes.height;
       const hCtx = previewSketchHiRes.getContext("2d");
       hCtx.clearRect(0, 0, hw, hh);
+      hCtx.imageSmoothingEnabled = true;
+      hCtx.imageSmoothingQuality = "high";
       hCtx.drawImage(sourcePhotoCanvas, 0, 0, hw, hh);
 
       const str = Math.max(0.1, (strengthVal || 70) / 100);
@@ -6322,7 +6326,7 @@
       const s = new Uint8ClampedArray(imgData.data);
       const d = imgData.data;
 
-      // 1. 輕度 3x3 平滑濾除縮圖雜訊，並萃取乾淨均勻的線條強度圖
+      // 1. 3x3 高斯平滑濾除高頻雜點，並萃取連續均勻的線條強度圖
       const lumArr = new Float32Array(hw * hh);
       for (let y = 0; y < hh; y++) {
         const ym = Math.max(0, y - 1), yp = Math.min(hh - 1, y + 1);
@@ -6342,8 +6346,9 @@
 
       const lineMask = new Uint8Array(hw * hh);
       lineMask.fill(255);
-      const lowEdge = 48 - str * 14;
-      const highEdge = 135 - str * 30;
+      const lowEdge = 42 - str * 12;
+      const highEdge = 128 - str * 28;
+      const span = Math.max(16, highEdge - lowEdge);
 
       for (let y = 1; y < hh - 1; y++) {
         for (let x = 1; x < hw - 1; x++) {
@@ -6354,13 +6359,14 @@
                      (lumArr[(y-1)*hw + x-1] + 2*lumArr[(y-1)*hw + x] + lumArr[(y-1)*hw + x+1]);
           const edge = Math.hypot(gx, gy) * 0.5;
           if (edge > lowEdge) {
-            const t = Math.min(1, (edge - lowEdge) / Math.max(15, highEdge - lowEdge));
-            lineMask[p] = Math.round(255 - t * 230);
+            const t = Math.min(1, (edge - lowEdge) / span);
+            const smooth = t * t * (3 - 2 * t);
+            lineMask[p] = Math.round(255 - smooth * 232);
           }
         }
       }
 
-      // 2. 2x2 連續性補強：避免縮小成預覽圖時細線斷裂或出現白點空隙
+      // 2. 2x2 連續性補強 + 柔滑寫入 960x720 畫布
       for (let y = 1; y < hh - 1; y++) {
         for (let x = 1; x < hw - 1; x++) {
           const p = y * hw + x;
@@ -6376,7 +6382,7 @@
       }
       hCtx.putImageData(imgData, 0, 0);
 
-      // 3. 高品質抗鋸齒縮小繪製至預覽框
+      // 3. 高品質抗鋸齒繪製至 960x720 預覽框
       const tCtx = targetCanvas.getContext("2d");
       tCtx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
       tCtx.imageSmoothingEnabled = true;
