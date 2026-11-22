@@ -140,7 +140,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext(); this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="轻点立即进入画室">
     <!-- 顶部居中极简版本编号 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.99 · Pro Edition
+      B.26.11.100 · Pro Edition
     </div>
 
     <!-- 中心纯净 KaiDraw Logo (纯白无界背景) -->
@@ -265,6 +265,21 @@
         <span class="text-sm">📷</span>
         <span>存相簿</span>
       </button>
+    </div>
+
+    <!-- 分类 5：会员与教学 -->
+    <div class="flex items-center gap-1.5 border-l border-stone-200/80 pl-2">
+      <!-- 新手引导教学 (7 步核心功能操作全览) -->
+      <button id="btnOpenTutorialModal" class="px-2.5 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200/80 active:scale-95 transition flex items-center gap-1 text-xs font-bold shadow-2xs shrink-0 cursor-pointer" title="查看 7 步新手操作引导教学">
+        <span class="text-sm">🎓</span>
+        <span>教学</span>
+      </button>
+
+      <!-- VIP 会员 (特权与订阅购买) -->
+      <button id="btnOpenVipModal" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:opacity-95 text-white active:scale-95 transition flex items-center gap-1 text-xs font-bold shadow-sm shadow-amber-500/20 shrink-0 cursor-pointer" title="升级加入 VIP 尊享会员">
+        <span class="text-sm">👑</span>
+        <span>VIP</span>
+      </button>
 
       <!-- 收起按钮 -->
       <button id="btnCloseTopToolbar" class="w-7 h-7 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition active:scale-95 text-xs font-bold flex items-center justify-center cursor-pointer ml-1" title="收起工具栏">
@@ -275,33 +290,12 @@
 
   <!-- ==================== 主画布视口区 (纯白通透背景，满版全屏创作工作室) ==================== -->
   <main id="viewportContainer" class="flex-1 relative overflow-hidden bg-white flex items-center justify-center min-h-0 touch-none w-full h-full" style="touch-action: none; -webkit-user-select: none; -webkit-touch-callout: none;">
-    <!-- 底层 KaiDraw 品牌水印与版本呈现 (无框线、纯白底色、居中放大呈现，配合笔触示范与版本号；画布缩小或平移移开时清晰显露) -->
-    <div id="viewportLogoBackground" class="pointer-events-none absolute inset-0 bg-white flex flex-col items-center justify-center select-none z-0 overflow-hidden transition-all duration-300 gap-2.5">
-      <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-52 h-52 sm:w-64 sm:h-64 md:w-72 md:h-72 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
-
-      <!-- 画笔笔触感觉与笔头示范展示区块 (动态呈现当前选定画具的笔头与笔触风格) -->
-      <div id="brushDemoBlock" class="flex flex-col items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-stone-50/90 border border-stone-200/70 shadow-xs backdrop-blur-xs transition-all max-w-xs">
-        <div class="flex items-center gap-2">
-          <!-- 笔头图形容器 (动态注入水彩/毛笔/蜡笔/马克笔/喷笔真实笔头 SVG) -->
-          <div id="brushTipGraphic" class="w-7 h-7 flex items-center justify-center text-amber-600 transition-transform">
-            <!-- 动态注入 -->
-          </div>
-          <div class="flex flex-col text-left">
-            <div class="flex items-center gap-1.5">
-              <span id="brushDemoName" class="text-xs font-bold text-stone-800">湿画水彩笔</span>
-              <span id="brushDemoBadge" class="text-[9px] font-mono px-1 py-0.2 rounded-md bg-amber-100 text-amber-800 font-bold">画笔示范</span>
-            </div>
-            <span id="brushDemoDesc" class="text-[10px] text-stone-500 font-medium">柔润水晕 · 透明叠色</span>
-          </div>
-        </div>
-        <!-- 笔触真实肌理示范条 -->
-        <div class="w-44 h-5 rounded-lg overflow-hidden border border-stone-200/60 bg-white/80 shadow-inner flex items-center justify-center p-0.5">
-          <canvas id="brushTipDemoCanvas" width="176" height="20" class="w-full h-full block"></canvas>
-        </div>
-      </div>
+    <!-- 底层 KaiDraw 品牌水印与版本呈现 (纯白底色、居中放大呈现与版本号；画布缩小或平移移开时清晰显露) -->
+    <div id="viewportLogoBackground" class="pointer-events-none absolute inset-0 bg-white flex flex-col items-center justify-center select-none z-0 overflow-hidden transition-all duration-300 gap-3">
+      <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.99 · Pro Edition
+        B.26.11.100 · Pro Edition
       </div>
     </div>
 
@@ -458,6 +452,30 @@
         <div id="recentColorsContainer" class="grid grid-cols-3 gap-1 place-items-center py-0.5">
           <!-- 动态注入最近使用的色彩圆点 -->
         </div>
+      </div>
+
+      <!-- 笔头图示展示区 (在常用色下方展示当前画笔笔头形象，支持自定义生成图片与高精度矢量笔头) -->
+      <div id="dockBrushTipContainer" class="flex flex-col items-center gap-0.5 pt-1 border-t border-stone-100 w-full" title="当前画笔笔头示范 (可在 images/ 替换图片)">
+        <span class="text-[7.5px] font-bold text-stone-400 text-center font-mono">笔头示范</span>
+        <div class="w-full flex flex-col items-center p-1 rounded-xl bg-stone-50/90 border border-stone-200/60 shadow-2xs">
+          <div class="relative w-8 h-8 flex items-center justify-center">
+            <!-- 优先载入用户自定义生成的笔头图片 images/brush_${medium}.png -->
+            <img id="dockBrushTipCustomImg" src="images/brush_watercolor.png" alt="Brush Tip" class="hidden w-7 h-7 object-contain drop-shadow-xs" />
+            <!-- 矢量高质感后备图形 -->
+            <div id="dockBrushTipVector" class="w-7 h-7 flex items-center justify-center text-amber-600 transition-transform">
+              <!-- 动态注入 -->
+            </div>
+          </div>
+          <span id="dockBrushTipBadge" class="text-[8px] font-bold text-stone-700 tracking-tight mt-0.5 truncate max-w-[50px] text-center">水彩笔</span>
+        </div>
+      </div>
+
+      <!-- 快捷增加图层按键 -->
+      <div class="pt-1 border-t border-stone-100 w-full">
+        <button id="dockBtnAddLayer" class="h-7 w-full rounded-lg bg-indigo-50 hover:bg-indigo-100/90 text-indigo-700 active:scale-90 transition flex items-center justify-center gap-0.5 text-[10px] font-bold shadow-2xs border border-indigo-200/60 cursor-pointer" title="快速增加图层 (独立图层叠加绘制)">
+          <span class="text-[11px]">➕</span>
+          <span>图层</span>
+        </button>
       </div>
 
       <!-- 第 4 行 (两列)：垂直滑动条 + 快速粗细圆点 -->
@@ -1324,6 +1342,231 @@
         <button id="btnDirectDownloadPhoto" class="px-4 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-900 text-white font-bold text-xs active:scale-95 transition flex items-center gap-1">
           <span>💾</span> 下载档案
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 弹窗：新手操作引导与功能教学 (1~7 核心功能全景引导) ==================== -->
+  <div id="tutorialModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-3xl p-5 sm:p-6 max-w-2xl w-full shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] flex flex-col gap-4 max-h-[90vh] overflow-hidden text-stone-800">
+      
+      <!-- 弹窗顶栏 -->
+      <div class="flex items-center justify-between border-b border-stone-100 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white text-lg shadow-md shadow-sky-500/20">🎓</div>
+          <div>
+            <h2 class="text-base font-extrabold tracking-tight text-stone-900 flex items-center gap-2">
+              KaiDraw 创作教学与功能引导
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 font-bold border border-sky-200">7 步核心指南</span>
+            </h2>
+            <p class="text-xs text-stone-500">轻松掌握从底图导入、分层手绘、AI 魔法赋能到动画微电影的完整创作闭环</p>
+          </div>
+        </div>
+        <button id="btnCloseTutorialModal" class="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 flex items-center justify-center text-sm font-bold transition active:scale-95 cursor-pointer">✕</button>
+      </div>
+
+      <!-- 教学核心步骤卡片列表 (1 ~ 7 完整呈现) -->
+      <div class="flex flex-col gap-2.5 overflow-y-auto pr-1 max-h-[62vh]">
+        <!-- 步骤 1 -->
+        <div class="flex items-start gap-3 p-3 rounded-2xl bg-stone-50/90 border border-stone-200/70 hover:border-amber-300/80 transition">
+          <div class="w-7 h-7 rounded-xl bg-amber-500 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">1</div>
+          <div class="flex flex-col gap-0.5 flex-1">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-stone-800">相片转换功能</span>
+              <span class="text-[10px] text-amber-700 bg-amber-100/80 px-1.5 py-0.2 rounded-md font-medium">📸 转换绘制底图</span>
+            </div>
+            <p class="text-[11px] text-stone-600 leading-relaxed">
+              进入之后可以使用「相片转换」功能，拍照或选取真实相片，智能将相片转换成绘制的底图或轮廓线稿进行描摹。点击左侧常用工具中的眼睛「👁️」可随时显示或隐藏底图。
+            </p>
+          </div>
+        </div>
+
+        <!-- 步骤 2 -->
+        <div class="flex items-start gap-3 p-3 rounded-2xl bg-stone-50/90 border border-stone-200/70 hover:border-amber-300/80 transition">
+          <div class="w-7 h-7 rounded-xl bg-emerald-500 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">2</div>
+          <div class="flex flex-col gap-0.5 flex-1">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-stone-800">绘制选择各种画笔</span>
+              <span class="text-[10px] text-emerald-700 bg-emerald-100/80 px-1.5 py-0.2 rounded-md font-medium">🖌️ 真实笔触质感</span>
+            </div>
+            <p class="text-[11px] text-stone-600 leading-relaxed">
+              绘制时可以选择各种不同的画笔：湿画水彩笔、传统毛笔、油画蜡笔、平头马克笔与精密喷笔。左侧常用工具栏下方实时展示笔头示范与常用色，搭配 Apple Pencil 压感与绘制速度动态反馈真实笔触音效。
+            </p>
+          </div>
+        </div>
+
+        <!-- 步骤 3 -->
+        <div class="flex items-start gap-3 p-3 rounded-2xl bg-stone-50/90 border border-stone-200/70 hover:border-amber-300/80 transition">
+          <div class="w-7 h-7 rounded-xl bg-indigo-500 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">3</div>
+          <div class="flex flex-col gap-0.5 flex-1">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-stone-800">增加图层分层使用</span>
+              <span class="text-[10px] text-indigo-700 bg-indigo-100/80 px-1.5 py-0.2 rounded-md font-medium">📑 独立图层系统</span>
+            </div>
+            <p class="text-[11px] text-stone-600 leading-relaxed">
+              随时轻点左侧常用工具「➕图层」快捷键或顶栏「图层」按钮增加图层，去进行不同图层的叠加与分层创作，线稿、上色与修饰互不干扰，自由调控透明度与图层顺序。
+            </p>
+          </div>
+        </div>
+
+        <!-- 步骤 4 -->
+        <div class="flex items-start gap-3 p-3 rounded-2xl bg-stone-50/90 border border-stone-200/70 hover:border-amber-300/80 transition">
+          <div class="w-7 h-7 rounded-xl bg-orange-500 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">4</div>
+          <div class="flex flex-col gap-0.5 flex-1">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-stone-800">新增不同画质与画纸</span>
+              <span class="text-[10px] text-orange-700 bg-orange-100/80 px-1.5 py-0.2 rounded-md font-medium">📄 多画纸与物理纸质</span>
+            </div>
+            <p class="text-[11px] text-stone-600 leading-relaxed">
+              右下角提供翻书折页效果，轻点拖曳即可翻开新增画纸（支持多达 10 张画纸切换回溯与自动存档保护）；同时在「选纸」中可切换水彩纸、熟宣纸、云彩纸等多种不同物理材质画质。
+            </p>
+          </div>
+        </div>
+
+        <!-- 步骤 5 -->
+        <div class="flex items-start gap-3 p-3 rounded-2xl bg-stone-50/90 border border-stone-200/70 hover:border-amber-300/80 transition">
+          <div class="w-7 h-7 rounded-xl bg-purple-500 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">5</div>
+          <div class="flex flex-col gap-0.5 flex-1">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-stone-800">使用 AI 的魔法进行辅助</span>
+              <span class="text-[10px] text-purple-700 bg-purple-100/80 px-1.5 py-0.2 rounded-md font-medium">✨ 智能以图生图</span>
+            </div>
+            <p class="text-[11px] text-stone-600 leading-relaxed">
+              轻点顶栏「AI魔法」按钮进入魔法工坊，使用 AI 魔法对绘制的原作轮廓进行辅助优化，保留孩子的童趣线条与构图，生成精美艺术大师级效果，并作为新图层叠加。
+            </p>
+          </div>
+        </div>
+
+        <!-- 步骤 6 -->
+        <div class="flex items-start gap-3 p-3 rounded-2xl bg-stone-50/90 border border-stone-200/70 hover:border-amber-300/80 transition">
+          <div class="w-7 h-7 rounded-xl bg-pink-500 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">6</div>
+          <div class="flex flex-col gap-0.5 flex-1">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-stone-800">让最后的图片变成动画</span>
+              <span class="text-[10px] text-pink-700 bg-pink-100/80 px-1.5 py-0.2 rounded-md font-medium">🎬 运镜微电影</span>
+            </div>
+            <p class="text-[11px] text-stone-600 leading-relaxed">
+              在 AI 魔法工坊选择「让画动起来」，可以让完成的静态图片变成具有呼吸感与运镜动效的 2~3 秒微电影动画，让创作跃然纸上。
+            </p>
+          </div>
+        </div>
+
+        <!-- 步骤 7 -->
+        <div class="flex items-start gap-3 p-3 rounded-2xl bg-stone-50/90 border border-stone-200/70 hover:border-amber-300/80 transition">
+          <div class="w-7 h-7 rounded-xl bg-teal-500 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">7</div>
+          <div class="flex flex-col gap-0.5 flex-1">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-stone-800">储存到电脑或平板相簿中</span>
+              <span class="text-[10px] text-teal-700 bg-teal-100/80 px-1.5 py-0.2 rounded-md font-medium">💾 本地档案存储</span>
+            </div>
+            <p class="text-[11px] text-stone-600 leading-relaxed">
+              可以将这些做成的图片或动画储存到电脑当中或平板的相簿项目当中。轻点「存相簿」即可拍照保存到相片库，或直接下载高清晰度档案永久留存。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部按键 -->
+      <div class="flex items-center justify-between border-t border-stone-100 pt-3">
+        <div class="text-[11px] text-stone-500">
+          💡 提示：随时轻点左上角 <span class="font-bold text-stone-700">KaiDraw 图示</span> 展开工具列即可重新查阅本教学
+        </div>
+        <button id="btnFinishTutorial" class="px-5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs shadow-sm active:scale-95 transition cursor-pointer">
+          🚀 开始尽情创作
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 弹窗：VIP 尊享会员特权与购买订阅 ==================== -->
+  <div id="vipModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-3xl p-5 sm:p-6 max-w-xl w-full shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] flex flex-col gap-4 max-h-[92vh] overflow-hidden text-stone-800">
+      
+      <!-- 弹窗顶栏 -->
+      <div class="flex items-center justify-between border-b border-stone-100 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 via-orange-500 to-amber-600 flex items-center justify-center text-white text-xl shadow-md shadow-amber-500/30">👑</div>
+          <div>
+            <h2 class="text-base font-extrabold tracking-tight text-stone-900 flex items-center gap-2">
+              加入 KaiDraw VIP 尊享会员
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold">Pro Unlimited</span>
+            </h2>
+            <p class="text-xs text-stone-500">解锁无限画纸图层 · 畅享 AI 魔法无限算力 · 专属大师级物理材质</p>
+          </div>
+        </div>
+        <button id="btnCloseVipModal" class="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 flex items-center justify-center text-sm font-bold transition active:scale-95 cursor-pointer">✕</button>
+      </div>
+
+      <!-- VIP 核心权益卡片矩阵 -->
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div class="p-2.5 rounded-2xl bg-amber-50/70 border border-amber-200/70 flex items-start gap-2">
+          <span class="text-base">📄</span>
+          <div>
+            <span class="font-bold text-amber-950 block text-[11px]">无限画纸与图层</span>
+            <span class="text-[10px] text-amber-800/80">解除画纸与图层数量上限，支持 4K 超高清导出</span>
+          </div>
+        </div>
+        <div class="p-2.5 rounded-2xl bg-purple-50/70 border border-purple-200/70 flex items-start gap-2">
+          <span class="text-base">✨</span>
+          <div>
+            <span class="font-bold text-purple-950 block text-[11px]">AI 魔法工坊无限算力</span>
+            <span class="text-[10px] text-purple-800/80">无限次 4 维以图生图与 3 秒运镜微电影生成</span>
+          </div>
+        </div>
+        <div class="p-2.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/70 flex items-start gap-2">
+          <span class="text-base">📜</span>
+          <div>
+            <span class="font-bold text-emerald-950 block text-[11px]">30+ 大师物理画纸</span>
+            <span class="text-[10px] text-emerald-800/80">解锁阿诗冷压水彩纸、手工生宣、金箔木纹纸</span>
+          </div>
+        </div>
+        <div class="p-2.5 rounded-2xl bg-sky-50/70 border border-sky-200/70 flex items-start gap-2">
+          <span class="text-base">🖌️</span>
+          <div>
+            <span class="font-bold text-sky-950 block text-[11px]">18+ 专业特调笔刷</span>
+            <span class="text-[10px] text-sky-800/80">多色混调水彩、泼墨飞白、油画厚涂刀与荧光笔</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 购买方案选择 (3 种方案卡片) -->
+      <div class="flex flex-col gap-2">
+        <span class="text-[11px] font-bold text-stone-600">选择您的订阅方案：</span>
+        <div class="grid grid-cols-3 gap-2">
+          <!-- 方案 1: 月度 -->
+          <div data-plan="monthly" class="vip-plan-card cursor-pointer p-3 rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 transition flex flex-col items-center text-center">
+            <span class="text-xs font-bold text-stone-700">月度会员</span>
+            <div class="text-base font-extrabold text-stone-900 my-1">¥28 <span class="text-[10px] font-normal text-stone-500">/月</span></div>
+            <span class="text-[9px] text-stone-400">适合灵感尝鲜</span>
+          </div>
+
+          <!-- 方案 2: 年度 (推荐) -->
+          <div data-plan="yearly" class="vip-plan-card active relative cursor-pointer p-3 rounded-2xl border-2 border-amber-500 bg-amber-50/60 shadow-xs transition flex flex-col items-center text-center">
+            <span class="absolute -top-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-red-500 to-amber-500 text-white font-extrabold text-[8px] tracking-wide shadow-2xs">超值推荐 · 省 41%</span>
+            <span class="text-xs font-bold text-amber-950">年度会员</span>
+            <div class="text-base font-extrabold text-amber-600 my-1">¥198 <span class="text-[10px] font-normal text-stone-500">/年</span></div>
+            <span class="text-[9px] text-amber-700 font-medium">折合仅 ¥16.5 /月</span>
+          </div>
+
+          <!-- 方案 3: 终身 -->
+          <div data-plan="lifetime" class="vip-plan-card cursor-pointer p-3 rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 transition flex flex-col items-center text-center">
+            <span class="text-xs font-bold text-stone-700">终身买断</span>
+            <div class="text-base font-extrabold text-stone-900 my-1">¥398</div>
+            <span class="text-[9px] text-stone-400">一次付费 · 终身享有</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 购买按钮与保障提示 -->
+      <div class="flex flex-col gap-2 pt-1">
+        <button id="btnConfirmPurchaseVip" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:opacity-95 text-white font-extrabold text-sm shadow-md shadow-amber-500/30 active:scale-98 transition flex items-center justify-center gap-2 cursor-pointer">
+          <span>👑</span>
+          <span id="vipPurchaseBtnText">立即开通【年度会员】¥198/年</span>
+        </button>
+        <div class="flex items-center justify-between text-[10px] text-stone-400 px-1">
+          <span>🔒 Apple App Store 安全购买保障</span>
+          <span>🔄 随时可取消订阅 · 7天无理由退款</span>
+        </div>
       </div>
     </div>
   </div>
@@ -2914,24 +3157,55 @@
     };
 
     function updateBrushTipDemo() {
-      const graphicEl = document.getElementById('brushTipGraphic');
-      const nameEl = document.getElementById('brushDemoName');
-      const descEl = document.getElementById('brushDemoDesc');
-      const canvasEl = document.getElementById('brushTipDemoCanvas');
-      if (!graphicEl || !canvasEl) return;
-
       const isEraser = currentTool === 'eraser';
       const key = isEraser ? 'eraser' : (currentBrushMedium || 'watercolor');
       const info = BRUSH_TIPS_INFO[key] || BRUSH_TIPS_INFO.watercolor;
       const svg = BRUSH_TIPS_SVG[key] || BRUSH_TIPS_SVG.watercolor;
-
-      graphicEl.innerHTML = svg;
       const currentColorHex = `rgb(${activeBrushRGB[0]}, ${activeBrushRGB[1]}, ${activeBrushRGB[2]})`;
-      graphicEl.style.color = isEraser ? '#E11D48' : currentColorHex;
 
+      // 1. 优先更新常用工具坞中的笔头图示卡片 (dockBrushTipContainer)
+      const dockImg = document.getElementById('dockBrushTipCustomImg');
+      const dockVector = document.getElementById('dockBrushTipVector');
+      const dockBadge = document.getElementById('dockBrushTipBadge');
+
+      if (dockBadge) {
+        dockBadge.textContent = isEraser ? '橡皮擦' : info.name.replace(/.*?(水彩|毛笔|蜡笔|马克笔|喷笔).*/, '$1');
+      }
+
+      if (dockVector) {
+        dockVector.innerHTML = svg;
+        dockVector.style.color = isEraser ? '#E11D48' : currentColorHex;
+      }
+
+      if (dockImg) {
+        // 尝试加载用户放入 images/ 的笔头自定义图片 (如 images/brush_watercolor.png)
+        const candidateSrc = `images/brush_${key}.png`;
+        const testImg = new Image();
+        testImg.onload = () => {
+          dockImg.src = candidateSrc;
+          dockImg.classList.remove('hidden');
+          if (dockVector) dockVector.classList.add('hidden');
+        };
+        testImg.onerror = () => {
+          dockImg.classList.add('hidden');
+          if (dockVector) dockVector.classList.remove('hidden');
+        };
+        testImg.src = candidateSrc;
+      }
+
+      // 2. 兼容其他展示区域 (如果存在)
+      const graphicEl = document.getElementById('brushTipGraphic');
+      const nameEl = document.getElementById('brushDemoName');
+      const descEl = document.getElementById('brushDemoDesc');
+      const canvasEl = document.getElementById('brushTipDemoCanvas');
+      if (graphicEl) {
+        graphicEl.innerHTML = svg;
+        graphicEl.style.color = isEraser ? '#E11D48' : currentColorHex;
+      }
       if (nameEl) nameEl.textContent = info.name;
       if (descEl) descEl.textContent = info.desc;
 
+      if (!canvasEl) return;
       const ctx = canvasEl.getContext('2d');
       const w = canvasEl.width;
       const h = canvasEl.height;
@@ -5455,7 +5729,7 @@
       if (!fullTopToolbar.contains(e.target) && 
           !btnMainLogoMenu?.contains(e.target) && 
           !document.getElementById('mainDrawer')?.contains(e.target) &&
-          !e.target.closest?.('#paperTextureModal, #styleModal, #cameraModal, #layersPanel, #artworkHistoryModal, #evictionPromptModal')) {
+          !e.target.closest?.('#paperTextureModal, #styleModal, #cameraModal, #layersPanel, #artworkHistoryModal, #evictionPromptModal, #aiModal, #photoAlbumModal, #tutorialModal, #vipModal')) {
         toggleTopToolbar(false);
       }
     });
@@ -6190,6 +6464,83 @@
     document.getElementById('btnCancelEviction')?.addEventListener('click', (e) => {
       e.stopPropagation();
       document.getElementById('evictionPromptModal')?.classList.add('hidden');
+    });
+
+    // 常用工具坞：快捷增加图层按键绑定
+    document.getElementById('dockBtnAddLayer')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      createLayer();
+      playSuctionPopSound(520, 0.09);
+      showToast(`📑 已增加【图层 ${layers.length}】`);
+    });
+
+    // 教学引导弹窗控制
+    const tutorialModal = document.getElementById('tutorialModal');
+    document.getElementById('btnOpenTutorialModal')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      playPaperRustleSound();
+      tutorialModal?.classList.remove('hidden');
+      toggleTopToolbar(false);
+    });
+    const closeTutorial = () => {
+      playSuctionPopSound(480, 0.08);
+      tutorialModal?.classList.add('hidden');
+    };
+    document.getElementById('btnCloseTutorialModal')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeTutorial();
+    });
+    document.getElementById('btnFinishTutorial')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeTutorial();
+      showToast('🎉 祝您创作愉快！');
+    });
+
+    // VIP 会员弹窗与购买交互
+    const vipModal = document.getElementById('vipModal');
+    let selectedVipPlan = 'yearly';
+    const vipPlanCards = document.querySelectorAll('.vip-plan-card');
+    const vipPurchaseBtnText = document.getElementById('vipPurchaseBtnText');
+
+    vipPlanCards.forEach(card => {
+      card.addEventListener('click', () => {
+        vipPlanCards.forEach(c => {
+          c.classList.remove('active', 'border-amber-500', 'bg-amber-50/60');
+          c.classList.add('border-stone-200', 'bg-white');
+        });
+        card.classList.add('active', 'border-amber-500', 'bg-amber-50/60');
+        card.classList.remove('border-stone-200', 'bg-white');
+        selectedVipPlan = card.dataset.plan || 'yearly';
+        playSuctionPopSound(500, 0.06);
+
+        if (vipPurchaseBtnText) {
+          if (selectedVipPlan === 'monthly') {
+            vipPurchaseBtnText.textContent = '立即开通【月度会员】¥28/月';
+          } else if (selectedVipPlan === 'yearly') {
+            vipPurchaseBtnText.textContent = '立即开通【年度会员】¥198/年';
+          } else if (selectedVipPlan === 'lifetime') {
+            vipPurchaseBtnText.textContent = '立即开通【终身买断卡】¥398';
+          }
+        }
+      });
+    });
+
+    document.getElementById('btnOpenVipModal')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      playSuctionPopSound(560, 0.09);
+      vipModal?.classList.remove('hidden');
+      toggleTopToolbar(false);
+    });
+    document.getElementById('btnCloseVipModal')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      playSuctionPopSound(420, 0.07);
+      vipModal?.classList.add('hidden');
+    });
+    document.getElementById('btnConfirmPurchaseVip')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      playSuctionPopSound(660, 0.12);
+      vipModal?.classList.add('hidden');
+      showToast('👑 恭喜您成功开通 KaiDraw VIP 尊享会员！已解除所有画纸与图层限制');
     });
 
     /********************************************************************
