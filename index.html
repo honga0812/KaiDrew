@@ -140,7 +140,7 @@
   <div id="kaiQuestSplash" onclick="this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="轻点立即进入画室">
     <!-- 顶部居中极简版本编号 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.97 · Pro Edition
+      B.26.11.98 · Pro Edition
     </div>
 
     <!-- 中心纯净 KaiDraw Logo (纯白无界背景) -->
@@ -275,9 +275,12 @@
 
   <!-- ==================== 主画布视口区 (纯白通透背景，满版全屏创作工作室) ==================== -->
   <main id="viewportContainer" class="flex-1 relative overflow-hidden bg-white flex items-center justify-center min-h-0 touch-none w-full h-full" style="touch-action: none; -webkit-user-select: none; -webkit-touch-callout: none;">
-    <!-- 底层 KaiDraw 品牌水印 (无框线、纯白底色、居中适中尺寸呈现，画布缩小时尽显艺术质感) -->
-    <div id="viewportLogoBackground" class="pointer-events-none absolute inset-0 bg-white flex items-center justify-center select-none z-0 overflow-hidden transition-opacity duration-300">
-      <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-48 h-48 sm:w-56 sm:h-56 object-contain opacity-25 mix-blend-multiply" />
+    <!-- 底层 KaiDraw 品牌水印与版本呈现 (无框线、纯白底色、居中放大呈现，配合版本号；画布缩小或平移移开时清晰显露) -->
+    <div id="viewportLogoBackground" class="pointer-events-none absolute inset-0 bg-white flex flex-col items-center justify-center select-none z-0 overflow-hidden transition-all duration-300 gap-3">
+      <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-60 h-60 sm:w-72 sm:h-72 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply" />
+      <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
+        B.26.11.98 · Pro Edition
+      </div>
     </div>
 
     <!-- 硬件加速视口变形包裹层 (Transform Wrapper - 重磅 300g 艺术画纸悬浮光影) -->
@@ -389,6 +392,12 @@
 
       <button id="btnResetView" class="w-8 h-8 rounded-xl bg-white/95 backdrop-blur-xl hover:bg-amber-50 border border-stone-200/90 text-stone-700 text-xs font-bold flex items-center justify-center active:scale-95 transition shadow-sm cursor-pointer" title="重置满版居中视野">
         <span>🎯</span>
+      </button>
+
+      <!-- 沉浸画室禅境伴奏 (支持一键播放/暂停，支持本地 4~5 分钟循环钢琴/吉他音轨与内置舒缓和弦) -->
+      <button id="btnToggleStudioBgm" class="h-8 px-2.5 rounded-xl bg-white/95 backdrop-blur-xl hover:bg-amber-50 border border-stone-200/90 text-stone-700 text-xs font-semibold flex items-center gap-1.5 active:scale-95 transition shadow-sm cursor-pointer group" title="点击开启/静音画室沉浸钢琴伴奏 (平静心绪专注绘画)">
+        <span id="bgmStateIcon" class="text-sm leading-none transition-transform group-hover:scale-110">🎵</span>
+        <span id="bgmStateText" class="text-[11px] font-medium hidden sm:inline text-stone-600">伴奏</span>
       </button>
     </div>
 
@@ -2477,6 +2486,7 @@
 
     function setDrawingTool(tool) {
       currentTool = tool;
+      playSuctionPopSound(currentTool === 'eraser' ? 380 : 440, 0.09);
       const brushBtn = document.getElementById('dockBtnBrush');
       const eraserBtn = document.getElementById('dockBtnEraser');
       const topEraserBtn = document.getElementById('btnToggleEraserTop');
@@ -2590,6 +2600,202 @@
     function drawStroke(x0, y0, x1, y1, pressure) {
       walkQuadraticCurveWithPressure(x0, y0, (x0 + x1) * 0.5, (y0 + y1) * 0.5, x1, y1, pressure, pressure);
     }
+
+    /********************************************************************
+     * 7.9 全局共享 Web Audio 声学引擎与触觉反馈系统
+     * 包含：共享 AudioContext、微小吸盘触觉音效、真实画笔物理接触纸张声学引擎
+     ********************************************************************/
+    let _sharedAudioCtx = null;
+    function getSharedAudioContext() {
+      if (!_sharedAudioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          _sharedAudioCtx = new AudioContextClass();
+        }
+      }
+      if (_sharedAudioCtx && _sharedAudioCtx.state === 'suspended') {
+        _sharedAudioCtx.resume().catch(() => {});
+      }
+      return _sharedAudioCtx;
+    }
+    window.addEventListener('pointerdown', () => {
+      if (_sharedAudioCtx && _sharedAudioCtx.state === 'suspended') {
+        _sharedAudioCtx.resume().catch(() => {});
+      }
+    }, { once: false, passive: true });
+
+    // 1. 微小吸盘触觉音效 (切换笔刷、颜色或工具时的细腻微小反馈)
+    let cachedSuctionPopAudio = null;
+    function playSuctionPopSound(freq = 460, volume = 0.09) {
+      try {
+        if (!cachedSuctionPopAudio) {
+          cachedSuctionPopAudio = new Audio('images/suction_pop.wav');
+          cachedSuctionPopAudio.volume = volume;
+        } else {
+          cachedSuctionPopAudio.currentTime = 0;
+          cachedSuctionPopAudio.volume = volume;
+        }
+        const promise = cachedSuctionPopAudio.play();
+        if (promise !== undefined) {
+          promise.catch(() => {
+            playAcousticSuctionPopFallback(freq, volume);
+          });
+        }
+      } catch (_) {
+        playAcousticSuctionPopFallback(freq, volume);
+      }
+    }
+
+    function playAcousticSuctionPopFallback(freq = 460, volume = 0.09) {
+      try {
+        const ctx = getSharedAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.038);
+        gain.gain.setValueAtTime(volume, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.042);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.045);
+      } catch (_) {}
+    }
+
+    // 2. 真实画笔物理接触纸张声学引擎 (Real-time Brush Paper Friction Acoustics)
+    // 模拟马克笔、水彩笔、毛笔、蜡笔、喷笔以及橡皮擦接触画纸的微弱真实摩擦与流动声
+    const BrushAudioEngine = (() => {
+      let isInitialized = false;
+      let isPlaying = false;
+      let noiseNode = null;
+      let filterNode = null;
+      let gainNode = null;
+      let targetGain = 0;
+
+      function init() {
+        if (isInitialized) return;
+        const ctx = getSharedAudioContext();
+        if (!ctx) return;
+
+        // 生成 2 秒粉红微颗粒噪声循环缓冲
+        const bufferSize = Math.floor(ctx.sampleRate * 2.0);
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        let b0 = 0, b1 = 0, b2 = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          b0 = 0.998 * b0 + white * 0.055;
+          b1 = 0.993 * b1 + white * 0.075;
+          b2 = 0.969 * b2 + white * 0.153;
+          const pink = b0 + b1 + b2 + white * 0.45;
+          data[i] = pink * 0.22;
+        }
+
+        noiseNode = ctx.createBufferSource();
+        noiseNode.buffer = buffer;
+        noiseNode.loop = true;
+
+        filterNode = ctx.createBiquadFilter();
+        gainNode = ctx.createGain();
+        gainNode.gain.setValueAtTime(0, ctx.currentTime);
+
+        noiseNode.connect(filterNode);
+        filterNode.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        noiseNode.start(0);
+        isInitialized = true;
+      }
+
+      function updateConfig(tool, medium) {
+        if (!isInitialized || !filterNode) return;
+        const ctx = getSharedAudioContext();
+        const now = ctx.currentTime;
+
+        if (tool === 'eraser') {
+          // 橡皮擦：低频橡胶刮擦 (Lowpass 460Hz)
+          filterNode.type = 'lowpass';
+          filterNode.frequency.setTargetAtTime(460, now, 0.04);
+          filterNode.Q.setTargetAtTime(1.0, now, 0.04);
+          targetGain = 0.024;
+        } else if (medium === 'marker') {
+          // 马克笔：特有的高频纤维微摩擦与阻尼滑行 (Bandpass 2400Hz, Q=1.8)
+          filterNode.type = 'bandpass';
+          filterNode.frequency.setTargetAtTime(2400, now, 0.04);
+          filterNode.Q.setTargetAtTime(1.8, now, 0.04);
+          targetGain = 0.022;
+        } else if (medium === 'watercolor') {
+          // 水彩笔：湿润毛刷在棉浆纸上柔和拂动水声 (Lowpass 950Hz)
+          filterNode.type = 'lowpass';
+          filterNode.frequency.setTargetAtTime(950, now, 0.04);
+          filterNode.Q.setTargetAtTime(0.8, now, 0.04);
+          targetGain = 0.020;
+        } else if (medium === 'crayon') {
+          // 蜡笔：颗粒干性蜡质抓纸微阻尼 (Bandpass 1700Hz, Q=1.1)
+          filterNode.type = 'bandpass';
+          filterNode.frequency.setTargetAtTime(1700, now, 0.04);
+          filterNode.Q.setTargetAtTime(1.1, now, 0.04);
+          targetGain = 0.028;
+        } else if (medium === 'airbrush') {
+          // 喷笔：极轻微细腻的连续喷雾气流拂音 (Highpass 3200Hz)
+          filterNode.type = 'highpass';
+          filterNode.frequency.setTargetAtTime(3200, now, 0.04);
+          filterNode.Q.setTargetAtTime(0.7, now, 0.04);
+          targetGain = 0.016;
+        } else if (medium === 'chinese-brush') {
+          // 毛笔：软毫在宣纸上的丝滑拂动 (Bandpass 700Hz)
+          filterNode.type = 'bandpass';
+          filterNode.frequency.setTargetAtTime(700, now, 0.04);
+          filterNode.Q.setTargetAtTime(0.9, now, 0.04);
+          targetGain = 0.018;
+        } else {
+          // 铅笔与其它画笔
+          filterNode.type = 'bandpass';
+          filterNode.frequency.setTargetAtTime(1800, now, 0.04);
+          filterNode.Q.setTargetAtTime(1.2, now, 0.04);
+          targetGain = 0.020;
+        }
+      }
+
+      function startStroke(tool, medium) {
+        init();
+        const ctx = getSharedAudioContext();
+        if (!ctx) return;
+        updateConfig(tool, medium);
+        isPlaying = true;
+        gainNode.gain.cancelScheduledValues(ctx.currentTime);
+        gainNode.gain.setTargetAtTime(targetGain, ctx.currentTime, 0.018);
+      }
+
+      function updateStrokeDynamics(speed = 1.0, pressure = 0.5) {
+        if (!isPlaying || !gainNode) return;
+        const ctx = getSharedAudioContext();
+        if (!ctx) return;
+        // 根据移动速度与下笔压感轻微动态调制音量，静止时音量趋近于零
+        const dynamicMultiplier = Math.min(1.4, Math.max(0.25, (speed * 0.4 + pressure * 0.6)));
+        const finalGain = targetGain * dynamicMultiplier;
+        gainNode.gain.setTargetAtTime(finalGain, ctx.currentTime, 0.035);
+      }
+
+      function endStroke() {
+        if (!isPlaying || !gainNode) return;
+        isPlaying = false;
+        const ctx = getSharedAudioContext();
+        if (!ctx) return;
+        gainNode.gain.setTargetAtTime(0.00001, ctx.currentTime, 0.035);
+      }
+
+      return {
+        init,
+        startStroke,
+        updateStrokeDynamics,
+        endStroke,
+        updateConfig
+      };
+    })();
 
     /********************************************************************
      * 8. 画布绘画事件 (起笔由细渐粗包络 + 行笔速度提按 + 滑动尾段顺滑收锋缓冲队列)
@@ -2799,6 +3005,9 @@
       // 下笔瞬间光标呈现纤细笔尖状态
       const cfg = getBrushTaperConfig(brushRadius);
       updateCursorRing(e.clientX, e.clientY, cfg.hasTaper ? 0.12 : 0.6, true);
+
+      // 触发轻微画笔纸张接触物理声学反馈
+      BrushAudioEngine.startStroke(currentTool, currentBrushMedium);
     }, { passive: false });
 
     paintCanvas.addEventListener('pointermove', (e) => {
@@ -2848,6 +3057,9 @@
           strokeSamples[0].speedP = frameTargetP;
         }
       }
+
+      // 动态更新笔尖纸张摩擦声学调制 (移动速度与压感)
+      BrushAudioEngine.updateStrokeDynamics(totalMoveDist / 8, frameTargetP);
 
       let accDist = 0;
       const startP = lastStrokePressure;
@@ -2953,6 +3165,7 @@
       committedSampleIdx = 0;
       isDrawing = false;
       activeDrawingPointerId = null;
+      BrushAudioEngine.endStroke();
       updateStylusPressureUI(0, e.pointerType, false);
       try { paintCanvas.releasePointerCapture(e.pointerId); } catch (_) {}
       updateCursorRing(e.clientX, e.clientY, 0.5, false);
@@ -2967,6 +3180,7 @@
     paintCanvas.addEventListener('pointercancel', endDrawing);
 
     paintCanvas.addEventListener('pointerleave', () => {
+      BrushAudioEngine.endStroke();
       cursorRing.classList.add('hidden');
     });
 
@@ -3300,8 +3514,11 @@
       });
     }
 
-    function applyBrushColor(rgb, isFromRecent = false) {
+    function applyBrushColor(rgb, isFromRecent = false, triggerAudio = true) {
       activeBrushRGB = [...rgb];
+      if (triggerAudio) {
+        playSuctionPopSound(500, 0.08);
+      }
       const circle = document.getElementById('currentSwatchCircle');
       if (circle) circle.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       const dockActive = document.getElementById('leftDockActiveColor');
@@ -3332,10 +3549,12 @@
         const h = Number(hSlider.value);
         const l = Number(lSlider.value) / 100;
         const rgb = hslToRgb(h, 0.88, l);
-        applyBrushColor(rgb);
+        applyBrushColor(rgb, false, false);
       }
       hSlider.addEventListener('input', update);
       lSlider.addEventListener('input', update);
+      hSlider.addEventListener('change', () => playSuctionPopSound(500, 0.08));
+      lSlider.addEventListener('change', () => playSuctionPopSound(500, 0.08));
     }
     setupColorRangePicker('hueSliderWatercolor', 'lightnessSliderWatercolor');
     setupColorRangePicker('hueSliderCrayon', 'lightnessSliderCrayon');
@@ -3511,6 +3730,8 @@
     function switchBrushMedium(medium) {
       currentBrushMedium = medium;
       activeMediumTab = medium;
+      playSuctionPopSound(470, 0.09);
+      BrushAudioEngine.updateConfig(currentTool, medium);
       updateTopMediumButtonDisplay();
 
       document.querySelectorAll('.medium-tab-btn').forEach(b => {
@@ -5446,107 +5667,214 @@
       });
     }
 
-    // 真实书本翻页物理音效 (Real Book Page Flip Sound Effect)
-    // 采用拟真翻书采样与 Web Audio 3段声学合成保底 (含起纸剥离摩擦声、空中扑动扰流、合页拍落轻响)
-    let cachedBookAudio = null;
+    // 轻微物理翻书/翻纸张音效 (Gentle Soft Paper Rustle - 仅轻柔的纸张翻动声，无厚重杂音)
+    let cachedGentlePageAudio = null;
     function playBookPageFlipSound() {
       try {
-        if (!cachedBookAudio) {
-          cachedBookAudio = new Audio('images/page_flip.wav');
-          cachedBookAudio.volume = 0.85;
+        if (!cachedGentlePageAudio) {
+          cachedGentlePageAudio = new Audio('images/page_flip.wav');
+          cachedGentlePageAudio.volume = 0.28; // 保持轻微细腻音量
         } else {
-          cachedBookAudio.currentTime = 0;
+          cachedGentlePageAudio.currentTime = 0;
+          cachedGentlePageAudio.volume = 0.28;
         }
-        const promise = cachedBookAudio.play();
+        const promise = cachedGentlePageAudio.play();
         if (promise !== undefined) {
           promise.catch(() => {
-            playAcousticPaperFlipFallback();
+            playAcousticGentlePaperFlipFallback();
           });
         }
       } catch (_) {
-        playAcousticPaperFlipFallback();
+        playAcousticGentlePaperFlipFallback();
       }
     }
 
-    // Web Audio 实时 3 段声学合成物理翻书声 (起纸摩擦 + 翻动风阻 + 拍合微响)
-    function playAcousticPaperFlipFallback() {
+    // Web Audio 实时轻微纸张翻动合成保底 (仅轻微柔和的纸纤维拂擦，时长 0.18s，无厚重杂音)
+    function playAcousticGentlePaperFlipFallback() {
       try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        const ctx = new AudioContext();
-        if (ctx.state === 'suspended') ctx.resume();
-
+        const ctx = getSharedAudioContext();
+        if (!ctx) return;
         const now = ctx.currentTime;
-        const dur = 0.42;
-
-        // 阶段 1：纸张微粒摩擦与纤维剥离 (Filtered Pink Noise with Envelope)
+        const dur = 0.18;
         const bufferSize = Math.floor(ctx.sampleRate * dur);
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
-        let b0 = 0, b1 = 0, b2 = 0;
         for (let i = 0; i < bufferSize; i++) {
-          const white = Math.random() * 2 - 1;
-          b0 = 0.99886 * b0 + white * 0.0555;
-          b1 = 0.99332 * b1 + white * 0.0750;
-          b2 = 0.96900 * b2 + white * 0.1538;
-          const pink = b0 + b1 + b2 + white * 0.5362;
           const t = i / ctx.sampleRate;
-          const env = Math.sin(Math.min(Math.PI, t / 0.28 * Math.PI)) * Math.exp(-t * 4.5);
-          data[i] = pink * 0.25 * env;
+          const env = (t < 0.025) ? (t / 0.025) : Math.exp(-(t - 0.025) * 16);
+          data[i] = (Math.random() * 2 - 1) * env * 0.15;
         }
-        const noiseSource = ctx.createBufferSource();
-        noiseSource.buffer = buffer;
-
-        const noiseFilter = ctx.createBiquadFilter();
-        noiseFilter.type = 'bandpass';
-        noiseFilter.frequency.setValueAtTime(2200, now);
-        noiseFilter.frequency.exponentialRampToValueAtTime(450, now + dur);
-        noiseFilter.Q.value = 1.8;
-
-        const noiseGain = ctx.createGain();
-        noiseGain.gain.setValueAtTime(0.65, now);
-        noiseGain.gain.exponentialRampToValueAtTime(0.01, now + dur);
-
-        noiseSource.connect(noiseFilter);
-        noiseFilter.connect(noiseGain);
-        noiseGain.connect(ctx.destination);
-        noiseSource.start(now);
-
-        // 阶段 2：书页翻折风阻扰流 (Low-freq Resonance whoosh with flutter)
-        const whooshOsc = ctx.createOscillator();
-        const whooshGain = ctx.createGain();
-        whooshOsc.type = 'sine';
-        whooshOsc.frequency.setValueAtTime(320, now + 0.06);
-        whooshOsc.frequency.exponentialRampToValueAtTime(110, now + 0.32);
-
-        whooshGain.gain.setValueAtTime(0.001, now);
-        whooshGain.gain.linearRampToValueAtTime(0.18, now + 0.14);
-        whooshGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-
-        whooshOsc.connect(whooshGain);
-        whooshGain.connect(ctx.destination);
-        whooshOsc.start(now + 0.06);
-        whooshOsc.stop(now + 0.36);
-
-        // 阶段 3：纸张扑落在书册上的微弱拍合阻尼敲击声 (Landing Tap)
-        const slapOsc = ctx.createOscillator();
-        const slapGain = ctx.createGain();
-        slapOsc.type = 'triangle';
-        slapOsc.frequency.setValueAtTime(140, now + 0.22);
-        slapOsc.frequency.exponentialRampToValueAtTime(42, now + 0.36);
-
-        slapGain.gain.setValueAtTime(0.001, now);
-        slapGain.gain.setValueAtTime(0.26, now + 0.22);
-        slapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
-
-        slapOsc.connect(slapGain);
-        slapGain.connect(ctx.destination);
-        slapOsc.start(now + 0.22);
-        slapOsc.stop(now + 0.40);
+        const src = ctx.createBufferSource();
+        src.buffer = buffer;
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1300, now);
+        filter.frequency.exponentialRampToValueAtTime(650, now + dur);
+        filter.Q.value = 1.0;
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+        src.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        src.start(now);
       } catch (_) {}
     }
 
     const playPaperFlipSound = playBookPageFlipSound;
+
+    /********************************************************************
+     * 沉浸画室禅境背景乐引擎 (Studio Zen Ambient Piano & BGM Player)
+     * 支持加载本地 4~5 分钟循环钢琴/吉他音轨，同时内置实时舒缓钢琴轻柔和弦生成保底
+     ********************************************************************/
+    const StudioBgmEngine = (() => {
+      let isPlaying = false;
+      let bgmAudioEl = null;
+      let proceduralTimer = null;
+      let ambientMasterGain = null;
+
+      // 舒缓和弦级数 (Erik Satie / Joe Hisaishi 风格平静大九和弦与抒情调式)
+      const PIANO_NOTES = [
+        130.81, 164.81, 196.00, 246.94, 293.66, 329.63, 392.00, 440.00, 493.88, 523.25, 587.33, 659.25
+      ];
+      const CHORD_PROGRESSIONS = [
+        [0, 2, 4, 7, 9],    // Cmaj9
+        [1, 3, 5, 8, 10],   // Em7
+        [2, 4, 6, 9, 11],   // Fmaj7/add9
+        [0, 4, 6, 7, 9]     // Gsus4 -> C
+      ];
+      let currentChordIdx = 0;
+
+      function playGentlePianoTone(freq, delay = 0, duration = 3.8, gainLevel = 0.04) {
+        const ctx = getSharedAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime + delay;
+
+        const osc = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now);
+
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(freq * 2.001, now);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1400, now);
+        filter.frequency.exponentialRampToValueAtTime(380, now + duration);
+
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.linearRampToValueAtTime(gainLevel, now + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.00001, now + duration);
+
+        osc.connect(filter);
+        osc2.connect(filter);
+        filter.connect(gain);
+        gain.connect(ambientMasterGain || ctx.destination);
+
+        osc.start(now);
+        osc2.start(now);
+        osc.stop(now + duration + 0.1);
+        osc2.stop(now + duration + 0.1);
+      }
+
+      function scheduleNextAmbientChord() {
+        if (!isPlaying) return;
+        const chord = CHORD_PROGRESSIONS[currentChordIdx];
+        currentChordIdx = (currentChordIdx + 1) % CHORD_PROGRESSIONS.length;
+
+        chord.forEach((noteIdx, i) => {
+          const freq = PIANO_NOTES[noteIdx % PIANO_NOTES.length];
+          const delay = i * (0.35 + Math.random() * 0.15);
+          const vol = 0.035 - (i * 0.004) + (Math.random() * 0.006);
+          playGentlePianoTone(freq, delay, 4.2, Math.max(0.012, vol));
+        });
+
+        const nextTime = 4800 + Math.random() * 800;
+        proceduralTimer = setTimeout(scheduleNextAmbientChord, nextTime);
+      }
+
+      function start() {
+        const ctx = getSharedAudioContext();
+        if (ctx && !ambientMasterGain) {
+          ambientMasterGain = ctx.createGain();
+          ambientMasterGain.gain.setValueAtTime(0.65, ctx.currentTime);
+          ambientMasterGain.connect(ctx.destination);
+        }
+
+        if (!bgmAudioEl) {
+          bgmAudioEl = new Audio('images/bgm.mp3');
+          bgmAudioEl.loop = true;
+          bgmAudioEl.volume = 0.35;
+        }
+
+        isPlaying = true;
+        updateUI();
+
+        const playPromise = bgmAudioEl.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            // 本地音轨播放成功
+          }).catch(() => {
+            // 无本地音轨时启用 Web Audio 实时极简禅境钢琴和弦生成
+            scheduleNextAmbientChord();
+          });
+        } else {
+          scheduleNextAmbientChord();
+        }
+      }
+
+      function stop() {
+        isPlaying = false;
+        if (bgmAudioEl) {
+          bgmAudioEl.pause();
+        }
+        if (proceduralTimer) {
+          clearTimeout(proceduralTimer);
+          proceduralTimer = null;
+        }
+        updateUI();
+      }
+
+      function toggle() {
+        if (isPlaying) {
+          stop();
+          showToast('已暂停画室背景音乐');
+        } else {
+          start();
+          showToast('🎶 已开启沉浸画室舒缓伴奏');
+        }
+      }
+
+      function updateUI() {
+        const icon = document.getElementById('bgmStateIcon');
+        const text = document.getElementById('bgmStateText');
+        const btn = document.getElementById('btnToggleStudioBgm');
+        if (icon) icon.textContent = isPlaying ? '⏸️' : '🎵';
+        if (text) text.textContent = isPlaying ? '播放中' : '伴奏';
+        if (btn) {
+          if (isPlaying) {
+            btn.classList.add('bg-amber-100', 'text-amber-800', 'border-amber-300');
+          } else {
+            btn.classList.remove('bg-amber-100', 'text-amber-800', 'border-amber-300');
+          }
+        }
+      }
+
+      return {
+        toggle,
+        start,
+        stop,
+        get isPlaying() { return isPlaying; }
+      };
+    })();
+
+    // 绑定沉浸画室伴奏按钮
+    document.getElementById('btnToggleStudioBgm')?.addEventListener('click', () => {
+      StudioBgmEngine.toggle();
+    });
 
     // 翻书过场动效与新建画纸
     let isPageFlipping = false;
