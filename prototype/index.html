@@ -157,7 +157,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext(); this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="轻点立即进入画室">
     <!-- 顶部居中极简版本编号 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.109 · Pro Edition
+      B.26.11.110 · Pro Edition
     </div>
 
     <!-- 中心纯净 KaiDraw Logo (纯白无界背景) -->
@@ -307,7 +307,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.109 · Pro Edition
+        B.26.11.110 · Pro Edition
       </div>
     </div>
 
@@ -4853,31 +4853,33 @@
       if (backdrop) backdrop.classList.remove('hidden');
     }
 
-    function closeDrawer() {
+    function closeDrawer(userInitiated = false) {
       isDrawerOpen = false;
       drawer.classList.remove('drawer-open');
       drawer.classList.add('drawer-closed');
       const backdrop = document.getElementById('drawerBackdrop');
       if (backdrop) backdrop.classList.add('hidden');
-      if (typeof onTourTargetClosed === 'function') onTourTargetClosed(1);
+      if (userInitiated && typeof onTourTargetClosed === 'function') {
+        onTourTargetClosed(1);
+      }
     }
 
-    document.getElementById('drawerBackdrop')?.addEventListener('click', closeDrawer);
+    document.getElementById('drawerBackdrop')?.addEventListener('click', () => closeDrawer(true));
 
     btnOpenStyleSelector.addEventListener('click', () => {
-      if (isDrawerOpen) closeDrawer();
+      if (isDrawerOpen) closeDrawer(true);
       else openDrawer();
     });
 
     const currentSwatchEl = document.getElementById('currentSwatchCircle');
     if (currentSwatchEl) {
       currentSwatchEl.addEventListener('click', () => {
-        if (isDrawerOpen) closeDrawer();
+        if (isDrawerOpen) closeDrawer(true);
         else openDrawer();
       });
     }
 
-    document.getElementById('btnCloseDrawer').addEventListener('click', closeDrawer);
+    document.getElementById('btnCloseDrawer')?.addEventListener('click', () => closeDrawer(true));
 
     document.querySelectorAll('.medium-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -4915,7 +4917,7 @@
     document.getElementById('btnApplyAndCloseDrawer')?.addEventListener('click', (e) => {
       e.stopPropagation();
       playSuctionPopSound(520, 0.08);
-      closeDrawer();
+      closeDrawer(true);
       showToast('🎨 画笔与色彩已就绪，开始尽情作画！');
     });
 
@@ -4941,8 +4943,7 @@
         });
         btn.className = 'crayon-tip-btn py-2 rounded-xl border-2 border-amber-500 bg-amber-50 text-amber-900 font-bold active:scale-95 transition shadow-2xs';
         crayonTipMode = btn.dataset.crayontip;
-        showToast(`已选择蜡笔：${btn.textContent.trim()}`);
-        setTimeout(closeDrawer, 220);
+        showToast(`已选择蜡笔造型：${btn.textContent.trim()}`);
       });
     });
 
@@ -7475,6 +7476,7 @@
      * 17. 主动引导实机导览教学引擎 (Interactive Guided Walkthrough Tour Engine)
      ********************************************************************/
     let isTourActive = false;
+    let isTourTransitioning = false;
     let currentTourStepIndex = 0;
 
     const INTERACTIVE_TOUR_STEPS = [
@@ -7487,7 +7489,6 @@
         targetSelector: '#cameraModal',
         highlightEl: '#btnOpenCameraModal',
         onEnter: () => {
-          closeAllTourPanels();
           const cam = document.getElementById('cameraModal');
           if (cam) {
             cam.classList.remove('hidden');
@@ -7512,7 +7513,6 @@
         targetSelector: '#drawer',
         highlightEl: '#btnOpenStyleSelector',
         onEnter: () => {
-          closeAllTourPanels();
           openDrawer();
           switchBrushMedium('watercolor');
         },
@@ -7529,7 +7529,6 @@
         targetSelector: '#miniLayersStrip',
         highlightEl: '#btnDockAddLayer',
         onEnter: () => {
-          closeAllTourPanels();
           const mini = document.getElementById('miniLayersStrip');
           if (mini) {
             mini.classList.remove('hidden');
@@ -7549,7 +7548,6 @@
         targetSelector: '#compactPaperHistoryPopover',
         highlightEl: '#btnFloatingPaperHistory',
         onEnter: () => {
-          closeAllTourPanels();
           const popover = document.getElementById('compactPaperHistoryPopover');
           if (popover) {
             popover.classList.remove('hidden');
@@ -7569,7 +7567,6 @@
         targetSelector: '#aiModal',
         highlightEl: '#btnFloatingAiMagic',
         onEnter: () => {
-          closeAllTourPanels();
           const ai = document.getElementById('aiModal');
           if (ai) {
             ai.classList.remove('hidden');
@@ -7589,7 +7586,6 @@
         targetSelector: '#aiModal',
         highlightEl: '#tabBtnVideo',
         onEnter: () => {
-          closeAllTourPanels();
           const ai = document.getElementById('aiModal');
           if (ai) {
             ai.classList.remove('hidden');
@@ -7609,7 +7605,6 @@
         targetSelector: '#photoAlbumModal',
         highlightEl: '#btnExport',
         onEnter: () => {
-          closeAllTourPanels();
           const album = document.getElementById('photoAlbumModal');
           if (album) {
             album.classList.remove('hidden');
@@ -7627,13 +7622,18 @@
       }
     ];
 
-    function closeAllTourPanels() {
+    function closeAllTourPanelsSilently() {
       const cam = document.getElementById('cameraModal');
       if (cam) {
         cam.classList.add('hidden');
         cam.classList.remove('flex');
       }
-      closeDrawer();
+      isDrawerOpen = false;
+      drawer.classList.remove('drawer-open');
+      drawer.classList.add('drawer-closed');
+      const backdrop = document.getElementById('drawerBackdrop');
+      if (backdrop) backdrop.classList.add('hidden');
+
       document.getElementById('miniLayersStrip')?.classList.add('hidden');
       document.getElementById('compactPaperHistoryPopover')?.classList.add('hidden');
       document.getElementById('aiModal')?.classList.add('hidden');
@@ -7660,15 +7660,10 @@
 
     function goToTourStep(index) {
       if (index < 0 || index >= INTERACTIVE_TOUR_STEPS.length) return;
+      isTourTransitioning = true;
       
-      // 先清理上一步的面板与高光
-      if (isTourActive && typeof currentTourStepIndex === 'number' && INTERACTIVE_TOUR_STEPS[currentTourStepIndex]) {
-        try {
-          INTERACTIVE_TOUR_STEPS[currentTourStepIndex].onLeave();
-        } catch(e) {
-          console.warn('onLeave error:', e);
-        }
-      }
+      // 静默清理上一步的面板与高光（不触发任何 onTourTargetClosed 事件）
+      closeAllTourPanelsSilently();
 
       currentTourStepIndex = index;
       const stepData = INTERACTIVE_TOUR_STEPS[index];
@@ -7714,6 +7709,11 @@
       if (typeof playSuctionPopSound === 'function') {
         playSuctionPopSound(440 + index * 40, 0.08);
       }
+
+      // 步骤稳定展开后恢复关闭监听
+      setTimeout(() => {
+        isTourTransitioning = false;
+      }, 600);
     }
 
     function nextTourStep() {
@@ -7733,19 +7733,23 @@
     }
 
     function onTourTargetClosed(stepIndex) {
-      if (isTourActive && currentTourStepIndex === stepIndex) {
-        setTimeout(() => {
-          if (isTourActive && currentTourStepIndex === stepIndex) {
-            nextTourStep();
-          }
-        }, 150);
-      }
+      if (!isTourActive || isTourTransitioning) return;
+      if (currentTourStepIndex !== stepIndex) return;
+
+      isTourTransitioning = true;
+      setTimeout(() => {
+        if (isTourActive && currentTourStepIndex === stepIndex) {
+          nextTourStep();
+        } else {
+          isTourTransitioning = false;
+        }
+      }, 250);
     }
 
     function startInteractiveTour(startStep = 0) {
       isTourActive = true;
       if (typeof toggleTopToolbar === 'function') toggleTopToolbar(false);
-      closeAllTourPanels();
+      closeAllTourPanelsSilently();
       const container = document.getElementById('interactiveTourContainer');
       if (container) {
         container.classList.remove('hidden');
@@ -7756,7 +7760,7 @@
 
     function finishInteractiveTour() {
       isTourActive = false;
-      closeAllTourPanels();
+      closeAllTourPanelsSilently();
       document.getElementById('interactiveTourContainer')?.classList.add('hidden');
       if (typeof playSuctionPopSound === 'function') playSuctionPopSound(720, 0.12);
       showToast('🎉 恭喜完成 KaiDraw 创作实机导览教学！随时可在顶栏「教学」重新回顾。');
@@ -7764,7 +7768,7 @@
 
     function exitInteractiveTour() {
       isTourActive = false;
-      closeAllTourPanels();
+      closeAllTourPanelsSilently();
       document.getElementById('interactiveTourContainer')?.classList.add('hidden');
       if (typeof playSuctionPopSound === 'function') playSuctionPopSound(400, 0.08);
       showToast('已退出实机教学，随时可在顶栏「教学」重新开启。');
