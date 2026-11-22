@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.130 · Pro Edition
+      B.26.11.131 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -404,7 +404,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.130 · Pro Edition
+        B.26.11.131 · Pro Edition
       </div>
     </div>
 
@@ -1145,7 +1145,7 @@
             </div>
             
             <div class="w-full h-32 sm:h-36 rounded-lg bg-white border border-stone-200 shadow-inner flex items-center justify-center overflow-hidden">
-              <canvas id="prevSketch" width="320" height="240" class="w-full h-full object-contain"></canvas>
+              <canvas id="prevSketch" width="320" height="240" class="w-full h-full object-cover"></canvas>
             </div>
 
             <div class="grid grid-cols-2 gap-1.5">
@@ -1168,7 +1168,7 @@
             </div>
 
             <div class="w-full h-32 sm:h-36 rounded-lg bg-white border border-stone-200 shadow-inner flex items-center justify-center overflow-hidden">
-              <canvas id="prevColor" width="320" height="240" class="w-full h-full object-contain"></canvas>
+              <canvas id="prevColor" width="320" height="240" class="w-full h-full object-cover"></canvas>
             </div>
 
             <button id="btnSetColorUnderlay" class="w-full py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition cursor-pointer flex items-center justify-center gap-1" title="將彩色圖片設為半透明底圖">
@@ -5446,6 +5446,21 @@
       });
     });
 
+    /** 切換右側雙預覽框顯示模式：16 款範例採用局部放大清晰呈現 (object-cover)；自訂上傳/拍照相片嚴格維持原比例不裁切 (object-contain) */
+    function updatePreviewFitMode(isCustomPhoto) {
+      ['prevSketch', 'prevColor'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (isCustomPhoto) {
+          el.classList.remove('object-cover');
+          el.classList.add('object-contain');
+        } else {
+          el.classList.remove('object-contain');
+          el.classList.add('object-cover');
+        }
+      });
+    }
+
     /** 嚴格保留圖片原始長寬比例並置中繪製於畫布 (不拉寬、不拉長) */
     function drawImagePreserveAspect(ctx, img, targetW, targetH) {
       ctx.clearRect(0, 0, targetW, targetH);
@@ -5460,6 +5475,7 @@
     function drawPresetPhoto(name) {
       const presetKey = PRESET_NAMES[name] ? name : "lion";
       const ctx = sourcePhotoCtx;
+      updatePreviewFitMode(false);
 
       // 若有自訂生成的高清圖片，優先使用
       if (presetCustomImages[presetKey]) {
@@ -6495,6 +6511,7 @@
         reader.onload = (evt) => {
           const img = new Image();
           img.onload = () => {
+            updatePreviewFitMode(true);
             drawImagePreserveAspect(sourcePhotoCtx, img, W, H);
             const labelEl = document.getElementById("currentSelectedPresetLabel");
             if (labelEl) labelEl.textContent = "📷 自訂相片";
@@ -6515,6 +6532,7 @@
         if (data && data.ok && data.image) {
           const img = new Image();
           img.onload = () => {
+            updatePreviewFitMode(true);
             drawImagePreserveAspect(sourcePhotoCtx, img, W, H);
             const labelEl = document.getElementById("currentSelectedPresetLabel");
             if (labelEl) labelEl.textContent = "📸 相機拍照";
