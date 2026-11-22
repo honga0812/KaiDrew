@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.127 · Pro Edition
+      B.26.11.128 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -396,7 +396,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.127 · Pro Edition
+        B.26.11.128 · Pro Edition
       </div>
     </div>
 
@@ -800,13 +800,14 @@
 
       <!-- 白瓷流動融合調色盤 (真實水彩流體暈染 + 減法混色自動上筆) -->
       <div class="porcelain-plate rounded-2xl p-3 border border-stone-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.04)] flex flex-col gap-2.5">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between gap-1 flex-wrap">
           <span class="text-[12px] font-bold text-stone-800 flex items-center gap-1.5">🥣 白瓷水彩流動混色盤</span>
-          <div class="flex items-center gap-1">
-            <button id="btnDropActiveColor" class="text-[10px] px-2 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-xs active:scale-95 transition" title="將當前顏色滴入調色盤">💧 滴入色</button>
-            <button id="btnPresetMixPool" class="text-[10px] px-2 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-sky-500 hover:opacity-90 text-white font-bold shadow-xs active:scale-95 transition" title="一鍵滴入兩組對比色池，立即體驗畫圈攪拌混色">🌈 雙色混色</button>
-            <button id="btnWetPalette" class="text-[10px] px-2 py-1 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 font-semibold border border-sky-200 active:scale-95 transition" title="滴入清水暈開顏料">💦 加水</button>
-            <button id="btnWashPorcelain" class="text-[10px] px-2 py-1 rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-700 font-semibold active:scale-95 transition" title="洗淨白瓷盤">🧼 洗淨</button>
+          <div class="flex items-center gap-1 flex-wrap">
+            <button id="btnAutoDropMode" class="text-[10px] px-2 py-1 rounded-lg bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-300 font-bold shadow-2xs active:scale-95 transition cursor-pointer" title="開啟後，點選上方任意水彩塊即自動連續滴入盤中，免跳出抽屜">💧 連續滴色</button>
+            <button id="btnDropActiveColor" class="text-[10px] px-2 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-xs active:scale-95 transition cursor-pointer" title="將當前畫筆顏色滴入調色盤">➕ 滴入當前色</button>
+            <button id="btnPresetMixPool" class="text-[10px] px-2 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-sky-500 hover:opacity-90 text-white font-bold shadow-xs active:scale-95 transition cursor-pointer" title="一鍵滴入兩組對比色池，立即體驗畫圈攪拌混色">🌈 雙色</button>
+            <button id="btnWetPalette" class="text-[10px] px-2 py-1 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 font-semibold border border-sky-200 active:scale-95 transition cursor-pointer" title="滴入清水暈開顏料">💦 加水</button>
+            <button id="btnWashPorcelain" class="text-[10px] px-2 py-1 rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-700 font-semibold active:scale-95 transition cursor-pointer" title="洗淨白瓷盤">🧼 洗淨</button>
           </div>
         </div>
 
@@ -4626,8 +4627,8 @@
     function depositWaterPool(x, y, rgb, radius, alpha) {
       const radGrad = palPaintCtx.createRadialGradient(x, y, radius * 0.1, x, y, radius);
       radGrad.addColorStop(0, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`);
-      radGrad.addColorStop(0.7, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha * 0.85})`);
-      radGrad.addColorStop(0.92, `rgba(${Math.max(0, rgb[0]-25)}, ${Math.max(0, rgb[1]-25)}, ${Math.max(0, rgb[2]-25)}, ${alpha * 0.55})`);
+      radGrad.addColorStop(0.72, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha * 0.88})`);
+      radGrad.addColorStop(0.94, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha * 0.45})`);
       radGrad.addColorStop(1, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0)`);
 
       palPaintCtx.fillStyle = radGrad;
@@ -4636,63 +4637,111 @@
       palPaintCtx.fill();
     }
 
+    let autoDropMode = false;
+    let dropSlotIndex = 0;
+    const DROP_SLOTS = [
+      [0.30, 0.50],
+      [0.70, 0.50],
+      [0.50, 0.46],
+      [0.40, 0.56],
+      [0.60, 0.44]
+    ];
+
+    function dropColorOntoPalette(rgb) {
+      const slot = DROP_SLOTS[dropSlotIndex % DROP_SLOTS.length];
+      dropSlotIndex++;
+      const jx = (Math.random() - 0.5) * 14;
+      const jy = (Math.random() - 0.5) * 12;
+      const rx = Math.max(30, Math.min(palCanvas.width - 30, palCanvas.width * slot[0] + jx));
+      const ry = Math.max(26, Math.min(palCanvas.height - 26, palCanvas.height * slot[1] + jy));
+      depositWaterPool(rx, ry, rgb, 30, 0.90);
+      renderPorcelainPlate();
+    }
+
     function initPorcelainPalette() {
       palPaintCtx.clearRect(0, 0, palPaintCanvas.width, palPaintCanvas.height);
       // 初始預置兩組水彩顏料滴，方便直接體驗攪拌融合
-      depositWaterPool(palCanvas.width * 0.32, palCanvas.height * 0.5, [250, 210, 20], 30, 0.88);
-      depositWaterPool(palCanvas.width * 0.68, palCanvas.height * 0.5, [20, 95, 220], 30, 0.88);
+      depositWaterPool(palCanvas.width * 0.32, palCanvas.height * 0.5, [250, 210, 20], 32, 0.90);
+      depositWaterPool(palCanvas.width * 0.68, palCanvas.height * 0.5, [20, 95, 220], 32, 0.90);
       renderPorcelainPlate();
     }
 
-    function depositPigment(x, y, rgb, radius, alpha) {
-      const sx = Math.max(2, Math.min(palCanvas.width - 3, Math.round(x)));
-      const sy = Math.max(2, Math.min(palCanvas.height - 3, Math.round(y)));
-      const block = palPaintCtx.getImageData(sx - 1, sy - 1, 3, 3).data;
+    // 以 Alpha 加權取樣調色盤局部區域的真實顏料色
+    function samplePalRegion(x, y, halfSize = 4) {
+      const sx = Math.max(0, Math.round(x - halfSize));
+      const sy = Math.max(0, Math.round(y - halfSize));
+      const sw = Math.min(palPaintCanvas.width - sx, halfSize * 2 + 1);
+      const sh = Math.min(palPaintCanvas.height - sy, halfSize * 2 + 1);
+      if (sw <= 0 || sh <= 0) return null;
 
-      let rSum = 0, gSum = 0, bSum = 0, aCount = 0;
+      const block = palPaintCtx.getImageData(sx, sy, sw, sh).data;
+      let rSum = 0, gSum = 0, bSum = 0, wSum = 0;
       for (let i = 0; i < block.length; i += 4) {
-        if (block[i + 3] > 25) {
-          rSum += block[i];
-          gSum += block[i + 1];
-          bSum += block[i + 2];
-          aCount++;
+        const a = block[i + 3];
+        if (a > 28) {
+          rSum += block[i] * a;
+          gSum += block[i + 1] * a;
+          bSum += block[i + 2] * a;
+          wSum += a;
         }
       }
-
-      let finalRGB = [...rgb];
-      let didMixDifferentColor = false;
-
-      if (aCount > 0) {
-        const existingRGB = [Math.round(rSum / aCount), Math.round(gSum / aCount), Math.round(bSum / aCount)];
-        const colorDiff = Math.hypot(existingRGB[0] - rgb[0], existingRGB[1] - rgb[1], existingRGB[2] - rgb[2]);
-        if (colorDiff > 24) {
-          // 減法水彩混色：將盤底顏料與畫筆顏料平滑融合
-          finalRGB = mixPigmentRGB(existingRGB, rgb, 0.22);
-          didMixDifferentColor = true;
-        }
-      }
-
-      const radGrad = palPaintCtx.createRadialGradient(x, y, 0, x, y, radius);
-      radGrad.addColorStop(0, `rgba(${finalRGB[0]}, ${finalRGB[1]}, ${finalRGB[2]}, ${alpha})`);
-      radGrad.addColorStop(0.68, `rgba(${finalRGB[0]}, ${finalRGB[1]}, ${finalRGB[2]}, ${alpha * 0.82})`);
-      radGrad.addColorStop(0.92, `rgba(${Math.max(0, finalRGB[0]-15)}, ${Math.max(0, finalRGB[1]-15)}, ${Math.max(0, finalRGB[2]-15)}, ${alpha * 0.35})`);
-      radGrad.addColorStop(1, `rgba(${finalRGB[0]}, ${finalRGB[1]}, ${finalRGB[2]}, 0)`);
-
-      palPaintCtx.fillStyle = radGrad;
-      palPaintCtx.beginPath();
-      palPaintCtx.arc(x, y, radius, 0, Math.PI * 2);
-      palPaintCtx.fill();
-
-      // 若在攪拌中融合了不同色，實時將調出的新色沾上畫筆！
-      if (didMixDifferentColor) {
-        applyBrushColor(finalRGB);
-      }
-
-      renderPorcelainPlate();
-      return finalRGB;
+      if (wSum < 80) return null;
+      return [
+        Math.round(rSum / wSum),
+        Math.round(gSum / wSum),
+        Math.round(bSum / wSum)
+      ];
     }
 
-    function handlePalettePointer(e) {
+    let brushWetRGB = null;
+
+    function stirPorcelainAt(x, y) {
+      const existing = samplePalRegion(x, y, 4);
+      if (!brushWetRGB) {
+        brushWetRGB = existing ? [...existing] : [...activeBrushRGB];
+      }
+
+      if (existing) {
+        const colorDiff = Math.hypot(
+          existing[0] - brushWetRGB[0],
+          existing[1] - brushWetRGB[1],
+          existing[2] - brushWetRGB[2]
+        );
+
+        if (colorDiff > 8) {
+          // 雙向物理減法水彩交換：畫筆把身上的顏色帶進色池，同時吸收色池裡的顏色
+          const poolMixed = mixPigmentRGB(existing, brushWetRGB, 0.36);
+          brushWetRGB = mixPigmentRGB(brushWetRGB, existing, 0.24);
+
+          const radGrad = palPaintCtx.createRadialGradient(x, y, 0, x, y, 18);
+          radGrad.addColorStop(0, `rgba(${poolMixed[0]}, ${poolMixed[1]}, ${poolMixed[2]}, 0.56)`);
+          radGrad.addColorStop(0.65, `rgba(${poolMixed[0]}, ${poolMixed[1]}, ${poolMixed[2]}, 0.40)`);
+          radGrad.addColorStop(1, `rgba(${poolMixed[0]}, ${poolMixed[1]}, ${poolMixed[2]}, 0)`);
+          palPaintCtx.fillStyle = radGrad;
+          palPaintCtx.beginPath();
+          palPaintCtx.arc(x, y, 18, 0, Math.PI * 2);
+          palPaintCtx.fill();
+
+          applyBrushColor(brushWetRGB);
+        } else {
+          // 同色區輕微攪勻
+          brushWetRGB = mixPigmentRGB(brushWetRGB, existing, 0.15);
+          applyBrushColor(brushWetRGB);
+        }
+      } else {
+        // 拖曳經過空白瓷盤時留下濕潤色跡，讓兩團分離的顏料自然接通融合
+        const radGrad = palPaintCtx.createRadialGradient(x, y, 0, x, y, 15);
+        radGrad.addColorStop(0, `rgba(${brushWetRGB[0]}, ${brushWetRGB[1]}, ${brushWetRGB[2]}, 0.38)`);
+        radGrad.addColorStop(0.7, `rgba(${brushWetRGB[0]}, ${brushWetRGB[1]}, ${brushWetRGB[2]}, 0.22)`);
+        radGrad.addColorStop(1, `rgba(${brushWetRGB[0]}, ${brushWetRGB[1]}, ${brushWetRGB[2]}, 0)`);
+        palPaintCtx.fillStyle = radGrad;
+        palPaintCtx.beginPath();
+        palPaintCtx.arc(x, y, 15, 0, Math.PI * 2);
+        palPaintCtx.fill();
+      }
+    }
+
+    function handlePalettePointer(e, isStart = false) {
       const rect = palCanvas.getBoundingClientRect();
       const px = (e.clientX - rect.left) * (palCanvas.width / rect.width);
       const py = (e.clientY - rect.top) * (palCanvas.height / rect.height);
@@ -4700,32 +4749,41 @@
       const y = Math.max(0, Math.min(palCanvas.height - 1, py));
 
       if (paletteMode === 'mix') {
+        if (isStart) {
+          // 落筆點在顏料池上就先沾起該池顏色；點在空白處就帶著當前畫筆顏色去混合
+          const under = samplePalRegion(x, y, 4);
+          brushWetRGB = under ? [...under] : [...activeBrushRGB];
+          if (under) applyBrushColor(brushWetRGB);
+        }
+
         if (lastPalX !== null && lastPalY !== null) {
           const dist = Math.hypot(x - lastPalX, y - lastPalY);
-          const steps = Math.max(1, Math.ceil(dist / 4));
+          const steps = Math.max(1, Math.ceil(dist / 3));
           for (let s = 1; s <= steps; s++) {
             const ix = lastPalX + (x - lastPalX) * (s / steps);
             const iy = lastPalY + (y - lastPalY) * (s / steps);
-            depositPigment(ix, iy, activeBrushRGB, 20, 0.58);
+            stirPorcelainAt(ix, iy);
           }
         } else {
-          depositPigment(x, y, activeBrushRGB, 20, 0.65);
+          stirPorcelainAt(x, y);
         }
+        renderPorcelainPlate();
         lastPalX = x;
         lastPalY = y;
 
+        const displayRGB = brushWetRGB || activeBrushRGB;
         palSampleRing.classList.remove('hidden');
         palSampleRing.style.left = `${e.clientX - rect.left}px`;
         palSampleRing.style.top = `${e.clientY - rect.top}px`;
-        palSampleRing.style.backgroundColor = `rgb(${activeBrushRGB[0]}, ${activeBrushRGB[1]}, ${activeBrushRGB[2]})`;
+        palSampleRing.style.backgroundColor = `rgb(${displayRGB[0]}, ${displayRGB[1]}, ${displayRGB[2]})`;
       } else {
-        const pix = palPaintCtx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
-        if (pix[3] > 20) {
-          applyBrushColor([pix[0], pix[1], pix[2]]);
+        const sampled = samplePalRegion(x, y, 2);
+        if (sampled) {
+          applyBrushColor(sampled);
           palSampleRing.classList.remove('hidden');
           palSampleRing.style.left = `${e.clientX - rect.left}px`;
           palSampleRing.style.top = `${e.clientY - rect.top}px`;
-          palSampleRing.style.backgroundColor = `rgb(${activeBrushRGB[0]}, ${activeBrushRGB[1]}, ${activeBrushRGB[2]})`;
+          palSampleRing.style.backgroundColor = `rgb(${sampled[0]}, ${sampled[1]}, ${sampled[2]})`;
         }
       }
     }
@@ -4735,11 +4793,12 @@
       isPaletteInteracting = true;
       lastPalX = null;
       lastPalY = null;
-      handlePalettePointer(e);
+      brushWetRGB = null;
+      handlePalettePointer(e, true);
     });
 
     palCanvas.addEventListener('pointermove', (e) => {
-      if (isPaletteInteracting) handlePalettePointer(e);
+      if (isPaletteInteracting) handlePalettePointer(e, false);
     });
 
     function endPalettePointer(e) {
@@ -4747,6 +4806,7 @@
       isPaletteInteracting = false;
       lastPalX = null;
       lastPalY = null;
+      brushWetRGB = null;
       try { palCanvas.releasePointerCapture(e.pointerId); } catch (_) {}
       setTimeout(() => palSampleRing.classList.add('hidden'), 450);
     }
@@ -4771,12 +4831,24 @@
       palModeHint.textContent = '點按精準吸取調色盤顏色';
     });
 
+    const btnAutoDrop = document.getElementById('btnAutoDropMode');
+    if (btnAutoDrop) {
+      btnAutoDrop.addEventListener('click', () => {
+        autoDropMode = !autoDropMode;
+        if (autoDropMode) {
+          btnAutoDrop.className = 'text-[10px] px-2 py-1 rounded-lg bg-emerald-600 text-white border border-emerald-700 font-bold shadow-sm active:scale-95 transition cursor-pointer ring-2 ring-emerald-300';
+          btnAutoDrop.textContent = '💧 連續滴色：開';
+          showToast('💧 已開啟連續滴色！直接點選上方水彩塊即可連續滴入盤中');
+        } else {
+          btnAutoDrop.className = 'text-[10px] px-2 py-1 rounded-lg bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-300 font-bold shadow-2xs active:scale-95 transition cursor-pointer';
+          btnAutoDrop.textContent = '💧 連續滴色';
+        }
+      });
+    }
+
     document.getElementById('btnDropActiveColor').addEventListener('click', () => {
-      const rx = palCanvas.width * (0.25 + Math.random() * 0.5);
-      const ry = palCanvas.height * (0.3 + Math.random() * 0.4);
-      depositWaterPool(rx, ry, activeBrushRGB, 28, 0.9);
-      renderPorcelainPlate();
-      showToast('已將當前畫筆顏色滴入白瓷盤，可與其他顏色來回塗抹混色！');
+      dropColorOntoPalette(activeBrushRGB);
+      showToast('💧 已滴入當前色！可再選其他顏色繼續滴入後攪拌混色');
     });
 
     const btnPresetMix = document.getElementById('btnPresetMixPool');
@@ -4938,10 +5010,12 @@
         btn.addEventListener('click', () => {
           switchBrushMedium('watercolor');
           applyBrushColor(rgb);
-          showToast('🎨 已選擇色彩！輕點下方「開始繪製」或直接落筆');
-          setTimeout(() => {
-            if (isDrawerOpen) closeDrawer();
-          }, 350);
+          if (autoDropMode) {
+            dropColorOntoPalette(rgb);
+            showToast('💧 已自動滴入水彩盤！可繼續點其他顏色或直接攪拌');
+          } else {
+            showToast('🎨 已選取水彩！可點「➕ 滴入當前色」加入調色盤，或點下方開始繪製');
+          }
         });
         box.appendChild(btn);
       });
