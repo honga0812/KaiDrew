@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.143 · Pro Edition
+      B.26.11.144 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -416,7 +416,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.143 · Pro Edition
+        B.26.11.144 · Pro Edition
       </div>
     </div>
 
@@ -1410,7 +1410,7 @@
                 <span class="text-xs font-bold text-stone-600">🎨 當前活動圖層/畫面 (Input)</span>
                 <span id="aiActiveLayerLabel" class="text-[10px] text-indigo-600 font-mono font-bold">圖層 1</span>
               </div>
-              <canvas id="aiSourceCanvas" width="300" height="216" class="w-full rounded-xl border border-stone-200 shadow-inner bg-white"></canvas>
+              <canvas id="aiSourceCanvas" width="900" height="648" class="w-full rounded-xl border border-stone-200 shadow-inner bg-white"></canvas>
             </div>
             <!-- 右側：AI 優化結果預覽圖 -->
             <div class="bg-stone-50 p-3 rounded-2xl border border-stone-200 flex flex-col items-center gap-2 relative">
@@ -1418,7 +1418,7 @@
                 <span class="text-xs font-bold text-purple-700">✨ AI 結構最佳化繪本 (Output)</span>
                 <span id="aiPolishStatus" class="text-[10px] text-stone-500 font-mono">就緒</span>
               </div>
-              <canvas id="aiResultCanvas" width="300" height="216" class="w-full rounded-xl border border-stone-200 shadow-inner bg-white"></canvas>
+              <canvas id="aiResultCanvas" width="900" height="648" class="w-full rounded-xl border border-stone-200 shadow-inner bg-white"></canvas>
               <div id="aiPolishSpinner" class="hidden absolute inset-0 bg-white/85 backdrop-blur-xs rounded-2xl flex flex-col items-center justify-center gap-2">
                 <div class="w-8 h-8 border-3 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
                 <span class="text-xs font-bold text-purple-700">正在重構輪廓、平滑線條與光影渲染...</span>
@@ -6956,68 +6956,81 @@
       const dw = dstCanvas.width, dh = dstCanvas.height;
       const dctx = dstCanvas.getContext('2d');
       dctx.clearRect(0, 0, dw, dh);
+      dctx.imageSmoothingEnabled = true;
+      dctx.imageSmoothingQuality = 'high';
 
-      // 1. 提取原畫並進行雙邊形態學濾波與輪廓修補
-      dctx.drawImage(srcCanvas, 0, 0, dw, dh);
-      const imgData = dctx.getImageData(0, 0, dw, dh);
-      const data = imgData.data;
-      const copy = new Uint8ClampedArray(data);
+      // 1. 高解析無方塊平滑繪製原畫 (900x648 Retina 級別，徹底消除 2x2 鋸齒方塊)
+      const smoothBuf = document.createElement('canvas');
+      smoothBuf.width = dw;
+      smoothBuf.height = dh;
+      const sctx = smoothBuf.getContext('2d');
+      sctx.imageSmoothingEnabled = true;
+      sctx.imageSmoothingQuality = 'high';
 
-      const radius = Math.max(1, Math.round((p1 * 0.6 + strength * 0.4) * 4.0));
-      for (let y = radius; y < dh - radius; y += 2) {
-        for (let x = radius; x < dw - radius; x += 2) {
-          const idx = (y * dw + x) * 4;
-          // 膨脹閉合斷裂線條：若中心透明但鄰域有畫素，且開啟了外型閉合度 p2
-          let rSum = 0, gSum = 0, bSum = 0, aSum = 0, wSum = 0;
-          for (let dy = -radius; dy <= radius; dy++) {
-            for (let dx = -radius; dx <= radius; dx++) {
-              const nIdx = ((y + dy) * dw + (x + dx)) * 4;
-              const na = copy[nIdx + 3];
-              if (na < 12) continue;
-              const dist = Math.hypot(dx, dy);
-              const w = 1.0 / (1.0 + dist * 1.2);
-              rSum += copy[nIdx] * w;
-              gSum += copy[nIdx + 1] * w;
-              bSum += copy[nIdx + 2] * w;
-              aSum += na * w;
-              wSum += w;
-            }
-          }
+      if (category === 'line_contour') {
+        // 先以輕柔高斯平滑消除手繪微小抖動，再保留原始色彩並對透明邊緣做抗鋸齒銳化
+        const blurPx = 0.6 + p1 * 1.4;
+        sctx.filter = `blur(${blurPx.toFixed(2)}px)`;
+        sctx.drawImage(srcCanvas, 0, 0, dw, dh);
+        sctx.filter = 'none';
 
-          if (wSum > 0.35) {
-            const nr = rSum / wSum, ng = gSum / wSum, nb = bSum / wSum;
-            const na = Math.min(255, (aSum / wSum) * (category === 'line_contour' ? (1.0 + p2 * 0.45) : 1.1));
-            for (let py = 0; py < 2; py++) {
-              for (let px = 0; px < 2; px++) {
-                const oIdx = ((y + py) * dw + (x + px)) * 4;
-                data[oIdx] = nr;
-                data[oIdx + 1] = ng;
-                data[oIdx + 2] = nb;
-                data[oIdx + 3] = na;
-              }
-            }
+        const imgData = sctx.getImageData(0, 0, dw, dh);
+        const d = imgData.data;
+        const lowA = 35 + (1 - p2) * 35;
+        const highA = 145 - p3 * 45;
+        const spanA = Math.max(20, highA - lowA);
+
+        for (let i = 0; i < d.length; i += 4) {
+          const a = d[i + 3];
+          if (a <= lowA) {
+            d[i + 3] = 0;
+          } else if (a < highA) {
+            const t = (a - lowA) / spanA;
+            const smooth = t * t * (3 - 2 * t);
+            d[i + 3] = Math.round(smooth * 255);
+          } else {
+            d[i + 3] = 255;
           }
         }
-      }
-      dctx.putImageData(imgData, 0, 0);
+        sctx.putImageData(imgData, 0, 0);
 
-      // 2. 依據 4 大維度與具體子風格施加深度結構化渲染
+        // 將原畫清晰的筆觸與平滑後的輪廓以高保真比例融合，保留原本鮮豔色彩
+        dctx.drawImage(smoothBuf, 0, 0);
+        dctx.save();
+        dctx.globalAlpha = Math.max(0.25, 1.0 - strength * 0.55);
+        dctx.drawImage(srcCanvas, 0, 0, dw, dh);
+        dctx.restore();
+      } else {
+        // 其他維度直接保留清晰高品質原圖作為基底
+        dctx.drawImage(srcCanvas, 0, 0, dw, dh);
+      }
+
+      // 2. 依據 4 大維度與具體子風格施加精緻渲染 (絕不覆蓋抹黑原本的筆觸色彩)
       dctx.save();
       if (category === 'line_contour') {
-        // 維度 1：線條平滑與外型完整性修改
-        const edgeCanvas = document.createElement('canvas');
-        edgeCanvas.width = dw; edgeCanvas.height = dh;
-        const ectx = edgeCanvas.getContext('2d');
-        ectx.filter = `blur(${Math.max(0.5, (1 - p3) * 1.5)}px) contrast(${1.3 + p2 * 0.8})`;
-        ectx.drawImage(dstCanvas, 0, 0, dw, dh);
-        ectx.globalCompositeOperation = 'source-in';
-        ectx.fillStyle = style === 'bold_comic' ? 'rgba(15, 15, 20, 0.96)' : 'rgba(30, 25, 35, 0.88)';
-        ectx.fillRect(0, 0, dw, dh);
+        if (style === 'bold_comic') {
+          // 張力卡通粗輪廓：在彩色線條「背後 (destination-over)」襯出精緻深色漫畫外框，既立體又不掩蓋原色
+          const outlineCanvas = document.createElement('canvas');
+          outlineCanvas.width = dw; outlineCanvas.height = dh;
+          const octx = outlineCanvas.getContext('2d');
+          octx.filter = `blur(${(1.2 + p2 * 1.4).toFixed(2)}px)`;
+          octx.drawImage(dstCanvas, 0, 0);
+          octx.filter = 'none';
+          octx.globalCompositeOperation = 'source-in';
+          octx.fillStyle = 'rgba(30, 25, 40, 0.85)';
+          octx.fillRect(0, 0, dw, dh);
 
-        dctx.filter = `contrast(${1.2 + p3 * 0.45}) saturate(1.15)`;
-        dctx.drawImage(dstCanvas, 0, 0);
-        dctx.filter = style === 'geo_complete' ? 'drop-shadow(0 0 1.5px rgba(20,20,30,0.75))' : 'drop-shadow(0 0 1px rgba(0,0,0,0.55))';
-        dctx.drawImage(edgeCanvas, 0, 0);
+          dctx.globalCompositeOperation = 'destination-over';
+          dctx.drawImage(outlineCanvas, 0, 0);
+        } else if (style === 'clean_ink') {
+          // 柔順繪本鋼筆線：微幅提升對比與圓潤清晰度，保留原本色系
+          dctx.filter = `contrast(${(1.08 + p3 * 0.18).toFixed(2)}) saturate(1.12)`;
+          dctx.drawImage(dstCanvas, 0, 0);
+        } else {
+          // 銳利圓滑描邊 / 外型完整性補全：微幅增強彩度與邊緣俐落感
+          dctx.filter = `saturate(${(1.06 + p3 * 0.16).toFixed(2)}) contrast(${(1.04 + p3 * 0.14).toFixed(2)})`;
+          dctx.drawImage(dstCanvas, 0, 0);
+        }
 
       } else if (category === 'color_shading') {
         // 維度 2：色彩與著色調整修改 (色調和諧 + 立體光影體積感)
