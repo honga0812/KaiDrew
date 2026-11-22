@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.142 · Pro Edition
+      B.26.11.143 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -416,7 +416,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.142 · Pro Edition
+        B.26.11.143 · Pro Edition
       </div>
     </div>
 
@@ -575,32 +575,13 @@
         </div>
       </div>
 
-      <!-- 筆頭圖示展示區 (觸控筆點按即放大約3倍高精特寫，放開即消失) -->
-      <div id="dockBrushTipContainer" class="flex flex-col items-center pt-1 border-t border-stone-100 w-full relative" title="觸控筆長按檢視約3倍高精筆頭特寫，放開消失">
-        <button id="dockBrushTipBtn" class="w-full aspect-square rounded-xl bg-stone-50/90 hover:bg-stone-100/90 border border-stone-200/70 shadow-2xs flex items-center justify-center p-0.5 active:scale-95 transition cursor-pointer overflow-hidden relative group select-none touch-none" style="touch-action: none;" title="觸控筆按住即放大約3倍檢視完整筆頭">
+      <!-- 筆頭圖示展示區 (長按即放大約3倍高精特寫，放開即消失) -->
+      <div id="dockBrushTipContainer" class="flex flex-col items-center pt-1 border-t border-stone-100 w-full relative" title="長按檢視約3倍高精筆頭特寫，放開消失">
+        <button id="dockBrushTipBtn" oncontextmenu="return false;" class="w-full aspect-square rounded-xl bg-stone-50/90 hover:bg-stone-100/90 border border-stone-200/70 shadow-2xs flex items-center justify-center p-0.5 active:scale-95 transition cursor-pointer overflow-hidden relative group select-none touch-none" style="touch-action: none; -webkit-touch-callout: none;" title="按住即放大約3倍檢視完整筆頭">
           <canvas id="dockBrushTipCanvas" width="128" height="128" class="w-full h-full object-contain drop-shadow-xs transition-transform group-hover:scale-105 pointer-events-none"></canvas>
           <img id="dockBrushTipCustomImg" src="images/brush_watercolor.png" alt="Brush Tip" class="hidden w-full h-full object-contain drop-shadow-xs pointer-events-none" />
           <div id="dockBrushTipVector" class="hidden w-8 h-8 flex items-center justify-center text-amber-600"></div>
         </button>
-
-        <!-- 3倍放大高保真筆頭懸浮透鏡檢視卡片 (觸控筆點住出現，放開消失) -->
-        <div id="dockBrushTipZoomCard" class="hidden pointer-events-none absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2 z-50 flex items-center select-none transition-all duration-150 transform origin-left scale-95 opacity-0">
-          <div class="relative bg-white/95 backdrop-blur-2xl border-2 border-amber-400/90 rounded-2xl p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.25),0_0_20px_rgba(245,158,11,0.2)] flex flex-col items-center gap-1.5 w-36 shrink-0">
-            <!-- 指向左側工具塢的尖角小三角 -->
-            <div class="absolute -left-2 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[7px] border-t-transparent border-b-[7px] border-b-transparent border-r-[8px] border-r-amber-400"></div>
-            
-            <!-- 3倍放大高解析度 Canvas (256x256 渲染，卡片尺寸 128x128，剛好是原圖 44px 的 ~3 倍！) -->
-            <div class="w-32 h-32 rounded-xl bg-stone-50/90 border border-stone-200/80 p-1 flex items-center justify-center shadow-inner overflow-hidden relative">
-              <canvas id="dockBrushTipZoomCanvas" width="256" height="256" class="w-full h-full object-contain drop-shadow-md"></canvas>
-            </div>
-
-            <!-- 底部筆頭名稱與物理質感特性標籤 -->
-            <div class="flex flex-col items-center w-full text-center">
-              <span id="dockBrushTipZoomName" class="text-xs font-black text-stone-900 tracking-tight">濕畫水彩筆</span>
-              <span id="dockBrushTipZoomDesc" class="text-[9px] font-bold text-amber-700 bg-amber-100/90 px-1.5 py-0.5 rounded-full mt-0.5 scale-95">3x 筆頭特寫</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- 快捷增加圖層按鍵 -->
@@ -661,6 +642,25 @@
         </div>
       </div>
     </aside>
+
+    <!-- 3倍放大高保真筆頭懸浮透鏡檢視卡片 (置於工具塢外部 fixed 最頂層，絕不被 overflow-y-auto 裁切，按住出現放開消失) -->
+    <div id="dockBrushTipZoomCard" class="hidden pointer-events-none fixed -translate-y-1/2 z-50 flex items-center select-none transition-all duration-150 transform origin-left scale-95 opacity-0" style="left: 112px; top: 50%;">
+      <div class="relative bg-white/95 backdrop-blur-2xl border-2 border-amber-400/90 rounded-2xl p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.25),0_0_20px_rgba(245,158,11,0.2)] flex flex-col items-center gap-1.5 w-36 shrink-0">
+        <!-- 指向左側工具塢的尖角小三角 -->
+        <div class="absolute -left-2 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[7px] border-t-transparent border-b-[7px] border-b-transparent border-r-[8px] border-r-amber-400"></div>
+        
+        <!-- 3倍放大高解析度 Canvas (256x256 渲染，卡片尺寸 128x128，剛好是原圖 44px 的 ~3 倍！) -->
+        <div class="w-32 h-32 rounded-xl bg-stone-50/90 border border-stone-200/80 p-1 flex items-center justify-center shadow-inner overflow-hidden relative">
+          <canvas id="dockBrushTipZoomCanvas" width="256" height="256" class="w-full h-full object-contain drop-shadow-md"></canvas>
+        </div>
+
+        <!-- 底部筆頭名稱與物理質感特性標籤 -->
+        <div class="flex flex-col items-center w-full text-center">
+          <span id="dockBrushTipZoomName" class="text-xs font-black text-stone-900 tracking-tight">濕畫水彩筆</span>
+          <span id="dockBrushTipZoomDesc" class="text-[9px] font-bold text-amber-700 bg-amber-100/90 px-1.5 py-0.5 rounded-full mt-0.5 scale-95">3x 筆頭特寫</span>
+        </div>
+      </div>
+    </div>
 
     <!-- ==================== 摺疊隱藏後在左側邊緣閃爍的發光小圓點 (點選重新喚出常用工具塢) ==================== -->
     <button id="leftDockCollapsedPill" class="hidden absolute left-2 top-1/2 -translate-y-1/2 z-30 p-2 cursor-pointer active:scale-90 transition group flex items-center justify-center" title="常用工具塢已隱藏，點選重新展開">
@@ -7857,6 +7857,12 @@
 
       if (dockZoomCanvas) {
         renderTintedBrushTip(key, activeBrushRGB, [dockZoomCanvas]);
+      }
+
+      if (dockTipBtn) {
+        const rect = dockTipBtn.getBoundingClientRect();
+        dockZoomCard.style.left = `${rect.right + 12}px`;
+        dockZoomCard.style.top = `${Math.max(100, Math.min(window.innerHeight - 100, rect.top + rect.height / 2))}px`;
       }
 
       dockZoomCard.classList.remove('hidden');
