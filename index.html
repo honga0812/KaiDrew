@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.129 · Pro Edition
+      B.26.11.130 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -233,10 +233,18 @@
       <span class="text-[10px]">➜</span>
     </button>
 
-    <!-- 中心 10 秒反向播放 Logo 影片容器 (純白無縫融底，無光暈無黑邊無邊框) -->
+    <!-- 中心 10 秒反向播放 Logo 影片容器 (純白無縫融底 + 四邊羽化轉白，與背景完全融為一體) -->
     <div class="relative flex flex-col items-center justify-center select-none max-w-full">
-      <!-- 10 秒反向播放的高畫質 Logo 影片 (純白融底 mix-blend-multiply，完全與背景融合一體) -->
-      <video id="splashLogoVideo" src="images/logo_video_reversed.mp4" autoplay playsinline class="relative z-10 w-full max-w-md sm:max-w-lg md:max-w-2xl aspect-video object-contain pointer-events-none mix-blend-multiply bg-white"></video>
+      <div class="relative w-full max-w-md sm:max-w-lg md:max-w-2xl aspect-video overflow-hidden bg-white">
+        <!-- 10 秒反向播放的高畫質 Logo 影片 (保留原始彩度與對比度) -->
+        <video id="splashLogoVideo" src="images/logo_video_reversed.mp4" autoplay playsinline class="relative z-10 w-full h-full object-contain pointer-events-none mix-blend-multiply bg-white"></video>
+        <!-- 四邊外框柔和羽化轉白遮罩：中央 Logo 色彩 100% 不受影響，僅四個邊緣漸層羽化融入純白背景 -->
+        <div class="pointer-events-none absolute inset-x-0 top-0 h-8 z-20 bg-gradient-to-b from-white via-white/60 to-transparent"></div>
+        <div class="pointer-events-none absolute inset-x-0 bottom-0 h-8 z-20 bg-gradient-to-t from-white via-white/60 to-transparent"></div>
+        <div class="pointer-events-none absolute inset-y-0 left-0 w-14 z-20 bg-gradient-to-r from-white via-white/60 to-transparent"></div>
+        <div class="pointer-events-none absolute inset-y-0 right-0 w-14 z-20 bg-gradient-to-l from-white via-white/60 to-transparent"></div>
+        <div class="pointer-events-none absolute inset-0 z-20" style="box-shadow: inset 0 0 24px 8px #ffffff;"></div>
+      </div>
 
 
 
@@ -396,7 +404,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.129 · Pro Edition
+        B.26.11.130 · Pro Edition
       </div>
     </div>
 
