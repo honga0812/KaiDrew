@@ -224,25 +224,28 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.120 · Pro Edition
+      B.26.11.121 · Pro Edition
     </div>
 
+    <!-- 左上角聲音切換按鍵 -->
+    <button id="btnToggleSplashSound" class="absolute top-5 left-5 z-20 px-3.5 py-1.5 rounded-full bg-stone-100/90 hover:bg-stone-200 text-stone-700 text-xs font-bold shadow-xs active:scale-95 transition flex items-center gap-1.5 cursor-pointer backdrop-blur-md" title="切換 Logo 動畫音效">
+      <span id="splashSoundIcon">🔊</span>
+      <span id="splashSoundLabel">動畫聲音已開啟</span>
+    </button>
+
     <!-- 右上角跳過按鍵 -->
-    <button id="btnSkipSplashIntro" class="absolute top-5 right-5 z-20 px-3.5 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold shadow-xs active:scale-95 transition flex items-center gap-1 cursor-pointer" title="跳過開場動畫，直接進入畫室">
+    <button id="btnSkipSplashIntro" class="absolute top-5 right-5 z-20 px-3.5 py-1.5 rounded-full bg-stone-100/90 hover:bg-stone-200 text-stone-700 text-xs font-bold shadow-xs active:scale-95 transition flex items-center gap-1 cursor-pointer backdrop-blur-md" title="跳過開場動畫，直接進入畫室">
       <span>跳過開場</span>
       <span class="text-[10px]">➜</span>
     </button>
 
-    <!-- 中心 10 秒反向播放 Logo 影片容器 -->
+    <!-- 中心 10 秒反向播放 Logo 影片容器 (純白無縫融底，無光暈無黑邊無邊框) -->
     <div class="relative flex flex-col items-center justify-center select-none max-w-full">
-      <!-- 柔彩水彩光暈光環 (緩慢綻放流光) -->
-      <div class="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-amber-300/30 via-rose-300/25 to-sky-300/30 blur-2xl pointer-events-none"></div>
-
-      <!-- 10 秒反向播放的高畫質 Logo 影片 -->
-      <video id="splashLogoVideo" src="images/logo_video_reversed.mp4" autoplay muted playsinline class="relative z-10 w-full max-w-md sm:max-w-lg md:max-w-xl aspect-video rounded-2xl shadow-[0_16px_40px_rgba(0,0,0,0.1)] border border-stone-200/70 object-contain pointer-events-none bg-white"></video>
+      <!-- 10 秒反向播放的高畫質 Logo 影片 (純白融底 mix-blend-multiply，完全與背景融合一體) -->
+      <video id="splashLogoVideo" src="images/logo_video_reversed.mp4" autoplay playsinline class="relative z-10 w-full max-w-md sm:max-w-lg md:max-w-2xl aspect-video object-contain pointer-events-none mix-blend-multiply bg-white"></video>
 
       <!-- 品牌標語 -->
-      <div class="relative z-10 mt-3.5 text-xs sm:text-sm font-bold text-stone-600 tracking-wider text-center">
+      <div class="relative z-10 mt-3 text-xs sm:text-sm font-bold text-stone-600 tracking-wider text-center">
         純粹3大畫種 · 讓孩子的奇思妙想躍然紙上
       </div>
 
@@ -402,7 +405,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.120 · Pro Edition
+        B.26.11.121 · Pro Edition
       </div>
     </div>
 
@@ -5328,14 +5331,63 @@
       butterfly: "🦋 蝴蝶"
     };
 
+    // 支援使用者放置於 images/ 資料夾的自訂高清 AI 生成圖片 (若存在優先載入自訂圖)
+    const presetCustomImages = {};
+    const presetFileCandidates = {
+      lion: ["images/Lion.jpeg", "images/lion.jpeg", "images/lion.png"],
+      tiger: ["images/Tiger.jpeg", "images/tiger.jpeg", "images/tiger.png"],
+      croc: ["images/Croc.jpeg", "images/Crocodile.jpeg", "images/croc.png"],
+      bear: ["images/Bear.jpeg", "images/bear.jpeg", "images/bear.png"],
+      cat: ["images/Cat.jpeg", "images/cat.jpeg", "images/cat.png"],
+      dog: ["images/Dog.jpeg", "images/dog.jpeg", "images/dog.png"],
+      rocket: ["images/Rocket.jpeg", "images/rocket.jpeg", "images/rocket.png"],
+      house: ["images/House.jpeg", "images/house.jpeg", "images/house.png"],
+      tree: ["images/Tree.jpeg", "images/tree.jpeg", "images/tree.png"],
+      boat: ["images/Boat.jpeg", "images/Sailboat.jpeg", "images/boat.png"],
+      dino: ["images/Dino.jpeg", "images/dino.jpeg", "images/dino.png"],
+      car: ["images/Car.jpeg", "images/car.jpeg", "images/car.png"],
+      plane: ["images/Plane.jpeg", "images/plane.jpeg", "images/plane.png"],
+      flower: ["images/Flower.jpeg", "images/flower.jpeg", "images/flower.png"],
+      sun: ["images/Sun.jpeg", "images/sun.jpeg", "images/sun.png"],
+      butterfly: ["images/Butterfly.jpeg", "images/butterfly.jpeg", "images/butterfly.png"]
+    };
+
+    Object.entries(presetFileCandidates).forEach(([k, paths]) => {
+      paths.forEach(p => {
+        const img = new Image();
+        img.onload = () => {
+          presetCustomImages[k] = img;
+          const activeBtn = document.querySelector(".cam-16-preset-btn.border-amber-500");
+          if (activeBtn && activeBtn.dataset.camerapreset === k) {
+            drawPresetPhoto(k);
+          }
+        };
+        img.src = p;
+      });
+    });
+
     function drawPresetPhoto(name) {
+      const presetKey = PRESET_NAMES[name] ? name : "lion";
       const ctx = sourcePhotoCtx;
+
+      // 若有自訂生成的高清圖片，優先使用
+      if (presetCustomImages[presetKey]) {
+        const img = presetCustomImages[presetKey];
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, W, H);
+        const scale = Math.min(W / img.width, H / img.height);
+        const dw = img.width * scale, dh = img.height * scale;
+        const dx = (W - dw) / 2, dy = (H - dh) / 2;
+        ctx.drawImage(img, dx, dy, dw, dh);
+        renderAllStylePreviews();
+        renderRefCanvas();
+        return;
+      }
       ctx.clearRect(0, 0, W, H);
       ctx.save();
       // 等比例向量無失真放大至 1440x1040 (放大 4 倍面積)
       ctx.scale(W / 720, H / 520);
-
-      const presetKey = PRESET_NAMES[name] ? name : "lion";
 
       if (presetKey === "lion") {
         // 1. 獅子 (溫暖大草原背景、毛茸茸圓圓鬃毛、金色臉龐與超萌鬍鬚)
@@ -7231,14 +7283,71 @@
         }, 1100);
       };
 
-      splashEl.addEventListener('click', dismissSplashFn);
-      splashEl.addEventListener('pointerdown', dismissSplashFn);
+      const btnToggleSplashSound = document.getElementById('btnToggleSplashSound');
+      const splashSoundIcon = document.getElementById('splashSoundIcon');
+      const splashSoundLabel = document.getElementById('splashSoundLabel');
+
+      // 點選背景處：若因瀏覽器政策被靜音，先解除靜音；若已在出聲則提前進入畫室
+      splashEl.addEventListener('click', (e) => {
+        if (e.target.closest('#btnToggleSplashSound') || e.target.closest('#btnSkipSplashIntro')) return;
+        if (splashVideo && splashVideo.muted) {
+          splashVideo.muted = false;
+          if (splashSoundIcon) splashSoundIcon.textContent = '🔊';
+          if (splashSoundLabel) splashSoundLabel.textContent = '動畫聲音已開啟';
+          return;
+        }
+        dismissSplashFn();
+      });
+
       btnSkipIntro?.addEventListener('click', (e) => {
         e.stopPropagation();
         dismissSplashFn();
       });
 
+      btnToggleSplashSound?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!splashVideo) return;
+        splashVideo.muted = !splashVideo.muted;
+        if (splashVideo.muted) {
+          if (splashSoundIcon) splashSoundIcon.textContent = '🔇';
+          if (splashSoundLabel) splashSoundLabel.textContent = '靜音 (點擊開啟)';
+        } else {
+          splashVideo.play().catch(() => {});
+          if (splashSoundIcon) splashSoundIcon.textContent = '🔊';
+          if (splashSoundLabel) splashSoundLabel.textContent = '動畫聲音已開啟';
+        }
+      });
+
       if (splashVideo) {
+        splashVideo.volume = 1.0;
+        splashVideo.muted = false;
+
+        // 嘗試有聲自動播放
+        const p = splashVideo.play();
+        if (p !== undefined) {
+          p.then(() => {
+            if (splashSoundIcon) splashSoundIcon.textContent = '🔊';
+            if (splashSoundLabel) splashSoundLabel.textContent = '動畫聲音已開啟';
+          }).catch(() => {
+            // 受限於瀏覽器自動播放策略時，先以靜音播放動態，等待手勢解除
+            splashVideo.muted = true;
+            splashVideo.play().catch(() => {});
+            if (splashSoundIcon) splashSoundIcon.textContent = '🔇';
+            if (splashSoundLabel) splashSoundLabel.textContent = '點擊開啟聲音';
+          });
+        }
+
+        // 第一次手勢互動自動解除靜音
+        const unmuteOnUserGesture = () => {
+          if (splashVideo && splashVideo.muted) {
+            splashVideo.muted = false;
+            if (splashSoundIcon) splashSoundIcon.textContent = '🔊';
+            if (splashSoundLabel) splashSoundLabel.textContent = '動畫聲音已開啟';
+          }
+        };
+        document.addEventListener('pointerdown', unmuteOnUserGesture, { once: true });
+        document.addEventListener('keydown', unmuteOnUserGesture, { once: true });
+
         splashVideo.addEventListener('timeupdate', () => {
           if (splashVideo.duration && splashProgress) {
             const pct = Math.min(100, Math.round((splashVideo.currentTime / splashVideo.duration) * 100));
@@ -7246,11 +7355,6 @@
           }
         });
         splashVideo.addEventListener('ended', dismissSplashFn);
-        // 嘗試自動播放反向 Logo 影片
-        const p = splashVideo.play();
-        if (p !== undefined) {
-          p.catch(() => {});
-        }
       }
 
       // 10.5 秒後自動結束開屏
