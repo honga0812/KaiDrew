@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.124 · Pro Edition
+      B.26.11.125 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -404,7 +404,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.124 · Pro Edition
+        B.26.11.125 · Pro Edition
       </div>
     </div>
 
@@ -520,7 +520,7 @@
       </button>
 
       <!-- 畫室背景音樂 (純音符圖示，點選切換播放/暫停) -->
-      <button id="btnToggleStudioBgm" class="w-8 h-8 rounded-xl bg-white/95 backdrop-blur-xl hover:bg-amber-50 border border-stone-200/90 text-stone-700 text-xs font-semibold flex items-center justify-center active:scale-95 transition shadow-sm cursor-pointer group" title="畫室背景音樂 (隨機曲目 · 音量 30%)">
+      <button id="btnToggleStudioBgm" class="w-8 h-8 rounded-xl bg-white/95 backdrop-blur-xl hover:bg-amber-50 border border-stone-200/90 text-stone-700 text-xs font-semibold flex items-center justify-center active:scale-95 transition shadow-sm cursor-pointer group" title="背景音樂 (音樂開 / 音樂關)">
         <span id="bgmStateIcon" class="text-sm leading-none transition-transform group-hover:scale-110">🎵</span>
       </button>
     </div>
@@ -8169,12 +8169,14 @@
           p.then(() => {
             isPlaying = true;
             updateUI();
+            showToast('音樂開');
           }).catch(() => {
             // 受現代瀏覽器自動播放限制時，在使用者第一次點選螢幕/敲擊任意鍵時自動播放
             const playOnFirstInteraction = () => {
               bgmAudioEl.play().then(() => {
                 isPlaying = true;
                 updateUI();
+                showToast('音樂開');
               }).catch(() => {});
               window.removeEventListener('pointerdown', playOnFirstInteraction);
               window.removeEventListener('click', playOnFirstInteraction);
@@ -8194,7 +8196,7 @@
           isPlaying = false;
           bgmAudioEl.pause();
           updateUI();
-          showToast('已暫停畫室背景伴奏');
+          showToast('音樂關');
         } else {
           bgmAudioEl.volume = 0.20;
           const p = bgmAudioEl.play();
@@ -8202,11 +8204,10 @@
             p.then(() => {
               isPlaying = true;
               updateUI();
-              showToast('🎶 已開啟畫室背景伴奏 (音量 20%)');
+              showToast('音樂開');
             }).catch((err) => {
               console.warn('BGM play error:', err);
               updateUI();
-              showToast('🎶 背景伴奏已就緒，輕點螢幕即可播放');
             });
           }
         }
@@ -8222,6 +8223,7 @@
         const btn = document.getElementById('btnToggleStudioBgm');
         if (icon) icon.textContent = isPlaying ? '⏸️' : '🎵';
         if (btn) {
+          btn.title = isPlaying ? '背景音樂 (音樂開)' : '背景音樂 (音樂關)';
           if (isPlaying) {
             btn.classList.add('bg-amber-100', 'text-amber-800', 'border-amber-300');
           } else {
@@ -8230,8 +8232,10 @@
         }
       }
 
-      // 初始化嘗試自動播放
-      setTimeout(autoPlay, 500);
+      // 若無開屏動畫，500ms 後嘗試自動播放；若有開屏動畫，則於關閉開屏進入畫室時由 dismissSplashFn 觸發 autoPlay
+      if (!document.getElementById('kaiQuestSplash')) {
+        setTimeout(autoPlay, 500);
+      }
 
       return {
         toggle,
