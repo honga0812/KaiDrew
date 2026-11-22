@@ -140,7 +140,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext(); this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="轻点立即进入画室">
     <!-- 顶部居中极简版本编号 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.101 · Pro Edition
+      B.26.11.102 · Pro Edition
     </div>
 
     <!-- 中心纯净 KaiDraw Logo (纯白无界背景) -->
@@ -290,7 +290,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.101 · Pro Edition
+        B.26.11.102 · Pro Edition
       </div>
     </div>
 
@@ -679,6 +679,28 @@
         </div>
       </div>
 
+      <!-- 当前画笔笔头示范与质感预览卡片 (在选择颜色正上方呈现真实笔头与特性) -->
+      <div id="drawerBrushTipPreviewCard" class="bg-gradient-to-r from-stone-50 via-amber-50/50 to-stone-50 p-2.5 rounded-2xl border border-amber-200/80 shadow-2xs flex items-center justify-between gap-2.5">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-12 h-12 rounded-xl bg-white border border-stone-200/90 p-1 flex items-center justify-center shadow-2xs shrink-0 overflow-hidden">
+            <img id="drawerBrushTipImg" src="images/brush_watercolor.png" alt="Brush Tip Preview" class="w-full h-full object-contain drop-shadow-xs" />
+            <div id="drawerBrushTipVector" class="hidden w-8 h-8 flex items-center justify-center text-amber-600"></div>
+          </div>
+          <div class="flex flex-col min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span id="drawerBrushTipName" class="text-xs font-bold text-stone-900 truncate">湿画水彩笔</span>
+              <span id="drawerBrushTipBadge" class="text-[9px] font-mono px-1.5 py-0.2 rounded-md bg-amber-100 text-amber-800 font-bold shrink-0">水痕自然渐变</span>
+            </div>
+            <span id="drawerBrushTipDesc" class="text-[10px] text-stone-500 font-medium truncate mt-0.5">温润水色晕染 · 速度控制浓淡与边缘扩散</span>
+          </div>
+        </div>
+        <!-- 当前选定颜色的圆环指示器 -->
+        <div class="flex flex-col items-center gap-0.5 shrink-0 pl-1.5 border-l border-stone-200/60">
+          <div id="drawerActiveColorDot" class="w-5 h-5 rounded-full border-2 border-white shadow-sm ring-2 ring-amber-500" style="background: rgb(20, 85, 210);" title="当前选中画笔颜色"></div>
+          <span class="text-[7.5px] font-bold text-stone-400">当前色</span>
+        </div>
+      </div>
+
       <!-- 12 块金属盒固体水彩块 (黑搪瓷金属盒底托，温润半块质感) -->
       <div class="bg-stone-900 p-3 rounded-2xl border border-stone-800 shadow-md">
         <div class="text-[11px] font-bold text-stone-300 mb-2 flex items-center justify-between">
@@ -751,6 +773,26 @@
 
     <!-- 2. 蜡笔画室详细设置 -->
     <div id="drawerCrayonContent" class="hidden flex flex-col gap-3.5">
+      <!-- 蜡笔笔头示范与质感预览卡片 (在选择颜色正上方呈现真实笔头与特性) -->
+      <div class="bg-gradient-to-r from-stone-50 via-orange-50/50 to-stone-50 p-2.5 rounded-2xl border border-amber-200/80 shadow-2xs flex items-center justify-between gap-2.5">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-12 h-12 rounded-xl bg-white border border-stone-200/90 p-1 flex items-center justify-center shadow-2xs shrink-0 overflow-hidden">
+            <img src="images/brush_crayon.png" alt="Crayon Tip Preview" class="w-full h-full object-contain drop-shadow-xs" />
+          </div>
+          <div class="flex flex-col min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-stone-900 truncate">质感油画蜡笔</span>
+              <span class="text-[9px] font-mono px-1.5 py-0.2 rounded-md bg-orange-100 text-orange-800 font-bold shrink-0">颗粒厚实</span>
+            </div>
+            <span class="text-[10px] text-stone-500 font-medium truncate mt-0.5">抓纸干性 · 真实物理油性蜡质颗粒阻尼</span>
+          </div>
+        </div>
+        <div class="flex flex-col items-center gap-0.5 shrink-0 pl-1.5 border-l border-stone-200/60">
+          <div class="drawer-active-color-dot-common w-5 h-5 rounded-full border-2 border-white shadow-sm ring-2 ring-amber-500" style="background: rgb(20, 85, 210);"></div>
+          <span class="text-[7.5px] font-bold text-stone-400">当前色</span>
+        </div>
+      </div>
+
       <div class="bg-[#fefcf8] border-2 border-amber-200/90 rounded-2xl p-3 crayons-box-shadow">
         <div class="text-[11px] font-bold text-amber-800 mb-2 flex items-center justify-between">
           <span>🖍️ 经典油性蜡笔盒 (12色)</span>
@@ -788,6 +830,26 @@
 
     <!-- 3. 马克笔画室详细设置 -->
     <div id="drawerMarkerContent" class="hidden flex flex-col gap-3.5">
+      <!-- 马克笔笔头示范与质感预览卡片 (在选择颜色正上方呈现真实笔头与特性) -->
+      <div class="bg-gradient-to-r from-stone-50 via-indigo-50/50 to-stone-50 p-2.5 rounded-2xl border border-indigo-200/80 shadow-2xs flex items-center justify-between gap-2.5">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-12 h-12 rounded-xl bg-white border border-stone-200/90 p-1 flex items-center justify-center shadow-2xs shrink-0 overflow-hidden">
+            <img src="images/brush_marker.png" alt="Marker Tip Preview" class="w-full h-full object-contain drop-shadow-xs" />
+          </div>
+          <div class="flex flex-col min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-stone-900 truncate">平头斜角马克笔</span>
+              <span class="text-[9px] font-mono px-1.5 py-0.2 rounded-md bg-indigo-100 text-indigo-800 font-bold shrink-0">平涂锐利</span>
+            </div>
+            <span class="text-[10px] text-stone-500 font-medium truncate mt-0.5">鲜明平涂 · 边缘高锐度高饱和不渗墨</span>
+          </div>
+        </div>
+        <div class="flex flex-col items-center gap-0.5 shrink-0 pl-1.5 border-l border-stone-200/60">
+          <div class="drawer-active-color-dot-common w-5 h-5 rounded-full border-2 border-white shadow-sm ring-2 ring-indigo-500" style="background: rgb(20, 85, 210);"></div>
+          <span class="text-[7.5px] font-bold text-stone-400">当前色</span>
+        </div>
+      </div>
+
       <div class="bg-stone-50 p-3 rounded-2xl border border-stone-200 shadow-sm">
         <div class="text-[11px] font-bold text-stone-800 mb-2 flex items-center justify-between">
           <span>🖊️ 专业双头马克笔架 (12色)</span>
@@ -819,6 +881,14 @@
           <button data-tip="chisel" class="tip-btn py-2 rounded-xl border border-stone-200 bg-white text-stone-700 font-semibold active:scale-95 transition shadow-2xs">📐 斜切头</button>
         </div>
       </div>
+    </div>
+
+    <!-- 抽屉底部快捷选定与关闭按钮 -->
+    <div class="sticky bottom-0 bg-white/95 backdrop-blur-md pt-2 pb-1 border-t border-stone-100 flex items-center gap-2">
+      <button id="btnApplyAndCloseDrawer" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs shadow-md shadow-amber-500/20 active:scale-95 transition flex items-center justify-center gap-1.5 cursor-pointer">
+        <span>🎨</span>
+        <span>选定画笔与颜色 · 开始绘制</span>
+      </button>
     </div>
   </aside>
 
@@ -3311,17 +3381,29 @@
     };
 
     const BRUSH_TIPS_INFO = {
-      watercolor: { name: '湿画水彩笔', desc: '柔润水晕 · 透明叠色' },
-      'chinese-brush': { name: '传统软毫毛笔', desc: '提按顿挫 · 墨韵飞白' },
-      crayon: { name: '质感油画蜡笔', desc: '抓纸干性 · 厚实质感' },
-      marker: { name: '平头斜角马克笔', desc: '鲜明平涂 · 边缘锐利' },
-      airbrush: { name: '精密气压喷笔', desc: '柔雾渐层 · 细腻微粒' },
-      eraser: { name: '美术橡皮擦', desc: '局部擦除 · 细腻退白' }
+      watercolor: { name: '湿画水彩笔', badge: '水痕渐变', desc: '温润水色晕染 · 速度控制浓淡与边缘扩散' },
+      'chinese-brush': { name: '传统软毫毛笔', badge: '快移笔锋', desc: '提按顿挫 · 快移细出苍劲笔锋与飞白' },
+      crayon: { name: '质感油画蜡笔', badge: '颗粒厚实', desc: '抓纸干性 · 真实物理油性蜡质颗粒阻尼' },
+      marker: { name: '平头斜角马克笔', badge: '平涂锐利', desc: '鲜明平涂 · 边缘锐利高饱和不渗墨' },
+      airbrush: { name: '精密气压喷笔', badge: '柔雾渐层', desc: '微粒雾化 · 柔和气压喷雾渐变' },
+      eraser: { name: '美术高光橡皮', badge: '局部退白', desc: '局部擦除 · 细腻退白修复' }
     };
+
+    function getEffectiveBrushKey() {
+      if (currentTool === 'eraser') return 'eraser';
+      if (currentBrushMedium === 'watercolor') {
+        if (typeof watercolorBrushType !== 'undefined') {
+          if (watercolorBrushType === 'calligraphy_brush') return 'chinese-brush';
+          if (watercolorBrushType === 'airbrush') return 'airbrush';
+        }
+        return 'watercolor';
+      }
+      return currentBrushMedium || 'watercolor';
+    }
 
     function updateBrushTipDemo() {
       const isEraser = currentTool === 'eraser';
-      const key = isEraser ? 'eraser' : (currentBrushMedium || 'watercolor');
+      const key = getEffectiveBrushKey();
       const info = BRUSH_TIPS_INFO[key] || BRUSH_TIPS_INFO.watercolor;
       const svg = BRUSH_TIPS_SVG[key] || BRUSH_TIPS_SVG.watercolor;
       const currentColorHex = `rgb(${activeBrushRGB[0]}, ${activeBrushRGB[1]}, ${activeBrushRGB[2]})`;
@@ -3332,7 +3414,13 @@
       const dockBadge = document.getElementById('dockBrushTipBadge');
 
       if (dockBadge) {
-        dockBadge.textContent = isEraser ? '橡皮擦' : info.name.replace(/.*?(水彩|毛笔|蜡笔|马克笔|喷笔).*/, '$1');
+        if (isEraser) dockBadge.textContent = '橡皮擦';
+        else if (key === 'chinese-brush') dockBadge.textContent = '毛笔';
+        else if (key === 'airbrush') dockBadge.textContent = '喷笔';
+        else if (key === 'watercolor') dockBadge.textContent = '水彩笔';
+        else if (key === 'crayon') dockBadge.textContent = '蜡笔';
+        else if (key === 'marker') dockBadge.textContent = '马克笔';
+        else dockBadge.textContent = info.name.slice(0, 3);
       }
 
       if (dockVector) {
@@ -3341,7 +3429,6 @@
       }
 
       if (dockImg) {
-        // 尝试加载用户放入 images/ 的笔头自定义图片 (如 images/brush_watercolor.png)
         const candidateSrc = `images/brush_${key}.png`;
         const testImg = new Image();
         testImg.onload = () => {
@@ -3354,6 +3441,48 @@
           if (dockVector) dockVector.classList.remove('hidden');
         };
         testImg.src = candidateSrc;
+      }
+
+      // 2. 更新画具工坊抽屉内的画笔笔头预览卡片 (drawerBrushTipPreviewCard)
+      const drawerImg = document.getElementById('drawerBrushTipImg');
+      const drawerVector = document.getElementById('drawerBrushTipVector');
+      const drawerName = document.getElementById('drawerBrushTipName');
+      const drawerBadge = document.getElementById('drawerBrushTipBadge');
+      const drawerDesc = document.getElementById('drawerBrushTipDesc');
+      const drawerDot = document.getElementById('drawerActiveColorDot');
+
+      if (drawerName) drawerName.textContent = info.name;
+      if (drawerBadge) drawerBadge.textContent = info.badge || '画具预览';
+      if (drawerDesc) drawerDesc.textContent = info.desc;
+      if (drawerDot) drawerDot.style.backgroundColor = currentColorHex;
+
+      document.querySelectorAll('.drawer-active-color-dot-common').forEach(el => {
+        el.style.backgroundColor = currentColorHex;
+      });
+
+      if (drawerVector) {
+        drawerVector.innerHTML = svg;
+        drawerVector.style.color = isEraser ? '#E11D48' : currentColorHex;
+      }
+
+      if (drawerImg) {
+        const candidateSrc = `images/brush_${key}.png`;
+        const testImg = new Image();
+        testImg.onload = () => {
+          drawerImg.src = candidateSrc;
+          drawerImg.classList.remove('hidden');
+          if (drawerVector) drawerVector.classList.add('hidden');
+        };
+        testImg.onerror = () => {
+          drawerImg.classList.add('hidden');
+          if (drawerVector) drawerVector.classList.remove('hidden');
+        };
+        testImg.src = candidateSrc;
+      }
+
+      // 3. 同步音频引擎配置
+      if (typeof BrushAudioEngine !== 'undefined' && BrushAudioEngine.updateConfig) {
+        BrushAudioEngine.updateConfig(currentTool, key);
       }
 
       // 2. 兼容其他展示区域 (如果存在)
@@ -4161,6 +4290,11 @@
       if (crayonBody) crayonBody.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       const markerTip = document.querySelector('#customMarkerPreview div:first-child');
       if (markerTip) markerTip.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+      const drawerDot = document.getElementById('drawerActiveColorDot');
+      if (drawerDot) drawerDot.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+      document.querySelectorAll('.drawer-active-color-dot-common').forEach(el => {
+        el.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+      });
 
       // 维护最近使用 6 种色彩（去重并将最新颜色置顶，完美适配双列/3列排布）
       recentColors = recentColors.filter(c => !(Math.abs(c[0] - rgb[0]) < 8 && Math.abs(c[1] - rgb[1]) < 8 && Math.abs(c[2] - rgb[2]) < 8));
@@ -4198,6 +4332,10 @@
         btn.addEventListener('click', () => {
           switchBrushMedium('watercolor');
           applyBrushColor(rgb);
+          showToast('🎨 已选择色彩！轻点下方「开始绘制」或直接落笔');
+          setTimeout(() => {
+            if (isDrawerOpen) closeDrawer();
+          }, 350);
         });
         box.appendChild(btn);
       });
@@ -4223,6 +4361,10 @@
           btn.classList.add('active-swatch-ring', 'rounded-md');
           switchBrushMedium('crayon');
           applyBrushColor(rgb);
+          showToast('🖍️ 已选择蜡笔色彩！轻点下方「开始绘制」或直接落笔');
+          setTimeout(() => {
+            if (isDrawerOpen) closeDrawer();
+          }, 350);
         });
         box.appendChild(btn);
       });
@@ -4246,6 +4388,10 @@
           btn.classList.add('active-swatch-ring', 'rounded-t-md');
           switchBrushMedium('marker');
           applyBrushColor(rgb);
+          showToast('🖊️ 已选择马克笔色彩！轻点下方「开始绘制」或直接落笔');
+          setTimeout(() => {
+            if (isDrawerOpen) closeDrawer();
+          }, 350);
         });
         rack.appendChild(btn);
       });
@@ -4438,11 +4584,21 @@
         const hintEl = document.getElementById('watercolorSubBrushHint');
         if (hintEl && subInfo) hintEl.textContent = subInfo.hint;
         updateTopMediumButtonDisplay();
-        if (subInfo) showToast(`已切换至：${subInfo.icon} ${subInfo.name}（${subInfo.hint}）`);
-        
-        // 关键调整前后关系：点选笔刷后自动轻柔关闭抽屉，让画纸立刻完全呈现不被遮挡
-        setTimeout(closeDrawer, 220);
+        playSuctionPopSound(500, 0.08);
+
+        // 核心更新：实时同步更新左侧常用工具坞笔头示范与抽屉内预览大图！
+        if (typeof updateBrushTipDemo === 'function') updateBrushTipDemo();
+
+        if (subInfo) showToast(`已切换至：${subInfo.icon} ${subInfo.name}，可继续在下方挑选色彩！`);
+        // 注意：不立即自动关闭抽屉，让使用者能清楚看到上方笔头图片，并从容挑选色彩或点击确认开始绘制
       });
+    });
+
+    document.getElementById('btnApplyAndCloseDrawer')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      playSuctionPopSound(520, 0.08);
+      closeDrawer();
+      showToast('🎨 画笔与色彩已就绪，开始尽情作画！');
     });
 
     document.getElementById('waterSlider').addEventListener('input', (e) => {
