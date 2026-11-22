@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.131 · Pro Edition
+      B.26.11.132 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -249,9 +249,15 @@
 
 
       <!-- 10 秒動態進度光條 -->
-      <div class="w-48 h-1.5 bg-stone-100 rounded-full mt-3 overflow-hidden relative shadow-inner">
+      <div id="splashProgressTrack" class="w-48 h-1.5 bg-stone-100 rounded-full mt-3 overflow-hidden relative shadow-inner">
         <div id="splashProgressFill" class="h-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 rounded-full transition-all duration-100" style="width: 0%;"></div>
       </div>
+
+      <!-- 影片播畢後呈現：大顆立體播放進入鍵，停留於最後完整 Logo 畫面等待使用者點選進入 -->
+      <button id="btnEnterStudioAfterSplash" class="hidden mt-5 px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white font-black text-base sm:text-lg shadow-[0_12px_32px_rgba(245,158,11,0.45)] hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-2 border-white/90 ring-4 ring-amber-400/30 cursor-pointer animate-bounce" title="點擊進入 KaiDraw 畫室">
+        <span class="w-8 h-8 rounded-full bg-white/25 flex items-center justify-center text-lg pl-0.5">▶</span>
+        <span class="tracking-wide">進入 KaiDraw 畫室</span>
+      </button>
     </div>
   </div>
 
@@ -404,7 +410,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.131 · Pro Edition
+        B.26.11.132 · Pro Edition
       </div>
     </div>
 
@@ -7500,21 +7506,37 @@
         }, 1100);
       };
 
+      const btnEnterStudioAfterSplash = document.getElementById('btnEnterStudioAfterSplash');
+      const splashProgressTrack = document.getElementById('splashProgressTrack');
+      let splashVideoEnded = false;
+
+      const showSplashEnterButton = () => {
+        splashVideoEnded = true;
+        if (splashProgressTrack) splashProgressTrack.classList.add('hidden');
+        if (btnEnterStudioAfterSplash) btnEnterStudioAfterSplash.classList.remove('hidden');
+      };
+
+      // 點選大顆播放進入鍵進入相片轉換/畫室
+      btnEnterStudioAfterSplash?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dismissSplashFn();
+      });
+
       // 點選跳過按鍵直接進入相片轉換/畫室
       btnSkipIntro?.addEventListener('click', (e) => {
         e.stopPropagation();
         dismissSplashFn();
       });
 
-      // 點選開屏背景：若播放超過 0.8 秒可快速跳過；否則嘗試開啟聲音繼續觀看
+      // 點選開屏背景：若影片尚未開啟聲音則嘗試開啟；若影片已播畢等待中，點選畫面亦可進入
       splashEl.addEventListener('click', (e) => {
-        if (e.target.closest('#btnSkipSplashIntro')) return;
-        if (splashVideo && splashVideo.muted) {
-          unmuteSplashOnGesture();
+        if (e.target.closest('#btnSkipSplashIntro') || e.target.closest('#btnEnterStudioAfterSplash')) return;
+        if (splashVideoEnded) {
+          dismissSplashFn();
           return;
         }
-        if (splashVideo && splashVideo.currentTime > 0.8) {
-          dismissSplashFn();
+        if (splashVideo && splashVideo.muted) {
+          unmuteSplashOnGesture();
         }
       });
 
@@ -7522,7 +7544,6 @@
         // 進入頁面立即嵌入自動播放（優先嘗試帶聲音直接播放）
         splashVideo.volume = 1.0;
         splashVideo.muted = false;
-        startDismissTimer(10500);
 
         const p = splashVideo.play();
         if (p !== undefined) {
@@ -7544,21 +7565,13 @@
             splashProgress.style.width = `${pct}%`;
           }
         });
-        splashVideo.addEventListener('ended', dismissSplashFn);
+        // 影片播放結束後停在最後一幀完整 Logo 畫面，並顯示大大顆播放進入鍵等待使用者點選
+        splashVideo.addEventListener('ended', showSplashEnterButton);
+        splashVideo.addEventListener('error', showSplashEnterButton);
       } else {
-        startDismissTimer(1500);
+        showSplashEnterButton();
       }
     }
-
-    // 全域性開屏保底計時器：無論如何 11.5 秒後呼叫 dismissSplashFn，徹底清除初始化過渡類與呈現相片轉換介面
-    setTimeout(() => {
-      if (dismissSplashFn) {
-        dismissSplashFn();
-      } else {
-        const s = document.getElementById('kaiQuestSplash');
-        if (s) s.remove();
-      }
-    }, 11500);
 
     // 2. 自由拖移元件：Logo 按鈕、圖層按鈕、AI 按鈕、畫紙按鈕 及 浮動迷你面板 (支援手指觸控、Apple Pencil 觸控筆及滑鼠拖移至螢幕任意位置)
     function makeElementDraggable(element, onTapped) {
