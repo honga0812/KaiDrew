@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.123 · Pro Edition
+      B.26.11.124 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -239,6 +239,14 @@
       <video id="splashLogoVideo" src="images/logo_video_reversed.mp4" autoplay playsinline class="relative z-10 w-full max-w-md sm:max-w-lg md:max-w-2xl aspect-video object-contain pointer-events-none mix-blend-multiply bg-white"></video>
 
 
+
+      <!-- 點選播放提示 (當瀏覽器政策限制未互動出聲時呈現，點選立即開聲播放) -->
+      <div id="splashStartPrompt" class="hidden absolute inset-0 z-30 flex flex-col items-center justify-center bg-white/75 backdrop-blur-xs transition-all cursor-pointer">
+        <button id="btnSplashStartPlay" class="px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white font-black text-sm sm:text-base shadow-xl shadow-amber-500/40 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 border-2 border-white/90 cursor-pointer animate-bounce">
+          <span class="text-lg">▶</span>
+          <span>點擊開啟 KaiDraw (播放動畫與音效)</span>
+        </button>
+      </div>
 
       <!-- 10 秒動態進度光條 -->
       <div class="w-48 h-1.5 bg-stone-100 rounded-full mt-3 overflow-hidden relative shadow-inner">
@@ -396,7 +404,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.123 · Pro Edition
+        B.26.11.124 · Pro Edition
       </div>
     </div>
 
@@ -987,201 +995,191 @@
   </aside>
 
   <!-- ==================== 彈窗：相片轉畫風與黑白描摹草稿實驗室 (明亮現代設計) ==================== -->
-  <div id="cameraModal" class="fixed inset-0 bg-stone-900/40 backdrop-blur-md z-50 hidden items-center justify-center p-3">
-    <div class="bg-white/95 backdrop-blur-3xl border border-stone-200/90 rounded-3xl max-w-4xl w-full p-3 sm:p-4 shadow-2xl flex flex-col gap-2.5 max-h-[96vh] overflow-y-auto text-stone-800">
-      <div class="flex items-center justify-between border-b border-stone-100 pb-2.5 gap-2 flex-wrap">
-        <div class="flex items-center gap-2 font-bold text-sm sm:text-base text-stone-800">
-          <span>📸</span> <span>相片智慧轉畫風與黑白描摹草稿實驗室</span>
+  <div id="cameraModal" class="fixed inset-0 bg-stone-900/40 backdrop-blur-md z-50 hidden items-center justify-center p-3 select-none">
+    <div class="bg-white/95 backdrop-blur-3xl border border-stone-200/90 rounded-3xl max-w-4xl w-full p-3 sm:p-4 shadow-2xl flex flex-col gap-2 max-h-[96vh] overflow-hidden text-stone-800">
+      
+      <!-- 頂欄：標題與核心動作按鍵 (緊湊直覺整合，免捲動) -->
+      <div class="flex items-center justify-between border-b border-stone-100 pb-2 gap-2 flex-wrap">
+        <div class="flex items-center gap-2 font-bold text-sm sm:text-base text-stone-800 shrink-0">
+          <span class="text-base sm:text-lg">📸</span> <span>相片智慧轉畫風與黑白描摹草稿實驗室</span>
         </div>
-        <div class="flex items-center gap-2.5 ml-auto">
-          <!-- 右上角明顯放大版：直接進入畫布繪畫 -->
-          <button id="btnSkipPhotoDirectDrawTop" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm shadow-lg shadow-amber-500/35 hover:shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 border border-amber-300/60 ring-2 ring-amber-400/40 cursor-pointer animate-pulse" title="跳過拍照，直接進入空白畫室開始繪畫">
-            <span class="text-base">🎨</span>
+        <div class="flex items-center gap-2 ml-auto">
+          <!-- 右上角直接進入畫布繪畫 -->
+          <button id="btnSkipPhotoDirectDrawTop" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs sm:text-sm shadow-md shadow-amber-500/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 border border-amber-300/60 ring-2 ring-amber-400/30 cursor-pointer" title="跳過拍照，直接進入空白畫室開始繪畫">
+            <span>🎨</span>
             <span>直接進入畫布繪畫</span>
-            <span class="text-xs bg-white/25 px-1.5 py-0.5 rounded-full font-sans">立即開始 ➜</span>
+            <span class="text-[10px] bg-white/25 px-1.5 py-0.5 rounded-full font-sans">➜</span>
           </button>
+          <button id="btnMacHardwareSnap" class="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs active:scale-95 transition flex items-center gap-1 cursor-pointer" title="開啟視訊相機拍照">
+            <span>📸</span>
+            <span class="hidden sm:inline">啟動相機</span>
+          </button>
+          <label class="px-3 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs cursor-pointer shadow-xs active:scale-95 transition flex items-center gap-1" title="上傳電腦或手機中的圖片">
+            <span>📂</span>
+            <span class="hidden sm:inline">上傳相片</span>
+            <input id="fileUploadInput" type="file" accept="image/*" class="hidden" />
+          </label>
           <button id="btnCloseCameraModal" class="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold flex items-center justify-center active:scale-95 transition cursor-pointer" title="關閉">✕</button>
         </div>
       </div>
 
-      <div class="bg-gradient-to-r from-amber-50/90 via-emerald-50/80 to-sky-50/80 border border-amber-200/90 rounded-2xl p-2.5 flex flex-wrap items-center justify-between gap-2 shadow-xs">
-        <div>
-          <div class="text-xs sm:text-sm font-extrabold text-stone-900 flex items-center gap-1.5">
-            <span>✨ 想先拍照臨摹，還是直接開始畫畫？</span>
-          </div>
-          <div class="text-[11px] text-stone-600 mt-0.5">
-            您可以拍照或選取範例轉成底圖進行描摹臨摹，也可以跳過拍照直接在空白畫紙上盡情創作！
-          </div>
-        </div>
-        <div class="flex items-center gap-2 flex-wrap">
-          <!-- 直接進入繪畫畫面的選項 -->
-          <button id="btnSkipPhotoDirectDraw" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-extrabold text-xs shadow-md shadow-amber-500/25 active:scale-95 transition flex items-center gap-1.5 cursor-pointer" title="跳過拍照，直接進入空白畫室開始繪畫">
-            <span>🎨</span>
-            <span>直接進入畫布繪畫</span>
-          </button>
-          <button id="btnMacHardwareSnap" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 active:scale-95 transition flex items-center gap-1 cursor-pointer">
-            <span>📸</span>
-            <span>啟動相機拍照</span>
-          </button>
-          <label class="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs cursor-pointer shadow-md shadow-sky-600/20 active:scale-95 transition flex items-center gap-1">
-            <span>📂</span>
-            <span>上傳相片</span>
-            <input id="fileUploadInput" type="file" accept="image/*" class="hidden" />
-          </label>
-        </div>
+      <!-- 輕量導引說明列與兼容按鈕 (極致緊湊) -->
+      <div class="flex items-center justify-between text-[11px] text-stone-500 px-1">
+        <span>✨ 點選左側 16 款熱門主題範例，右側即時選擇「黑白線條草稿」或「彩色完成圖」作為臨摹底圖</span>
+        <button id="btnSkipPhotoDirectDraw" class="hidden" aria-hidden="true"></button>
       </div>
 
-      <!-- 左右分欄：左邊 16 格小朋友最愛線稿範例 (4x4 純線圖直覺選取)，右邊 2 大選項 (黑白線條草稿 vs 彩色完成樣貌) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-2.5 items-stretch min-h-0">
+      <!-- 左右分欄：左邊 16 格 4x4 極致緊湊網格，右邊二選一 (黑白線條 vs 彩色完成樣貌) -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-stretch min-h-0">
         
-        <!-- 左欄：16 格兒童繪畫啟蒙範例 (4x4 純線稿圖示，無多餘文字) -->
-        <div class="lg:col-span-7 flex flex-col gap-1.5 bg-stone-50/80 p-2 rounded-2xl border border-stone-200/80">
-          <div class="flex items-center justify-between">
+        <!-- 左欄：16 格兒童繪畫啟蒙範例 (嚴格等距 4x4 極致緊湊排版，行距與間距完全一致) -->
+        <div class="md:col-span-6 lg:col-span-7 flex flex-col justify-between gap-1.5 bg-stone-50/80 p-2 sm:p-2.5 rounded-2xl border border-stone-200/80">
+          <div class="flex items-center justify-between px-0.5">
             <span class="text-xs font-black text-stone-800 flex items-center gap-1.5">
               <span>🎨</span> <span>小朋友繪畫啟蒙範例 (彩色示範點選)</span>
             </span>
-            <span class="text-[10px] text-stone-500 font-medium">16 款最受歡迎主題</span>
+            <span class="text-[10px] text-stone-500 font-medium">16 款精選主題</span>
           </div>
 
-          <!-- 4x4 緊密精緻網格 (16格全彩示範卡片，緊密排列免上下滾動) -->
-          <div id="camera16PresetsGrid" class="grid grid-cols-4 gap-1.5 flex-1">
+          <!-- 4x4 嚴格正方形等距無捲動網格 (寬高比1:1，gap-2水平與垂直間距100%均勻一致) -->
+          <div id="camera16PresetsGrid" class="grid grid-cols-4 grid-rows-4 gap-2 w-full aspect-square max-w-[340px] max-h-[340px] mx-auto">
             <!-- 1. 獅子 -->
-            <button data-camerapreset="lion" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-amber-500 bg-amber-50/70 ring-2 ring-amber-400/50 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="獅子">
+            <button data-camerapreset="lion" class="cam-16-preset-btn w-full h-full aspect-square rounded-xl border-2 border-amber-500 bg-amber-50/70 ring-2 ring-amber-400/50 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="獅子">
               <img src="images/Lion.jpeg" alt="獅子" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 2. 老虎 -->
-            <button data-camerapreset="tiger" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="老虎">
+            <button data-camerapreset="tiger" class="cam-16-preset-btn w-full h-full aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="老虎">
               <img src="images/Tiger.jpeg" alt="老虎" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 3. 鱷魚 -->
-            <button data-camerapreset="croc" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="鱷魚">
+            <button data-camerapreset="croc" class="cam-16-preset-btn w-full h-full aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="鱷魚">
               <img src="images/Crocodile.jpeg" alt="鱷魚" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 4. 熊 -->
-            <button data-camerapreset="bear" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="熊熊">
+            <button data-camerapreset="bear" class="cam-16-preset-btn w-full h-full aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="熊熊">
               <img src="images/Bear.jpeg" alt="熊熊" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 5. 貓咪 -->
-            <button data-camerapreset="cat" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="貓咪">
+            <button data-camerapreset="cat" class="cam-16-preset-btn w-full h-full aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="貓咪">
               <img src="images/Cat.jpeg" alt="貓咪" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 6. 狗狗 -->
-            <button data-camerapreset="dog" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="狗狗">
+            <button data-camerapreset="dog" class="cam-16-preset-btn w-full h-full aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="狗狗">
               <img src="images/Dog.jpeg" alt="狗狗" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 7. 火箭 -->
-            <button data-camerapreset="rocket" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="火箭">
+            <button data-camerapreset="rocket" class="cam-16-preset-btn w-full h-full aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="火箭">
               <img src="images/Rocket.jpeg" alt="火箭" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 8. 房子 -->
-            <button data-camerapreset="house" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="房子">
+            <button data-camerapreset="house" class="cam-16-preset-btn w-full h-full aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="房子">
               <img src="images/House.jpeg" alt="房子" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 9. 樹木 -->
-            <button data-camerapreset="tree" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="樹木">
+            <button data-camerapreset="tree" class="cam-16-preset-btn w-full h-full aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="樹木">
               <img src="images/Tree.jpeg" alt="樹木" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 10. 帆船 -->
-            <button data-camerapreset="boat" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="帆船">
+            <button data-camerapreset="boat" class="cam-16-preset-btn w-full h-full aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="帆船">
               <img src="images/Boat.jpeg" alt="帆船" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 11. 恐龍 -->
-            <button data-camerapreset="dino" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="恐龍">
+            <button data-camerapreset="dino" class="cam-16-preset-btn w-full h-full aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="恐龍">
               <img src="images/Dino.jpeg" alt="恐龍" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 12. 汽車 -->
-            <button data-camerapreset="car" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="汽車">
+            <button data-camerapreset="car" class="cam-16-preset-btn w-full h-full aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="汽車">
               <img src="images/Car.jpeg" alt="汽車" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 13. 飛機 -->
-            <button data-camerapreset="plane" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="飛機">
+            <button data-camerapreset="plane" class="cam-16-preset-btn w-full h-full aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="飛機">
               <img src="images/Plane.jpeg" alt="飛機" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 14. 花朵 -->
-            <button data-camerapreset="flower" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="花朵">
+            <button data-camerapreset="flower" class="cam-16-preset-btn w-full h-full aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="花朵">
               <img src="images/Flower.jpeg" alt="花朵" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 15. 太陽 -->
-            <button data-camerapreset="sun" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="太陽">
+            <button data-camerapreset="sun" class="cam-16-preset-btn w-full h-full aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="太陽">
               <img src="images/Sun.jpeg" alt="太陽" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
 
             <!-- 16. 蝴蝶 -->
-            <button data-camerapreset="butterfly" class="cam-16-preset-btn aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="蝴蝶">
+            <button data-camerapreset="butterfly" class="cam-16-preset-btn w-full h-full aspect-square rounded-xl border-2 border-stone-200 bg-white hover:border-amber-400 p-1 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group overflow-hidden" title="蝴蝶">
               <img src="images/Butterfly.jpeg" alt="蝴蝶" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform" />
             </button>
           </div>
         </div>
 
-        <!-- 右欄：二選一臨摹模式 (黑白線條草稿 vs 彩色完成樣貌) -->
-        <div class="lg:col-span-5 flex flex-col gap-2 bg-stone-50/90 border border-stone-200/90 rounded-2xl p-2.5">
-          <div class="flex items-center justify-between border-b border-stone-200 pb-2">
-            <span class="text-xs font-black text-stone-800 flex items-center gap-1.5">
+        <!-- 右欄：二選一臨摹模式 (黑白線條草稿 vs 彩色完成樣貌，緊湊設計免捲動) -->
+        <div class="md:col-span-6 lg:col-span-5 flex flex-col justify-between gap-1.5 bg-stone-50/90 border border-stone-200/90 rounded-2xl p-2 sm:p-2.5">
+          <div class="flex items-center justify-between border-b border-stone-200 pb-1.5 px-0.5">
+            <span class="text-xs font-black text-stone-800 flex items-center gap-1">
               <span>✨</span> <span>選擇臨摹方式 (二選一)</span>
             </span>
             <span id="currentSelectedPresetLabel" class="text-[11px] font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-full">🦁 獅子</span>
           </div>
 
-          <!-- 選項 1：黑白線條草稿 -->
-          <div class="bg-white border-2 border-stone-200 hover:border-amber-400 rounded-2xl p-2 flex flex-col gap-1.5 shadow-xs transition group">
+          <!-- 選項 1：黑白線條草稿 (緊湊預覽) -->
+          <div class="bg-white border-2 border-stone-200 hover:border-amber-400 rounded-xl p-1.5 flex flex-col gap-1 shadow-xs transition group">
             <div class="flex items-center justify-between">
               <span class="text-xs font-extrabold text-stone-800 flex items-center gap-1">
                 <span>✏️</span> <span>黑白線條草稿</span>
               </span>
-              <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-600 font-bold">適合練習勾勒線條</span>
+              <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-600 font-bold">練習勾勒輪廓</span>
             </div>
             
-            <div class="w-full aspect-[4/3] rounded-xl bg-white border border-stone-200 shadow-inner flex items-center justify-center overflow-hidden p-1">
+            <div class="w-full h-20 sm:h-22 rounded-lg bg-white border border-stone-200 shadow-inner flex items-center justify-center overflow-hidden p-0.5">
               <canvas id="prevSketch" width="320" height="240" class="w-full h-full object-contain"></canvas>
             </div>
 
-            <div class="grid grid-cols-2 gap-1.5 pt-1">
-              <button id="btnSetSketchUnderlay" class="w-full py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs active:scale-95 transition shadow-2xs cursor-pointer flex items-center justify-center gap-1" title="將黑白線條設為半透明底圖">
+            <div class="grid grid-cols-2 gap-1.5 pt-0.5">
+              <button id="btnSetSketchUnderlay" class="w-full py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs active:scale-95 transition shadow-2xs cursor-pointer flex items-center justify-center gap-1" title="將黑白線條設為半透明底圖">
                 <span>👁️</span> <span>設為描摹底圖</span>
               </button>
-              <button id="btnImportSketchToPaint" class="w-full py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs shadow-md shadow-amber-500/20 active:scale-95 transition cursor-pointer flex items-center justify-center gap-1" title="直接把線條畫在當前畫布圖層上">
+              <button id="btnImportSketchToPaint" class="w-full py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs shadow-md shadow-amber-500/20 active:scale-95 transition cursor-pointer flex items-center justify-center gap-1" title="直接把線條畫在當前畫布圖層上">
                 <span>🎨</span> <span>匯入線稿填色</span>
               </button>
             </div>
           </div>
 
-          <!-- 選項 2：彩色完成圖 (上色樣貌) -->
-          <div class="bg-white border-2 border-stone-200 hover:border-emerald-400 rounded-2xl p-2 flex flex-col gap-1.5 shadow-xs transition group">
+          <!-- 選項 2：彩色完成圖 (緊湊預覽) -->
+          <div class="bg-white border-2 border-stone-200 hover:border-emerald-400 rounded-xl p-1.5 flex flex-col gap-1 shadow-xs transition group">
             <div class="flex items-center justify-between">
               <span class="text-xs font-extrabold text-emerald-950 flex items-center gap-1">
                 <span>🎨</span> <span>彩色完成圖 (上色成果)</span>
               </span>
-              <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">照著顏色塗色臨摹</span>
+              <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">照著顏色塗色</span>
             </div>
 
-            <div class="w-full aspect-[4/3] rounded-xl bg-white border border-stone-200 shadow-inner flex items-center justify-center overflow-hidden p-1">
+            <div class="w-full h-20 sm:h-22 rounded-lg bg-white border border-stone-200 shadow-inner flex items-center justify-center overflow-hidden p-0.5">
               <canvas id="prevColor" width="320" height="240" class="w-full h-full object-contain"></canvas>
             </div>
 
-            <button id="btnSetColorUnderlay" class="w-full py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition cursor-pointer flex items-center justify-center gap-1" title="將彩色圖片設為半透明底圖">
+            <button id="btnSetColorUnderlay" class="w-full py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition cursor-pointer flex items-center justify-center gap-1" title="將彩色圖片設為半透明底圖">
               <span>🖼️</span> <span>設為彩色臨摹底圖</span>
             </button>
           </div>
 
-          <!-- 底圖透光度滑動微調 -->
-          <div class="flex items-center gap-2 pt-2 border-t border-stone-200">
+          <!-- 底圖透光度微調 (緊湊單行) -->
+          <div class="flex items-center gap-2 pt-1 border-t border-stone-200">
             <span class="text-[11px] font-bold text-stone-600 shrink-0">🎨 底圖透光度:</span>
             <input id="styleIntensitySlider" type="range" min="10" max="100" value="70" class="flex-1 accent-amber-500 cursor-pointer h-1.5 bg-stone-200 rounded-lg" />
-            <span id="styleIntensityVal" class="text-xs font-bold text-amber-600 w-9 text-right font-mono">70%</span>
+            <span id="styleIntensityVal" class="text-xs font-bold text-amber-600 w-8 text-right font-mono">70%</span>
           </div>
         </div>
 
@@ -7239,41 +7237,83 @@
         }, 1100);
       };
 
+      let hasStartedSoundPlay = false;
+      let splashAutoDismissTimer = null;
+      const startDismissTimer = (ms = 10500) => {
+        if (splashAutoDismissTimer) clearTimeout(splashAutoDismissTimer);
+        splashAutoDismissTimer = setTimeout(dismissSplashFn, ms);
+      };
+
+      const splashStartPrompt = document.getElementById('splashStartPrompt');
+      const btnSplashStartPlay = document.getElementById('btnSplashStartPlay');
+
+      const triggerStartSoundPlayback = (e) => {
+        if (e && e.target && e.target.closest('#btnSkipSplashIntro')) return;
+        if (hasStartedSoundPlay) return;
+        hasStartedSoundPlay = true;
+        if (splashStartPrompt) {
+          splashStartPrompt.classList.add('hidden');
+        }
+        if (splashVideo) {
+          splashVideo.muted = false;
+          splashVideo.volume = 1.0;
+          splashVideo.currentTime = 0;
+          splashVideo.play().catch(() => {});
+        }
+        startDismissTimer(10500);
+      };
+
       // 點選跳過按鍵直接進入畫室
       btnSkipIntro?.addEventListener('click', (e) => {
         e.stopPropagation();
         dismissSplashFn();
       });
 
-      // 點選開屏背景跳過進入
+      // 點選開屏背景：若尚未開始有聲播放則啟動播放；若已播放超過0.8秒則跳過
       splashEl.addEventListener('click', (e) => {
         if (e.target.closest('#btnSkipSplashIntro')) return;
-        dismissSplashFn();
+        if (!hasStartedSoundPlay) {
+          triggerStartSoundPlayback(e);
+          return;
+        }
+        if (splashVideo && splashVideo.currentTime > 0.8) {
+          dismissSplashFn();
+        }
       });
 
       if (splashVideo) {
-        // Logo 動畫預設直接開啟聲音
+        // Logo 動畫預設直接開啟聲音 (音量 1.0，完全非靜音)
         splashVideo.volume = 1.0;
         splashVideo.muted = false;
 
+        // 嘗試直接以有聲方式播放
         const p = splashVideo.play();
         if (p !== undefined) {
-          p.catch(() => {
-            // 若受限於特定瀏覽器未互動政策，先以靜音播放，並在第一次觸控時自動出聲
-            splashVideo.muted = true;
-            splashVideo.play().catch(() => {});
+          p.then(() => {
+            hasStartedSoundPlay = true;
+            startDismissTimer(10500);
+          }).catch(() => {
+            // 受限於瀏覽器自動播放未互動政策，暫停於第 0 幀，並顯示觸發按鈕，確保從 0:00 聽到完整童趣音效
+            splashVideo.pause();
+            splashVideo.currentTime = 0;
+            if (splashStartPrompt) {
+              splashStartPrompt.classList.remove('hidden');
+            }
           });
         }
 
-        // 任意手勢互動自動恢復出聲
-        const unmuteOnUserGesture = () => {
-          if (splashVideo && splashVideo.muted) {
-            splashVideo.muted = false;
-          }
-        };
-        document.addEventListener('pointerdown', unmuteOnUserGesture, { once: true });
-        document.addEventListener('click', unmuteOnUserGesture, { once: true });
-        document.addEventListener('keydown', unmuteOnUserGesture, { once: true });
+        // 點選按鈕或點選畫面任意位置立即觸發有聲音播放
+        btnSplashStartPlay?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          triggerStartSoundPlayback(e);
+        });
+        splashStartPrompt?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          triggerStartSoundPlayback(e);
+        });
+        document.addEventListener('pointerdown', triggerStartSoundPlayback, { once: true });
+        document.addEventListener('click', triggerStartSoundPlayback, { once: true });
+        document.addEventListener('keydown', triggerStartSoundPlayback, { once: true });
 
         splashVideo.addEventListener('timeupdate', () => {
           if (splashVideo.duration && splashProgress) {
@@ -7283,9 +7323,6 @@
         });
         splashVideo.addEventListener('ended', dismissSplashFn);
       }
-
-      // 10.5 秒後自動結束開屏
-      setTimeout(dismissSplashFn, 10500);
     }
 
     // 全域性開屏保底計時器：無論如何 11.5 秒後呼叫 dismissSplashFn，徹底清除初始化過渡類與呈現相片轉換介面
