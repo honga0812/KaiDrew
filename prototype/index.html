@@ -140,7 +140,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext(); this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="轻点立即进入画室">
     <!-- 顶部居中极简版本编号 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.106 · Pro Edition
+      B.26.11.107 · Pro Edition
     </div>
 
     <!-- 中心纯净 KaiDraw Logo (纯白无界背景) -->
@@ -290,7 +290,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.106 · Pro Edition
+        B.26.11.107 · Pro Edition
       </div>
     </div>
 
@@ -594,15 +594,15 @@
   </button>
 
   <!-- ==================== 3. 悬浮自由拖移 画纸与画质版本圆形按钮 (位于 AI 按键下方，轻点唤起紧凑画纸版本与材质预览) ==================== -->
-  <button id="btnFloatingPaperHistory" class="stagger-init-right fixed right-2.5 top-[calc(50%+85px)] z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/95 backdrop-blur-xl border border-amber-300/80 shadow-[0_4px_16px_rgba(217,119,6,0.18)] hover:shadow-[0_8px_24px_rgba(217,119,6,0.28)] hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center text-stone-800 cursor-move select-none touch-none group" style="touch-action: none;" title="画纸与材质：可自由拖移，轻点查看画纸版本与物理画质预览">
-    <span class="text-base sm:text-lg leading-none filter drop-shadow-2xs pointer-events-none group-hover:scale-110 transition-transform">📄</span>
-    <span id="floatingPaperCountBadge" class="text-[8px] font-bold text-amber-700 font-mono leading-none mt-0.5 pointer-events-none">1/10</span>
+  <button id="btnFloatingPaperHistory" class="stagger-init-right fixed right-2.5 top-[calc(50%+85px)] z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden shadow-[0_4px_16px_rgba(217,119,6,0.18)] hover:shadow-[0_8px_24px_rgba(217,119,6,0.28)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center p-0 bg-white cursor-move select-none touch-none group border-0 ring-0 outline-none" style="touch-action: none;" title="画纸与材质：可自由拖移，轻点查看画纸版本与物理画质预览">
+    <img src="images/btn_paper_icon.png" alt="Paper & Canvas" class="w-full h-full object-cover rounded-full pointer-events-none select-none transition-transform group-hover:scale-105" />
+    <span id="floatingPaperCountBadge" class="absolute bottom-0 right-0 text-[7.5px] font-bold text-white bg-amber-600/90 px-1 py-0.2 rounded-full shadow-xs pointer-events-none font-mono">1/10</span>
   </button>
 
   <!-- ==================== 4. 悬浮自由拖移 图层管理器圆形按钮 (位于右侧下方，轻点唤起迷你长条图层条) ==================== -->
-  <button id="btnFloatingLayersManager" class="stagger-init-right fixed right-2.5 top-[calc(50%+160px)] z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/95 backdrop-blur-xl border border-indigo-300/80 shadow-[0_4px_16px_rgba(99,102,241,0.18)] hover:shadow-[0_8px_24px_rgba(99,102,241,0.28)] hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center text-stone-800 cursor-move select-none touch-none group" style="touch-action: none;" title="图层管理器：可自由拖移，轻点展开图层迷你条与管理器">
-    <span class="text-base sm:text-lg leading-none filter drop-shadow-2xs pointer-events-none group-hover:scale-110 transition-transform">📑</span>
-    <span id="floatingLayerCountBadge" class="text-[8px] font-bold text-indigo-700 font-mono leading-none mt-0.5 pointer-events-none">1层</span>
+  <button id="btnFloatingLayersManager" class="stagger-init-right fixed right-2.5 top-[calc(50%+160px)] z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden shadow-[0_4px_16px_rgba(99,102,241,0.18)] hover:shadow-[0_8px_24px_rgba(99,102,241,0.28)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center p-0 bg-white cursor-move select-none touch-none group border-0 ring-0 outline-none" style="touch-action: none;" title="图层管理器：可自由拖移，轻点展开图层迷你条与管理器">
+    <img src="images/btn_layers_icon.png" alt="Layers Manager" class="w-full h-full object-cover rounded-full pointer-events-none select-none transition-transform group-hover:scale-105" />
+    <span id="floatingLayerCountBadge" class="absolute bottom-0 right-0 text-[7.5px] font-bold text-white bg-indigo-600/90 px-1 py-0.2 rounded-full shadow-xs pointer-events-none font-mono">1层</span>
   </button>
 
   <!-- ==================== 抽屉背景点击遮罩 (点击画布或空白处立即轻柔关闭抽屉，绝不遮挡画纸) ==================== -->
@@ -3467,8 +3467,8 @@
         brushTipOffscreenCtx.clearRect(0, 0, w, h);
         brushTipOffscreenCtx.drawImage(img, 0, 0, w, h);
 
-        // 如果是蜡笔或马克笔，动态将笔尖染上用户选定的画笔颜色，保留原有立体光影与颗粒质感
-        if (key === 'crayon' || key === 'marker') {
+        // 如果是蜡笔、马克笔、水彩笔、毛笔或喷笔，动态将笔尖染上用户选定的画笔颜色，保留原有立体光影与材质细节
+        if (key === 'crayon' || key === 'marker' || key === 'watercolor' || key === 'chinese-brush' || key === 'airbrush') {
           const imgData = brushTipOffscreenCtx.getImageData(0, 0, w, h);
           const data = imgData.data;
           const [targetH, targetS, targetV] = rgbToHsv(rgb[0], rgb[1], rgb[2]);
@@ -3477,6 +3477,8 @@
             const a = data[i + 3];
             if (a < 20) continue;
             const r = data[i], g = data[i + 1], b = data[i + 2];
+            const px = (i / 4) % w;
+            const py = Math.floor((i / 4) / w);
 
             if (key === 'crayon') {
               // 蜡笔卷纸区域保持纸张原本米白与印刷质感，仅将外露蜡体进行动态着色
@@ -3515,6 +3517,68 @@
                   data[i] = nr;
                   data[i + 1] = ng;
                   data[i + 2] = nb;
+                }
+              }
+            } else if (key === 'watercolor') {
+              // 水彩笔：保留金属笔箍与毛干自然质感，将笔尖凝结的水滴与浸染颜料的下部湿润毛簇动态染上所选颜色
+              const isDrop = (py > 72 && px < 65) && ((b > r + 8 && b > g + 6) || (b > 115 && r > 85 && g > 95));
+              if (isDrop) {
+                const [oh, os, ov] = rgbToHsv(r, g, b);
+                if (targetS < 0.08) {
+                  const newV = Math.max(0.15, ov * Math.max(0.3, targetV));
+                  data[i] = Math.round(newV * 255);
+                  data[i + 1] = Math.round(newV * 255);
+                  data[i + 2] = Math.round(newV * 255);
+                } else {
+                  const newS = Math.max(targetS, 0.65);
+                  const newV = Math.min(1.0, ov * 1.15) * Math.max(0.35, targetV);
+                  const [nr, ng, nb] = hsvToRgb(targetH, newS, newV);
+                  const blend = 0.86;
+                  data[i] = Math.round(nr * blend + r * (1 - blend));
+                  data[i + 1] = Math.round(ng * blend + g * (1 - blend));
+                  data[i + 2] = Math.round(nb * blend + b * (1 - blend));
+                }
+              }
+            } else if (key === 'chinese-brush') {
+              // 书法毛笔：保留玉石笔杆与根部毫毛传统本色，仅将锋颖出锋聚墨处染上朱砂/石青/墨色等当前画笔颜色
+              const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+              if (px > 60 && lum < 155) {
+                const [oh, os, ov] = rgbToHsv(r, g, b);
+                const distFactor = Math.min(1.0, (px - 60) / 45.0);
+                if (targetS < 0.08) {
+                  const newV = ov * (0.3 + 0.7 * targetV);
+                  data[i] = Math.round(newV * 255);
+                  data[i + 1] = Math.round(newV * 255);
+                  data[i + 2] = Math.round(newV * 255);
+                } else {
+                  const newS = Math.max(targetS, 0.7) * distFactor;
+                  const newV = Math.min(1.0, (ov + 0.18 * distFactor) * Math.max(0.3, targetV));
+                  const [nr, ng, nb] = hsvToRgb(targetH, newS, newV);
+                  const blend = 0.88 * distFactor;
+                  data[i] = Math.round(nr * blend + r * (1 - blend));
+                  data[i + 1] = Math.round(ng * blend + g * (1 - blend));
+                  data[i + 2] = Math.round(nb * blend + b * (1 - blend));
+                }
+              }
+            } else if (key === 'airbrush') {
+              // 喷笔：金属喷头与枪身保留精工反光，将前端雾化喷雾粒子染上当前色彩
+              if (px < 60) {
+                const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+                if (lum > 75) {
+                  const [oh, os, ov] = rgbToHsv(r, g, b);
+                  const distFactor = Math.min(1.0, (60 - px) / 45.0);
+                  if (targetS < 0.08) {
+                    const newV = ov * (0.4 + 0.6 * targetV);
+                    data[i] = Math.round(newV * 255);
+                    data[i + 1] = Math.round(newV * 255);
+                    data[i + 2] = Math.round(newV * 255);
+                  } else {
+                    const [nr, ng, nb] = hsvToRgb(targetH, Math.max(targetS, 0.6), ov * Math.max(0.4, targetV));
+                    const blend = 0.85 * distFactor;
+                    data[i] = Math.round(nr * blend + r * (1 - blend));
+                    data[i + 1] = Math.round(ng * blend + g * (1 - blend));
+                    data[i + 2] = Math.round(nb * blend + b * (1 - blend));
+                  }
                 }
               }
             }
