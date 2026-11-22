@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.132 · Pro Edition
+      B.26.11.133 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -253,10 +253,11 @@
         <div id="splashProgressFill" class="h-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 rounded-full transition-all duration-100" style="width: 0%;"></div>
       </div>
 
-      <!-- 影片播畢後呈現：大顆立體播放進入鍵，停留於最後完整 Logo 畫面等待使用者點選進入 -->
-      <button id="btnEnterStudioAfterSplash" class="hidden mt-5 px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white font-black text-base sm:text-lg shadow-[0_12px_32px_rgba(245,158,11,0.45)] hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-2 border-white/90 ring-4 ring-amber-400/30 cursor-pointer animate-bounce" title="點擊進入 KaiDraw 畫室">
-        <span class="w-8 h-8 rounded-full bg-white/25 flex items-center justify-center text-lg pl-0.5">▶</span>
-        <span class="tracking-wide">進入 KaiDraw 畫室</span>
+      <!-- 影片播畢後呈現：純淨大顆圓形播放進入鍵，停留於最後完整 Logo 畫面等待使用者點選進入 -->
+      <button id="btnEnterStudioAfterSplash" class="hidden mt-5 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 hover:from-amber-500 hover:to-rose-600 text-white shadow-[0_12px_32px_rgba(245,158,11,0.45)] hover:scale-110 active:scale-95 transition-all flex items-center justify-center border-3 border-white/95 ring-4 ring-amber-400/35 cursor-pointer animate-bounce" aria-label="進入畫室" title="點擊進入">
+        <svg class="w-7 h-7 sm:w-9 sm:h-9 translate-x-0.5 fill-current drop-shadow-sm" viewBox="0 0 24 24">
+          <path d="M8 5.14v14l11-7-11-7z"/>
+        </svg>
       </button>
     </div>
   </div>
@@ -410,7 +411,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.132 · Pro Edition
+        B.26.11.133 · Pro Edition
       </div>
     </div>
 
