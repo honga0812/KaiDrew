@@ -55,17 +55,17 @@
       transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .studio-toolbar-collapsed {
-      opacity: 0;
-      transform: translateY(-10px) scale(0.96);
-      pointer-events: none;
-      visibility: hidden;
+      opacity: 0 !important;
+      transform: translateY(-10px) scale(0.96) !important;
+      pointer-events: none !important;
+      visibility: hidden !important;
       transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.28s;
     }
     .studio-toolbar-expanded {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      pointer-events: auto;
-      visibility: visible;
+      opacity: 1 !important;
+      transform: translateY(0) scale(1) !important;
+      pointer-events: auto !important;
+      visibility: visible !important;
       transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1), transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.32s;
     }
     .hue-slider {
@@ -140,7 +140,7 @@
   <div id="kaiQuestSplash" onclick="this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="轻点立即进入画室">
     <!-- 顶部居中极简版本编号 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.96 · Pro Edition
+      B.26.11.97 · Pro Edition
     </div>
 
     <!-- 中心纯净 KaiDraw Logo (纯白无界背景) -->
@@ -150,12 +150,12 @@
   </div>
 
   <!-- ==================== 自由拖移 KaiDraw Logo 主控制 (纯净圆形无边框，轻点平滑展开工具箱) ==================== -->
-  <button id="btnMainLogoMenu" class="stagger-init-top fixed left-3 top-3 z-50 group w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.18)] hover:scale-105 active:scale-95 transition-all cursor-pointer p-0 bg-white select-none touch-none flex items-center justify-center border-0 ring-0 outline-none" style="touch-action: none;" title="KaiDraw 极简工具箱：轻点展开/收起画具与画风选单">
+  <button id="btnMainLogoMenu" class="fixed left-3 top-3 z-50 group w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.18)] hover:scale-105 active:scale-95 transition-all cursor-pointer p-0 bg-white select-none touch-none flex items-center justify-center border-0 ring-0 outline-none" style="touch-action: none;" title="KaiDraw 极简工具箱：轻点展开/收起画具与画风选单">
     <img src="images/logo button_v2_.png" alt="KaiDraw Logo Menu" class="w-full h-full object-cover rounded-full pointer-events-none select-none transition-transform group-hover:scale-105" />
   </button>
 
   <!-- ==================== 顶部悬浮展开式工具栏 (点击 LogoButton 平滑展开/收起，分类归类清晰) ==================== -->
-  <div id="fullTopToolbar" class="studio-toolbar-collapsed fixed top-3 left-16 sm:left-18 z-45 max-w-[calc(100vw-5rem)] bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl px-3 py-2 shadow-[0_12px_36px_rgba(0,0,0,0.15)] flex flex-wrap items-center gap-2.5 select-none transition-all">
+  <div id="fullTopToolbar" class="studio-toolbar-collapsed fixed top-3 left-16 sm:left-18 z-50 max-w-[calc(100vw-5rem)] bg-white/95 backdrop-blur-2xl border border-stone-200/90 rounded-2xl px-3 py-2 shadow-[0_12px_36px_rgba(0,0,0,0.15)] flex flex-wrap items-center gap-2.5 select-none transition-all">
     
     <!-- 分类 1：画种与媒介 -->
     <div class="flex items-center gap-1.5 pr-2 border-r border-stone-200/80">
@@ -198,6 +198,12 @@
     <!-- 分类 3：画纸与图层 -->
     <div class="flex items-center gap-1.5 pr-2 border-r border-stone-200/80">
       <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider hidden md:inline">画布</span>
+      <!-- 新建画纸 (真实翻书动效与音效) -->
+      <button id="btnTopNewCanvas" class="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white active:scale-95 transition flex items-center gap-1 text-xs font-bold shadow-2xs shrink-0 cursor-pointer" title="新建画纸：翻开全新空白画布 (真实翻书音效)">
+        <span class="text-xs">➕</span>
+        <span>新建</span>
+      </button>
+
       <!-- 选纸按键 -->
       <button id="btnOpenPaperModal" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100/90 border border-amber-200/80 text-amber-800 active:scale-95 transition flex items-center gap-1 text-xs font-bold shadow-2xs shrink-0 cursor-pointer" title="选纸：默认白纸，含水彩纸、宣纸、云彩纸、卡纸">
         <span class="text-sm">📄</span>
@@ -541,7 +547,7 @@
   </div>
 
   <!-- ==================== 悬浮可拖移 AI 魔法圆形按钮 (星光与 AI 标志，支持手指与触控笔自由拖移至画面各处，轻点开启 AI 魔法工坊) ==================== -->
-  <button id="btnFloatingAiMagic" class="stagger-init-right fixed right-2.5 top-1/2 -translate-y-1/2 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 border border-white/90 shadow-[0_6px_20px_rgba(168,85,247,0.4)] hover:shadow-[0_10px_25px_rgba(168,85,247,0.6)] hover:scale-105 active:scale-95 transition-shadow flex flex-col items-center justify-center text-white cursor-move select-none touch-none group" style="touch-action: none;" title="AI 魔法：可自由拖移至屏幕任意位置，轻点开启以图生图与动画魔法">
+  <button id="btnFloatingAiMagic" class="fixed right-2.5 top-1/2 -translate-y-1/2 z-40 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 border border-white/90 shadow-[0_6px_20px_rgba(168,85,247,0.4)] hover:shadow-[0_10px_25px_rgba(168,85,247,0.6)] hover:scale-105 active:scale-95 transition-shadow flex flex-col items-center justify-center text-white cursor-move select-none touch-none group" style="touch-action: none;" title="AI 魔法：可自由拖移至屏幕任意位置，轻点开启以图生图与动画魔法">
     <span class="text-base sm:text-lg leading-none filter drop-shadow-sm pointer-events-none group-hover:scale-110 transition-transform">✨</span>
     <span class="text-[8px] sm:text-[9px] font-black tracking-widest uppercase font-mono leading-none mt-0.5 filter drop-shadow-sm pointer-events-none">AI</span>
   </button>
@@ -4859,7 +4865,7 @@
       let startY = 0;
       let initialLeft = 0;
       let initialTop = 0;
-      let startTime = 0;
+      let suppressClickUntil = 0;
 
       element.addEventListener('pointerdown', (e) => {
         if (e.button !== 0) return;
@@ -4867,15 +4873,10 @@
         hasMoved = false;
         startX = e.clientX;
         startY = e.clientY;
-        startTime = Date.now();
 
         const rect = element.getBoundingClientRect();
         initialLeft = rect.left;
         initialTop = rect.top;
-
-        try {
-          element.setPointerCapture(e.pointerId);
-        } catch (_) {}
       });
 
       element.addEventListener('pointermove', (e) => {
@@ -4885,6 +4886,9 @@
 
         if (!hasMoved && Math.hypot(dx, dy) > 8) {
           hasMoved = true;
+          try {
+            element.setPointerCapture(e.pointerId);
+          } catch (_) {}
           // 仅在真实发生位移时转换为 fixed 绝对定位
           element.style.left = `${initialLeft}px`;
           element.style.top = `${initialTop}px`;
@@ -4921,28 +4925,24 @@
           }
         } catch (_) {}
 
-        const elapsed = Date.now() - startTime;
-        if (!hasMoved && elapsed < 650) {
-          if (typeof onTapped === 'function') {
-            onTapped(e);
-          }
+        // 若产生明显位移，则在 400ms 内屏蔽随后的 click 事件，防止松开指针时误触点击展开
+        if (hasMoved) {
+          suppressClickUntil = Date.now() + 400;
+          hasMoved = false;
         }
       };
 
       element.addEventListener('pointerup', handlePointerEnd);
-      element.addEventListener('pointercancel', (e) => {
-        isDragging = false;
-        try {
-          if (element.hasPointerCapture(e.pointerId)) {
-            element.releasePointerCapture(e.pointerId);
-          }
-        } catch (_) {}
-      });
+      element.addEventListener('pointercancel', handlePointerEnd);
 
-      // 允许普通 click 事件触发轻点展开，增强跨设备兼容性
+      // 单一权威点选事件：轻点由原生 click 统一执行一次，绝不在 pointerup 和 click 中双重触发！
       element.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopPropagation();
-        if (!hasMoved && typeof onTapped === 'function') {
+        if (Date.now() < suppressClickUntil) {
+          return;
+        }
+        if (typeof onTapped === 'function') {
           onTapped(e);
         }
       });
@@ -4976,13 +4976,11 @@
       if (shouldOpen) {
         fullTopToolbar.classList.remove('studio-toolbar-collapsed');
         fullTopToolbar.classList.add('studio-toolbar-expanded');
-        btnMainLogoMenu?.classList.add('ring-2', 'ring-amber-400');
         if (logoMenuToggleArrow) logoMenuToggleArrow.style.transform = 'rotate(180deg)';
         if (fullToolbarArrow) fullToolbarArrow.style.transform = 'rotate(180deg)';
       } else {
         fullTopToolbar.classList.remove('studio-toolbar-expanded');
         fullTopToolbar.classList.add('studio-toolbar-collapsed');
-        btnMainLogoMenu?.classList.remove('ring-2', 'ring-amber-400');
         if (logoMenuToggleArrow) logoMenuToggleArrow.style.transform = 'rotate(0deg)';
         if (fullToolbarArrow) fullToolbarArrow.style.transform = 'rotate(0deg)';
       }
@@ -5011,12 +5009,18 @@
         const minX = 6;
         const maxX = window.innerWidth - rect.width - 6;
         const minY = 6;
-        const maxY = window.innerHeight - height - 6;
+        const maxY = window.innerHeight - rect.height - 6;
         if (rect.left > maxX || rect.top > maxY) {
           el.style.left = `${Math.max(minX, Math.min(maxX, rect.left))}px`;
           el.style.top = `${Math.max(minY, Math.min(maxY, rect.top))}px`;
         }
       });
+    });
+
+    // 顶栏新建画纸按钮关联翻页动效与翻书音效
+    document.getElementById('btnTopNewCanvas')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerPageFlipNewCanvas();
     });
     if (btnToggleFullToolbar) {
       btnToggleFullToolbar.addEventListener('click', (e) => {
@@ -5034,7 +5038,10 @@
     // 点击外部区域或画布时平滑收拢顶部工具栏
     document.addEventListener('pointerdown', (e) => {
       if (!fullTopToolbar || !fullTopToolbar.classList.contains('studio-toolbar-expanded')) return;
-      if (!fullTopToolbar.contains(e.target) && !btnMainLogoMenu?.contains(e.target) && !document.getElementById('mainDrawer')?.contains(e.target)) {
+      if (!fullTopToolbar.contains(e.target) && 
+          !btnMainLogoMenu?.contains(e.target) && 
+          !document.getElementById('mainDrawer')?.contains(e.target) &&
+          !e.target.closest?.('#paperTextureModal, #styleModal, #cameraModal, #layersPanel, #artworkHistoryModal, #evictionPromptModal')) {
         toggleTopToolbar(false);
       }
     });
@@ -5251,6 +5258,10 @@
         return;
       }
 
+      if (!isPageFlipping) {
+        playBookPageFlipSound();
+      }
+
       // 完整封存当前正在绘制的画作现场
       saveCurrentSlotSnapshot(false);
 
@@ -5435,40 +5446,107 @@
       });
     }
 
-    // 物理拟真翻页音效 (Web Audio API 真实白噪声带通滤波，模拟纸张掀动刷刷声)
-    function playPaperFlipSound() {
+    // 真实书本翻页物理音效 (Real Book Page Flip Sound Effect)
+    // 采用拟真翻书采样与 Web Audio 3段声学合成保底 (含起纸剥离摩擦声、空中扑动扰流、合页拍落轻响)
+    let cachedBookAudio = null;
+    function playBookPageFlipSound() {
+      try {
+        if (!cachedBookAudio) {
+          cachedBookAudio = new Audio('images/page_flip.wav');
+          cachedBookAudio.volume = 0.85;
+        } else {
+          cachedBookAudio.currentTime = 0;
+        }
+        const promise = cachedBookAudio.play();
+        if (promise !== undefined) {
+          promise.catch(() => {
+            playAcousticPaperFlipFallback();
+          });
+        }
+      } catch (_) {
+        playAcousticPaperFlipFallback();
+      }
+    }
+
+    // Web Audio 实时 3 段声学合成物理翻书声 (起纸摩擦 + 翻动风阻 + 拍合微响)
+    function playAcousticPaperFlipFallback() {
       try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (!AudioContext) return;
         const ctx = new AudioContext();
         if (ctx.state === 'suspended') ctx.resume();
 
-        const bufferSize = Math.floor(ctx.sampleRate * 0.28);
+        const now = ctx.currentTime;
+        const dur = 0.42;
+
+        // 阶段 1：纸张微粒摩擦与纤维剥离 (Filtered Pink Noise with Envelope)
+        const bufferSize = Math.floor(ctx.sampleRate * dur);
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
+        let b0 = 0, b1 = 0, b2 = 0;
         for (let i = 0; i < bufferSize; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.09));
+          const white = Math.random() * 2 - 1;
+          b0 = 0.99886 * b0 + white * 0.0555;
+          b1 = 0.99332 * b1 + white * 0.0750;
+          b2 = 0.96900 * b2 + white * 0.1538;
+          const pink = b0 + b1 + b2 + white * 0.5362;
+          const t = i / ctx.sampleRate;
+          const env = Math.sin(Math.min(Math.PI, t / 0.28 * Math.PI)) * Math.exp(-t * 4.5);
+          data[i] = pink * 0.25 * env;
         }
-        const noise = ctx.createBufferSource();
-        noise.buffer = buffer;
+        const noiseSource = ctx.createBufferSource();
+        noiseSource.buffer = buffer;
 
-        const filter = ctx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(1200, ctx.currentTime);
-        filter.frequency.exponentialRampToValueAtTime(320, ctx.currentTime + 0.28);
-        filter.Q.value = 1.2;
+        const noiseFilter = ctx.createBiquadFilter();
+        noiseFilter.type = 'bandpass';
+        noiseFilter.frequency.setValueAtTime(2200, now);
+        noiseFilter.frequency.exponentialRampToValueAtTime(450, now + dur);
+        noiseFilter.Q.value = 1.8;
 
-        const gain = ctx.createGain();
-        gain.gain.setValueAtTime(0.35, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+        const noiseGain = ctx.createGain();
+        noiseGain.gain.setValueAtTime(0.65, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, now + dur);
 
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(ctx.destination);
+        noiseSource.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        noiseGain.connect(ctx.destination);
+        noiseSource.start(now);
 
-        noise.start();
+        // 阶段 2：书页翻折风阻扰流 (Low-freq Resonance whoosh with flutter)
+        const whooshOsc = ctx.createOscillator();
+        const whooshGain = ctx.createGain();
+        whooshOsc.type = 'sine';
+        whooshOsc.frequency.setValueAtTime(320, now + 0.06);
+        whooshOsc.frequency.exponentialRampToValueAtTime(110, now + 0.32);
+
+        whooshGain.gain.setValueAtTime(0.001, now);
+        whooshGain.gain.linearRampToValueAtTime(0.18, now + 0.14);
+        whooshGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+        whooshOsc.connect(whooshGain);
+        whooshGain.connect(ctx.destination);
+        whooshOsc.start(now + 0.06);
+        whooshOsc.stop(now + 0.36);
+
+        // 阶段 3：纸张扑落在书册上的微弱拍合阻尼敲击声 (Landing Tap)
+        const slapOsc = ctx.createOscillator();
+        const slapGain = ctx.createGain();
+        slapOsc.type = 'triangle';
+        slapOsc.frequency.setValueAtTime(140, now + 0.22);
+        slapOsc.frequency.exponentialRampToValueAtTime(42, now + 0.36);
+
+        slapGain.gain.setValueAtTime(0.001, now);
+        slapGain.gain.setValueAtTime(0.26, now + 0.22);
+        slapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+
+        slapOsc.connect(slapGain);
+        slapGain.connect(ctx.destination);
+        slapOsc.start(now + 0.22);
+        slapOsc.stop(now + 0.40);
       } catch (_) {}
     }
+
+    const playPaperFlipSound = playBookPageFlipSound;
 
     // 翻书过场动效与新建画纸
     let isPageFlipping = false;
