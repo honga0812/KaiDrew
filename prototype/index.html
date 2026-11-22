@@ -157,7 +157,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext(); this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="輕點立即進入畫室">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.113 · Pro Edition
+      B.26.11.114 · Pro Edition
     </div>
 
     <!-- 中心純淨 KaiDraw Logo (純白無界背景) -->
@@ -307,7 +307,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.113 · Pro Edition
+        B.26.11.114 · Pro Edition
       </div>
     </div>
 
@@ -3251,7 +3251,7 @@
     }
 
     // 2. 真實畫筆物理接觸紙張聲學引擎 (Real-time Brush Paper Friction Acoustics)
-    // 依據繪畫速度閾值響應：原地慢速畫時無聲，快速划動才出現微弱摩擦聲；噴筆則起筆即有細膩氣流噴音
+    // 依據繪畫速度閾值響應：接觸紙張瞬間提供輕微觸紙微音，划動時呈現擬真質物質感；音量提升 30%
     const BrushAudioEngine = (() => {
       let isInitialized = false;
       let isPlaying = false;
@@ -3260,6 +3260,7 @@
       let filterNode = null;
       let gainNode = null;
       let targetGain = 0;
+      const BRUSH_VOLUME_SCALAR = 1.30; // 畫筆接觸紙張音效提升 30% (+30%)
 
       function init() {
         if (isInitialized) return;
@@ -3306,49 +3307,49 @@
           filterNode.type = 'lowpass';
           filterNode.frequency.setTargetAtTime(460, now, 0.04);
           filterNode.Q.setTargetAtTime(1.0, now, 0.04);
-          targetGain = 0.020;
+          targetGain = 0.020 * BRUSH_VOLUME_SCALAR;
           isAirbrush = false;
         } else if (medium === 'marker') {
           // 馬克筆：特有的高頻纖維微摩擦與阻尼滑行 (Bandpass 2400Hz, Q=1.8)
           filterNode.type = 'bandpass';
           filterNode.frequency.setTargetAtTime(2400, now, 0.04);
           filterNode.Q.setTargetAtTime(1.8, now, 0.04);
-          targetGain = 0.018;
+          targetGain = 0.018 * BRUSH_VOLUME_SCALAR;
           isAirbrush = false;
         } else if (medium === 'watercolor') {
           // 水彩筆：輕微、高頻、淡雅的濕潤毛刷拂紙微聲 (Bandpass 3600Hz，極淡微增益)
           filterNode.type = 'bandpass';
           filterNode.frequency.setTargetAtTime(3600, now, 0.04);
           filterNode.Q.setTargetAtTime(0.65, now, 0.04);
-          targetGain = 0.012;
+          targetGain = 0.012 * BRUSH_VOLUME_SCALAR;
           isAirbrush = false;
         } else if (medium === 'crayon') {
           // 蠟筆：顆粒乾性蠟質抓紙微阻尼 (Bandpass 1600Hz, Q=1.0)
           filterNode.type = 'bandpass';
           filterNode.frequency.setTargetAtTime(1600, now, 0.04);
           filterNode.Q.setTargetAtTime(1.0, now, 0.04);
-          targetGain = 0.020;
+          targetGain = 0.020 * BRUSH_VOLUME_SCALAR;
           isAirbrush = false;
         } else if (medium === 'airbrush') {
           // 噴筆：極輕微細膩的連續噴霧氣流拂音 (Highpass 3200Hz, 落筆即持續噴射)
           filterNode.type = 'highpass';
           filterNode.frequency.setTargetAtTime(3200, now, 0.04);
           filterNode.Q.setTargetAtTime(0.6, now, 0.04);
-          targetGain = 0.015;
+          targetGain = 0.015 * BRUSH_VOLUME_SCALAR;
           isAirbrush = true;
         } else if (medium === 'chinese-brush') {
           // 毛筆：軟毫在宣紙上的絲滑輕盈拂動 (Bandpass 2800Hz, 柔淡高頻)
           filterNode.type = 'bandpass';
           filterNode.frequency.setTargetAtTime(2800, now, 0.04);
           filterNode.Q.setTargetAtTime(0.75, now, 0.04);
-          targetGain = 0.011;
+          targetGain = 0.011 * BRUSH_VOLUME_SCALAR;
           isAirbrush = false;
         } else {
           // 鉛筆與其它畫筆
           filterNode.type = 'bandpass';
           filterNode.frequency.setTargetAtTime(2200, now, 0.04);
           filterNode.Q.setTargetAtTime(1.2, now, 0.04);
-          targetGain = 0.016;
+          targetGain = 0.016 * BRUSH_VOLUME_SCALAR;
           isAirbrush = false;
         }
       }
@@ -3364,8 +3365,9 @@
           // 噴筆起筆即有細膩氣流噴射聲
           gainNode.gain.setTargetAtTime(targetGain, ctx.currentTime, 0.02);
         } else {
-          // 其他畫筆落筆原地保持靜音，只有達到一定划動速度後才發聲
-          gainNode.gain.setValueAtTime(0, ctx.currentTime);
+          // 畫筆接觸紙張瞬間提供輕柔擬真觸紙微響，隨後由運筆滑動速度接續維持
+          gainNode.gain.setValueAtTime(targetGain * 0.45, ctx.currentTime);
+          gainNode.gain.setTargetAtTime(0.00001, ctx.currentTime + 0.02, 0.04);
         }
       }
 
@@ -6993,7 +6995,7 @@
     const playPaperFlipSound = playBookPageFlipSound;
 
     /********************************************************************
-     * 沉浸畫室背景樂控制器 (已載入專屬音軌 images/bgm.mp3，音量精準設定為 70%)
+     * 沉浸畫室背景樂控制器 (已載入專屬音軌 images/bgm.mp3，音量設定為 50%)
      ********************************************************************/
     const StudioBgmEngine = (() => {
       let isPlaying = false;
@@ -7003,7 +7005,7 @@
         if (!bgmAudioEl) {
           bgmAudioEl = new Audio('images/bgm.mp3');
           bgmAudioEl.loop = true;
-          bgmAudioEl.volume = 0.70; // 設定音量為 70%
+          bgmAudioEl.volume = 0.50; // 設定音量為 50%
         }
       }
 
@@ -7016,13 +7018,13 @@
           updateUI();
           showToast('已暫停畫室背景伴奏');
         } else {
-          bgmAudioEl.volume = 0.70;
+          bgmAudioEl.volume = 0.50;
           const p = bgmAudioEl.play();
           if (p !== undefined) {
             p.then(() => {
               isPlaying = true;
               updateUI();
-              showToast('🎶 已開啟畫室背景伴奏 (音量 70%)');
+              showToast('🎶 已開啟畫室背景伴奏 (音量 50%)');
             }).catch((err) => {
               console.warn('BGM play error:', err);
               updateUI();
