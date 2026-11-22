@@ -220,29 +220,35 @@
 </head>
 <body class="text-stone-800 antialiased h-screen flex flex-col p-0 select-none relative overflow-hidden bg-white" style="height: 100dvh;">
 
-  <!-- ==================== KaiDraw 純白極簡開屏 (純白底色，居中 Logo 3秒藝術動畫，頂部版本號，底部進度光條) ==================== -->
-  <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
+  <!-- ==================== KaiDraw 純白極簡開屏 (反向播放 10秒 Logo 影片，頂部版本號，跳過按鍵，底部進度光條) ==================== -->
+  <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
-    <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.118 · Pro Edition
+    <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
+      B.26.11.119 · Pro Edition
     </div>
 
-    <!-- 中心純淨 KaiDraw Logo 3秒藝術動畫容器 -->
-    <div class="relative flex flex-col items-center justify-center select-none">
-      <!-- 柔彩水彩光暈光環 (3秒緩慢綻放流光) -->
-      <div class="absolute w-56 h-56 sm:w-68 sm:h-68 rounded-full bg-gradient-to-tr from-amber-300/40 via-rose-300/35 to-sky-300/40 blur-2xl animate-[logoAuraPulse3s_3s_cubic-bezier(0.16,1,0.3,1)_forwards] pointer-events-none"></div>
+    <!-- 右上角跳過按鍵 -->
+    <button id="btnSkipSplashIntro" class="absolute top-5 right-5 z-20 px-3.5 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold shadow-xs active:scale-95 transition flex items-center gap-1 cursor-pointer" title="跳過開場動畫，直接進入畫室">
+      <span>跳過開場</span>
+      <span class="text-[10px]">➜</span>
+    </button>
 
-      <!-- 中心 Logo 主體 (3秒優雅浮現微縮放動效) -->
-      <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="relative z-10 w-36 h-36 sm:w-44 sm:h-44 object-contain mix-blend-multiply select-none pointer-events-none drop-shadow-sm animate-[logoBloom3s_3s_cubic-bezier(0.16,1,0.3,1)_forwards]" />
+    <!-- 中心 10 秒反向播放 Logo 影片容器 -->
+    <div class="relative flex flex-col items-center justify-center select-none max-w-full">
+      <!-- 柔彩水彩光暈光環 (緩慢綻放流光) -->
+      <div class="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-amber-300/30 via-rose-300/25 to-sky-300/30 blur-2xl pointer-events-none"></div>
 
-      <!-- 品牌標語 (3秒柔和浮現) -->
-      <div class="relative z-10 mt-3 text-xs sm:text-sm font-bold text-stone-600 tracking-wider text-center animate-[logoTextFade3s_3s_ease-out_forwards]">
+      <!-- 10 秒反向播放的高畫質 Logo 影片 -->
+      <video id="splashLogoVideo" src="images/logo_video_reversed.mp4" autoplay muted playsinline class="relative z-10 w-full max-w-md sm:max-w-lg md:max-w-xl aspect-video rounded-2xl shadow-[0_16px_40px_rgba(0,0,0,0.1)] border border-stone-200/70 object-contain pointer-events-none bg-white"></video>
+
+      <!-- 品牌標語 -->
+      <div class="relative z-10 mt-3.5 text-xs sm:text-sm font-bold text-stone-600 tracking-wider text-center">
         純粹3大畫種 · 讓孩子的奇思妙想躍然紙上
       </div>
 
-      <!-- 3 秒輕奢極簡金色進度光條 -->
-      <div class="w-32 h-1 bg-stone-100 rounded-full mt-4 overflow-hidden relative">
-        <div class="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full animate-[logoShimmerProgress3s_3s_linear_forwards]"></div>
+      <!-- 10 秒動態進度光條 -->
+      <div class="w-48 h-1.5 bg-stone-100 rounded-full mt-3 overflow-hidden relative shadow-inner">
+        <div id="splashProgressFill" class="h-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 rounded-full transition-all duration-100" style="width: 0%;"></div>
       </div>
     </div>
   </div>
@@ -396,7 +402,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.118 · Pro Edition
+        B.26.11.119 · Pro Edition
       </div>
     </div>
 
@@ -6483,14 +6489,22 @@
     /********************************************************************
      * 14.5 極簡模式主控、多畫紙狀態實時預覽條(最多5張)、高頻工具塢互動與 KaiQuest 開屏啟動
      ********************************************************************/
-    // 1. KaiDraw 純白開場與元件逐個漸顯流光動效 (Staggered cascading entrance)
+    // 1. KaiDraw 純白開場與反向 10 秒 Logo 影片播放 (支援點選跳過與影片播放結束自動進入)
     let dismissSplashFn = null;
     const splashEl = document.getElementById('kaiQuestSplash');
+    const splashVideo = document.getElementById('splashLogoVideo');
+    const splashProgress = document.getElementById('splashProgressFill');
+    const btnSkipIntro = document.getElementById('btnSkipSplashIntro');
+
     if (splashEl) {
       dismissSplashFn = () => {
         if (splashEl.dataset.dismissed) return;
         splashEl.dataset.dismissed = 'true';
         splashEl.classList.add('splash-fade-out');
+
+        try {
+          if (splashVideo) splashVideo.pause();
+        } catch (_) {}
 
         // 嘗試自動播放隨機挑選的背景音樂 (符合瀏覽器互動權限規範)
         try {
@@ -6530,7 +6544,7 @@
           // 啟動完成後立即執行滿版自適應計算，讓 4 倍超大畫布優雅鋪滿視口
           if (typeof fitCanvasToScreen === 'function') fitCanvasToScreen();
 
-          // Logo 3秒動畫結束後：自動呈現相片轉換與臨摹實驗室，讓使用者決定是否拍照上傳或直接繪圖
+          // Logo 影片結束後：自動呈現相片轉換與臨摹實驗室，讓使用者決定是否拍照上傳或直接繪圖
           const cam = document.getElementById('cameraModal');
           if (cam) {
             cam.classList.remove('hidden');
@@ -6543,10 +6557,31 @@
 
       splashEl.addEventListener('click', dismissSplashFn);
       splashEl.addEventListener('pointerdown', dismissSplashFn);
-      setTimeout(dismissSplashFn, 3000); // 3 秒鐘的出現動畫
+      btnSkipIntro?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dismissSplashFn();
+      });
+
+      if (splashVideo) {
+        splashVideo.addEventListener('timeupdate', () => {
+          if (splashVideo.duration && splashProgress) {
+            const pct = Math.min(100, Math.round((splashVideo.currentTime / splashVideo.duration) * 100));
+            splashProgress.style.width = `${pct}%`;
+          }
+        });
+        splashVideo.addEventListener('ended', dismissSplashFn);
+        // 嘗試自動播放反向 Logo 影片
+        const p = splashVideo.play();
+        if (p !== undefined) {
+          p.catch(() => {});
+        }
+      }
+
+      // 10.5 秒後自動結束開屏
+      setTimeout(dismissSplashFn, 10500);
     }
 
-    // 全域性開屏保底計時器：無論如何 3.5 秒後呼叫 dismissSplashFn，徹底清除初始化過渡類與呈現相片轉換介面
+    // 全域性開屏保底計時器：無論如何 11.5 秒後呼叫 dismissSplashFn，徹底清除初始化過渡類與呈現相片轉換介面
     setTimeout(() => {
       if (dismissSplashFn) {
         dismissSplashFn();
@@ -6554,7 +6589,7 @@
         const s = document.getElementById('kaiQuestSplash');
         if (s) s.remove();
       }
-    }, 3500);
+    }, 11500);
 
     // 2. 自由拖移元件：Logo 按鈕、圖層按鈕、AI 按鈕、畫紙按鈕 及 浮動迷你面板 (支援手指觸控、Apple Pencil 觸控筆及滑鼠拖移至螢幕任意位置)
     function makeElementDraggable(element, onTapped) {
