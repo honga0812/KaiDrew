@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.141 · Pro Edition
+      B.26.11.142 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -416,7 +416,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.141 · Pro Edition
+        B.26.11.142 · Pro Edition
       </div>
     </div>
 
@@ -2930,18 +2930,20 @@
     function dabWatercolorAt(targetCtx, cx, cy, radius, pressure, stepIndex) {
       const p = Math.max(0.02, Math.min(1.0, pressure));
       const effRadius = getEffectiveBrushRadius(radius, p);
-      const wetness = waterLevel / 100;
+      const wetness = waterLevel / 100; // 0.10 (極少水/濃墨原色) ~ 0.95 (大量清水稀釋)
+      // 顏料濃度與水分稀釋成反比：水分越少 (10%) 濃度=1.0 越接近原色；水分越多 (95%) 越淡透稀釋
+      const dryConc = Math.max(0.15, Math.min(1.0, 1.0 - (wetness - 0.10) * 0.88));
 
       if (watercolorBrushType === 'calligraphy_brush') {
-        // ✒️ 書法毛筆：下筆由細漸粗、快移變細變淡、收筆順滑收尖 (p 代表行筆力度與提按包絡)
-        const minStr = Math.max(0.24, 0.34 - wetness * 0.10);
-        // 即使在極細筆鋒尖端 (p < 0.15) 也保持清晰墨跡不斷線
-        const inkP = Math.max(0.28, Math.pow(p, 0.72));
+        // ✒️ 書法毛筆：水分越少越接近純粹濃墨原色 (如黑墨即純黑不發灰)；水分越多越呈現淡墨水韻
+        const minStr = 0.16 + dryConc * 0.74; // 10%水→0.90濃墨原色；95%水→0.34淡墨
+        const inkP = Math.max(0.24, Math.pow(p, 0.78 - dryConc * 0.34) * (0.45 + dryConc * 0.55));
         const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, inkP, brushDilution, minStr);
+        const dabAlpha = 0.44 + dryConc * 0.54; // 10%水→0.98紮實飽滿；95%水→0.57淡透
         const innerR = Math.max(0.50, (effRadius - Math.min(1.1, effRadius * 0.35)) / effRadius);
         const radGrad = targetCtx.createRadialGradient(cx, cy, 0, cx, cy, effRadius);
-        radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.88)`);
-        radGrad.addColorStop(innerR, `rgba(${r}, ${g}, ${b}, 0.78)`);
+        radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${dabAlpha})`);
+        radGrad.addColorStop(innerR, `rgba(${r}, ${g}, ${b}, ${dabAlpha * 0.90})`);
         radGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
 
         targetCtx.fillStyle = radGrad;
@@ -2964,13 +2966,15 @@
       }
 
       if (watercolorBrushType === 'airbrush') {
-        // 💨 柔和噴筆：高斯霧化漸變 + 微米噴霧顆粒，快移輕霧、慢移濃霧
-        const minStr = Math.max(0.14, 0.22 - wetness * 0.08);
-        const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, p, brushDilution, minStr);
+        // 💨 柔和噴筆：水分越少噴色越濃實；水分越多噴霧越清淡通透
+        const minStr = 0.12 + dryConc * 0.64;
+        const inkP = Math.max(0.18, p * (0.45 + dryConc * 0.55));
+        const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, inkP, brushDilution, minStr);
+        const dabAlpha = 0.14 + dryConc * 0.30; // 10%水→0.44；95%水→0.21
         const radGrad = targetCtx.createRadialGradient(cx, cy, 0, cx, cy, effRadius);
-        radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.28)`);
-        radGrad.addColorStop(0.38, `rgba(${r}, ${g}, ${b}, 0.18)`);
-        radGrad.addColorStop(0.72, `rgba(${r}, ${g}, ${b}, 0.06)`);
+        radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${dabAlpha})`);
+        radGrad.addColorStop(0.38, `rgba(${r}, ${g}, ${b}, ${dabAlpha * 0.64})`);
+        radGrad.addColorStop(0.72, `rgba(${r}, ${g}, ${b}, ${dabAlpha * 0.22})`);
         radGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
 
         targetCtx.fillStyle = radGrad;
@@ -2981,7 +2985,7 @@
         // 外圍霧化微粒
         if (stepIndex % 2 === 0) {
           const mistCount = Math.max(2, Math.floor(effRadius * 0.32));
-          targetCtx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.22)`;
+          targetCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${dabAlpha * 0.78})`;
           for (let mi = 0; mi < mistCount; mi++) {
             const mAngle = Math.random() * Math.PI * 2;
             const mDist = (0.35 + Math.random() * 0.65) * effRadius;
@@ -2991,12 +2995,12 @@
         return;
       }
 
-      // 🖌️ 標準水彩筆 (watercolor_round)：濕度與速度共同控制濃淡與粗細
-      const minStr = Math.max(0.14, 0.26 - wetness * 0.10);
-      const inkP = Math.max(0.22, p * (1.08 - wetness * 0.22));
+      // 🖌️ 標準水彩筆 (watercolor_round)：水分越少越接近指定濃彩原色；水分越多越稀釋淡雅暈染
+      const minStr = 0.12 + dryConc * 0.72; // 10%水→0.84接近原色；95%水→0.30極淡透
+      const inkP = Math.max(0.18, p * (0.42 + dryConc * 0.68));
       const [r, g, b] = getPressurePigmentRGB(activeBrushRGB, inkP, brushDilution, minStr);
 
-      const dabAlpha = 0.54;
+      const dabAlpha = 0.26 + dryConc * 0.64; // 10%水→0.90濃彩；95%水→0.42清透水彩
       const radGrad = targetCtx.createRadialGradient(cx, cy, 0, cx, cy, effRadius);
       radGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${dabAlpha})`);
       radGrad.addColorStop(0.72, `rgba(${r}, ${g}, ${b}, ${dabAlpha * 0.85})`);
