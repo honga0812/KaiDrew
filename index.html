@@ -140,7 +140,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext(); this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="轻点立即进入画室">
     <!-- 顶部居中极简版本编号 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.107 · Pro Edition
+      B.26.11.108 · Pro Edition
     </div>
 
     <!-- 中心纯净 KaiDraw Logo (纯白无界背景) -->
@@ -290,7 +290,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.107 · Pro Edition
+        B.26.11.108 · Pro Edition
       </div>
     </div>
 
@@ -823,15 +823,28 @@
           </div>
           <div class="flex flex-col min-w-0">
             <div class="flex items-center gap-1.5">
-              <span class="text-xs font-bold text-stone-900 truncate">平头斜角马克笔</span>
-              <span class="text-[9px] font-mono px-1.5 py-0.2 rounded-md bg-indigo-100 text-indigo-800 font-bold shrink-0">平涂锐利</span>
+              <span id="drawerMarkerTipName" class="text-xs font-bold text-stone-900 truncate">平头斜角马克笔</span>
+              <span id="drawerMarkerTipBadge" class="text-[9px] font-mono px-1.5 py-0.2 rounded-md bg-indigo-100 text-indigo-800 font-bold shrink-0">平涂锐利</span>
             </div>
-            <span class="text-[10px] text-stone-500 font-medium truncate mt-0.5">鲜明平涂 · 边缘高锐度高饱和不渗墨</span>
+            <span id="drawerMarkerTipDesc" class="text-[10px] text-stone-500 font-medium truncate mt-0.5">鲜明平涂 · 边缘高锐度高饱和不渗墨</span>
           </div>
         </div>
         <div class="flex flex-col items-center gap-0.5 shrink-0 pl-1.5 border-l border-stone-200/60">
           <div class="drawer-active-color-dot-common w-5 h-5 rounded-full border-2 border-white shadow-sm ring-2 ring-indigo-500" style="background: rgb(20, 85, 210);"></div>
           <span class="text-[7.5px] font-bold text-stone-400">当前色</span>
+        </div>
+      </div>
+
+      <!-- 笔头造型切换 (斜切头 / 圆头 / 软尖头) - 置于笔头卡片下方，一键换头 -->
+      <div class="bg-stone-50 p-2.5 rounded-2xl border border-stone-200/80 shadow-xs flex flex-col gap-1.5">
+        <div class="text-[11px] font-bold text-stone-700 flex items-center justify-between">
+          <span>🖊️ 笔头造型切换：</span>
+          <span class="text-[10px] text-stone-400 font-normal">点击即刻换头与预染</span>
+        </div>
+        <div class="grid grid-cols-3 gap-1.5 text-xs">
+          <button data-tip="chisel" class="tip-btn py-2 rounded-xl border-2 border-indigo-500 bg-indigo-50 text-indigo-900 font-bold active:scale-95 transition shadow-2xs">📐 斜切头</button>
+          <button data-tip="round" class="tip-btn py-2 rounded-xl border border-stone-200 bg-white text-stone-700 font-semibold active:scale-95 transition shadow-2xs">⏺️ 圆头</button>
+          <button data-tip="brush" class="tip-btn py-2 rounded-xl border border-stone-200 bg-white text-stone-700 font-semibold active:scale-95 transition shadow-2xs">🖌️ 软尖头</button>
         </div>
       </div>
 
@@ -855,15 +868,6 @@
         <div class="flex items-center gap-2 text-xs">
           <span class="text-stone-500 shrink-0 text-[11px]">墨水饱和度:</span>
           <input id="lightnessSliderMarker" type="range" min="20" max="95" value="55" class="flex-1 accent-indigo-500" />
-        </div>
-      </div>
-
-      <div class="bg-stone-50 p-3 rounded-2xl border border-stone-200/80 shadow-xs flex flex-col gap-1.5">
-        <div class="text-[11px] font-bold text-stone-600 mb-1">笔头造型切换：</div>
-        <div class="grid grid-cols-3 gap-1.5 text-xs">
-          <button data-tip="round" class="tip-btn py-2 rounded-xl border-2 border-amber-500 bg-amber-50 text-amber-900 font-bold active:scale-95 transition shadow-2xs">⏺️ 圆头</button>
-          <button data-tip="brush" class="tip-btn py-2 rounded-xl border border-stone-200 bg-white text-stone-700 font-semibold active:scale-95 transition shadow-2xs">🖌️ 软尖头</button>
-          <button data-tip="chisel" class="tip-btn py-2 rounded-xl border border-stone-200 bg-white text-stone-700 font-semibold active:scale-95 transition shadow-2xs">📐 斜切头</button>
         </div>
       </div>
     </div>
@@ -1869,7 +1873,7 @@
     let watercolorBrushType = 'watercolor_round'; // 'watercolor_round' | 'calligraphy_brush' | 'airbrush'
     let crayonTipMode = 'tip';
     let crayonRoughness = 65;
-    let markerTip = 'round';
+    let markerTip = 'chisel'; // 'chisel' | 'round' | 'brush'
 
     let refVisible = false;
     let refOpacity = 60;
@@ -3357,6 +3361,24 @@
           <path d="M24 28 L24 16 L40 8 L40 28 Z" fill="currentColor"/>
           <polygon points="24,16 40,8 36,8 24,14" fill="white" opacity="0.4"/>
         </svg>`,
+      'marker-chisel': `
+        <svg class="w-7 h-7 drop-shadow-xs" viewBox="0 0 64 64" fill="none">
+          <rect x="22" y="28" width="20" height="34" rx="3" fill="#1E293B"/>
+          <path d="M24 28 L24 16 L40 8 L40 28 Z" fill="currentColor"/>
+          <polygon points="24,16 40,8 36,8 24,14" fill="white" opacity="0.4"/>
+        </svg>`,
+      'marker-round': `
+        <svg class="w-7 h-7 drop-shadow-xs" viewBox="0 0 64 64" fill="none">
+          <rect x="22" y="28" width="20" height="34" rx="3" fill="#1E293B"/>
+          <path d="M26 28 L26 18 C26 10 38 10 38 18 L38 28 Z" fill="currentColor"/>
+          <circle cx="32" cy="16" r="3" fill="white" opacity="0.35"/>
+        </svg>`,
+      'marker-brush': `
+        <svg class="w-7 h-7 drop-shadow-xs" viewBox="0 0 64 64" fill="none">
+          <rect x="22" y="30" width="20" height="32" rx="3" fill="#1E293B"/>
+          <path d="M25 30 C25 22 29 10 32 4 C35 10 39 22 39 30 Z" fill="currentColor"/>
+          <path d="M30 18 L32 8" stroke="white" stroke-width="1.2" opacity="0.5"/>
+        </svg>`,
       airbrush: `
         <svg class="w-7 h-7 drop-shadow-xs" viewBox="0 0 64 64" fill="none">
           <path d="M16 42 L48 42 L44 26 L20 26 Z" fill="#94A3B8"/>
@@ -3378,7 +3400,10 @@
       watercolor: { name: '湿画水彩笔', badge: '水痕渐变', desc: '温润水色晕染 · 速度控制浓淡与边缘扩散' },
       'chinese-brush': { name: '传统软毫毛笔', badge: '快移笔锋', desc: '提按顿挫 · 快移细出苍劲笔锋与飞白' },
       crayon: { name: '质感油画蜡笔', badge: '颗粒厚实', desc: '抓纸干性 · 真实物理油性蜡质颗粒阻尼' },
-      marker: { name: '平头斜角马克笔', badge: '平涂锐利', desc: '鲜明平涂 · 边缘锐利高饱和不渗墨' },
+      marker: { name: '平头斜角马克笔', badge: '平涂锐利', desc: '宽面平涂 · 边缘高锐度高饱和平整铺色' },
+      'marker-chisel': { name: '平头斜角马克笔', badge: '平涂锐利', desc: '宽面平涂 · 边缘高锐度高饱和平整铺色' },
+      'marker-round': { name: '经典圆头马克笔', badge: '勾线描边', desc: '均匀圆头 · 稳定勾边、插画描线与细节刻画' },
+      'marker-brush': { name: '柔韧软尖秀丽笔', badge: '压感粗细', desc: '柔韧软尖 · 压感轻重控制线条粗细与动感飞白' },
       airbrush: { name: '精密气压喷笔', badge: '柔雾渐层', desc: '微粒雾化 · 柔和气压喷雾渐变' },
       eraser: { name: '美术高光橡皮', badge: '局部退白', desc: '局部擦除 · 细腻退白修复' }
     };
@@ -3391,6 +3416,14 @@
           if (watercolorBrushType === 'airbrush') return 'airbrush';
         }
         return 'watercolor';
+      }
+      if (currentBrushMedium === 'marker') {
+        if (typeof markerTip !== 'undefined') {
+          if (markerTip === 'round') return 'marker-round';
+          if (markerTip === 'brush') return 'marker-brush';
+          return 'marker-chisel';
+        }
+        return 'marker-chisel';
       }
       return currentBrushMedium || 'watercolor';
     }
@@ -3416,6 +3449,24 @@
         callback(img);
       };
       img.onerror = () => {
+        // 如果特定变体（如 marker-round, marker-brush）图片尚不存在，自动回退到默认 marker 图片
+        if (key.startsWith('marker-')) {
+          const altKey = key.replace('-', '_');
+          if (altKey !== key && !brushTipImageCache[altKey]) {
+            const altImg = new Image();
+            altImg.onload = () => {
+              brushTipImageCache[key] = altImg;
+              callback(altImg);
+            };
+            altImg.onerror = () => {
+              loadBrushTipImage('marker', callback);
+            };
+            altImg.src = `images/brush_${altKey}.png`;
+            return;
+          }
+          loadBrushTipImage('marker', callback);
+          return;
+        }
         callback(null);
       };
       img.src = `images/brush_${key}.png`;
@@ -3467,8 +3518,8 @@
         brushTipOffscreenCtx.clearRect(0, 0, w, h);
         brushTipOffscreenCtx.drawImage(img, 0, 0, w, h);
 
-        // 如果是蜡笔、马克笔、水彩笔、毛笔或喷笔，动态将笔尖染上用户选定的画笔颜色，保留原有立体光影与材质细节
-        if (key === 'crayon' || key === 'marker' || key === 'watercolor' || key === 'chinese-brush' || key === 'airbrush') {
+        // 如果是蜡笔、马克笔（含各笔头造型）、水彩笔、毛笔或喷笔，动态将笔尖染上用户选定的画笔颜色，保留原有立体光影与材质细节
+        if (key === 'crayon' || key === 'marker' || key.startsWith('marker') || key === 'watercolor' || key === 'chinese-brush' || key === 'airbrush') {
           const imgData = brushTipOffscreenCtx.getImageData(0, 0, w, h);
           const data = imgData.data;
           const [targetH, targetS, targetV] = rgbToHsv(rgb[0], rgb[1], rgb[2]);
@@ -3500,10 +3551,14 @@
                   data[i + 2] = nb;
                 }
               }
-            } else if (key === 'marker') {
-              // 马克笔黑色笔身与套筒保持黑色，仅将斜角凿形笔尖进行动态着色
-              const isChisel = (b > r + 15) && (b > g + 10) && (r + g + b > 50);
-              if (isChisel) {
+            } else if (key === 'marker' || key.startsWith('marker')) {
+              // 马克笔黑色笔身与套筒保持黑色，仅将笔尖部分（斜切头、圆头或软尖）进行动态着色
+              const isDarkCollar = (r < 65 && g < 65 && b < 65 && Math.abs(r - g) < 22 && Math.abs(g - b) < 22);
+              const isChiselBlue = (b > r + 15) && (b > g + 10) && (r + g + b > 50);
+              const isColoredNib = (!isDarkCollar && (Math.max(r, g, b) - Math.min(r, g, b) > 28));
+              const isNib = isChiselBlue || isColoredNib;
+
+              if (isNib) {
                 const [oh, os, ov] = rgbToHsv(r, g, b);
                 if (targetS < 0.08) {
                   const newV = Math.max(0.1, ov * Math.max(0.2, targetV));
@@ -3624,11 +3679,18 @@
 
       const drawerCrayonCanvas = document.getElementById('drawerBrushTipCanvas_crayon');
       const drawerMarkerCanvas = document.getElementById('drawerBrushTipCanvas_marker');
+      const drawerMarkerName = document.getElementById('drawerMarkerTipName');
+      const drawerMarkerBadge = document.getElementById('drawerMarkerTipBadge');
+      const drawerMarkerDesc = document.getElementById('drawerMarkerTipDesc');
 
       if (drawerName) drawerName.textContent = info.name;
       if (drawerBadge) drawerBadge.textContent = info.badge || '画具预览';
       if (drawerDesc) drawerDesc.textContent = info.desc;
       if (drawerDot) drawerDot.style.backgroundColor = currentColorHex;
+
+      if (drawerMarkerName && key.startsWith('marker')) drawerMarkerName.textContent = info.name;
+      if (drawerMarkerBadge && key.startsWith('marker')) drawerMarkerBadge.textContent = info.badge || '马克笔';
+      if (drawerMarkerDesc && key.startsWith('marker')) drawerMarkerDesc.textContent = info.desc;
 
       document.querySelectorAll('.drawer-active-color-dot-common').forEach(el => {
         el.style.backgroundColor = currentColorHex;
@@ -3655,16 +3717,17 @@
       if (key === 'crayon' && drawerCrayonCanvas) {
         targetCanvases.push(drawerCrayonCanvas);
       }
-      if (key === 'marker' && drawerMarkerCanvas) {
+      if (key.startsWith('marker') && drawerMarkerCanvas) {
         targetCanvases.push(drawerMarkerCanvas);
       }
 
-      // 无论当前选用何种画笔，抽屉里的蜡笔与马克笔预览卡片均随当前选择颜色动态变色
+      // 无论当前选用何种画笔，抽屉里的蜡笔与马克笔预览卡片均随当前选择颜色与选定造型动态变色
       if (drawerCrayonCanvas && key !== 'crayon') {
         renderTintedBrushTip('crayon', activeBrushRGB, [drawerCrayonCanvas]);
       }
-      if (drawerMarkerCanvas && key !== 'marker') {
-        renderTintedBrushTip('marker', activeBrushRGB, [drawerMarkerCanvas]);
+      if (drawerMarkerCanvas && !key.startsWith('marker')) {
+        const mKey = (typeof markerTip !== 'undefined' && markerTip) ? `marker-${markerTip}` : 'marker-chisel';
+        renderTintedBrushTip(mKey, activeBrushRGB, [drawerMarkerCanvas]);
       }
 
       renderTintedBrushTip(key, activeBrushRGB, targetCanvases);
@@ -4477,8 +4540,8 @@
       if (crayonTip) crayonTip.style.borderBottomColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       const crayonBody = document.querySelector('#customCrayonPreview div:last-child');
       if (crayonBody) crayonBody.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
-      const markerTip = document.querySelector('#customMarkerPreview div:first-child');
-      if (markerTip) markerTip.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+      const customMarkerTipEl = document.querySelector('#customMarkerPreview div:first-child');
+      if (customMarkerTipEl) customMarkerTipEl.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       const drawerDot = document.getElementById('drawerActiveColorDot');
       if (drawerDot) drawerDot.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
       document.querySelectorAll('.drawer-active-color-dot-common').forEach(el => {
@@ -4826,10 +4889,10 @@
         document.querySelectorAll('.tip-btn').forEach(b => {
           b.className = 'tip-btn py-2 rounded-xl border border-stone-200 bg-white text-stone-700 font-semibold active:scale-95 transition shadow-2xs';
         });
-        btn.className = 'tip-btn py-2 rounded-xl border-2 border-amber-500 bg-amber-50 text-amber-900 font-bold active:scale-95 transition shadow-2xs';
+        btn.className = 'tip-btn py-2 rounded-xl border-2 border-indigo-500 bg-indigo-50 text-indigo-900 font-bold active:scale-95 transition shadow-2xs';
         markerTip = btn.dataset.tip;
-        showToast(`已选择马克笔：${btn.textContent.trim()}`);
-        setTimeout(closeDrawer, 220);
+        if (typeof updateBrushTipDemo === 'function') updateBrushTipDemo();
+        showToast(`已切换马克笔笔头：${btn.textContent.trim()}`);
       });
     });
 
