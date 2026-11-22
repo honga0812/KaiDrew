@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.119 · Pro Edition
+      B.26.11.120 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -402,7 +402,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.119 · Pro Edition
+        B.26.11.120 · Pro Edition
       </div>
     </div>
 
@@ -1037,73 +1037,244 @@
         </div>
       </div>
 
-      <div class="flex items-center justify-between gap-2 flex-wrap bg-stone-50 p-3 rounded-2xl border border-stone-200/80">
-        <div class="flex items-center gap-1.5 text-xs flex-wrap">
-          <span class="text-stone-500 font-medium">小朋友最愛臨摹示例:</span>
-          <button data-camerapreset="dino" class="cam-preset-btn px-3 py-1.5 rounded-xl bg-amber-500 text-white font-bold active:scale-95 transition shadow-xs">🦕 萌萌小恐龍</button>
-          <button data-camerapreset="donut" class="cam-preset-btn px-3 py-1.5 rounded-xl bg-white border border-stone-200 text-stone-700 font-semibold active:scale-95 transition shadow-xs">🍩 美味甜甜圈</button>
-          <button data-camerapreset="rocket" class="cam-preset-btn px-3 py-1.5 rounded-xl bg-white border border-stone-200 text-stone-700 font-semibold active:scale-95 transition shadow-xs">🚀 宇宙小火箭</button>
-        </div>
-        <div class="flex items-center gap-2 flex-1 min-w-[200px]">
-          <span class="text-xs font-bold text-stone-700 shrink-0">🎨 藝術處理強度:</span>
-          <input id="styleIntensitySlider" type="range" min="0" max="100" value="75" class="flex-1 accent-amber-500" />
-          <span id="styleIntensityVal" class="text-xs font-bold text-amber-600 w-9 text-right font-mono">75%</span>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-        <!-- 1. 黑白草稿描邊圖 -->
-        <div class="bg-stone-50 border-2 border-stone-200 hover:border-amber-500 rounded-2xl p-2.5 flex flex-col items-center gap-2 shadow-xs transition">
-          <div class="flex items-center justify-between w-full">
-            <span class="text-xs font-bold text-amber-800">✏️ 黑白描摹草稿</span>
-            <span class="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-bold">描邊先練</span>
+      <!-- 左右分欄：左邊 16 格小朋友最愛線稿範例 (4x4 純線圖直覺選取)，右邊 2 大選項 (黑白線條草稿 vs 彩色完成樣貌) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch min-h-0">
+        
+        <!-- 左欄：16 格兒童繪畫啟蒙範例 (4x4 純線稿圖示，無多餘文字) -->
+        <div class="lg:col-span-7 flex flex-col gap-2 bg-stone-50/80 p-3 rounded-2xl border border-stone-200/80">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-black text-stone-800 flex items-center gap-1.5">
+              <span>🎨</span> <span>小朋友繪畫啟蒙範例 (純線圖直覺點選)</span>
+            </span>
+            <span class="text-[10px] text-stone-500 font-medium">16 款最受歡迎主題</span>
           </div>
-          <canvas id="prevSketch" width="260" height="180" class="w-full rounded-xl bg-white border border-stone-200 shadow-inner"></canvas>
-          <div class="flex flex-col gap-1.5 w-full">
-            <button data-pickstyle="sketch" class="pick-style-btn w-full py-1.5 rounded-xl bg-white border border-stone-200 hover:bg-stone-100 text-stone-700 text-xs font-bold active:scale-95 transition shadow-2xs">
-              👁️ 設為半透明描摹底圖
+
+          <!-- 4x4 網格 (16格純線圖卡片，不帶文字，點選立即選取) -->
+          <div id="camera16PresetsGrid" class="grid grid-cols-4 gap-2 flex-1">
+            <!-- 1. 獅子 -->
+            <button data-camerapreset="lion" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-amber-500 bg-amber-50/70 ring-2 ring-amber-400/50 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="獅子">
+              <svg class="w-full h-full text-amber-900 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="24" cy="24" r="11" />
+                <path d="M24 7a5 5 0 0 1 5 5M29 12a5 5 0 0 1 6 3M35 15a5 5 0 0 1 4 6M39 21a5 5 0 0 1 0 7M39 28a5 5 0 0 1-4 6M35 34a5 5 0 0 1-6 3M29 37a5 5 0 0 1-5 5M24 42a5 5 0 0 1-5-5M19 37a5 5 0 0 1-6-3M13 34a5 5 0 0 1-4-6M9 28a5 5 0 0 1 0-7M9 21a5 5 0 0 1 4-6M13 15a5 5 0 0 1 6-3M19 12a5 5 0 0 1 5-5" />
+                <circle cx="20" cy="22" r="1.5" fill="currentColor" />
+                <circle cx="28" cy="22" r="1.5" fill="currentColor" />
+                <path d="M22 26l2 2 2-2M24 28v2" />
+              </svg>
             </button>
-            <button id="btnImportSketchToPaint" class="w-full py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-md shadow-amber-500/20 active:scale-95 transition">
-              🎨 匯入為畫布線稿 (填色模式)
+
+            <!-- 2. 老虎 -->
+            <button data-camerapreset="tiger" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="老虎">
+              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="24" cy="26" r="13" />
+                <path d="M13 16l4 3M35 16l-4 3" />
+                <path d="M21 16l3 4 3-4M24 20v3" />
+                <circle cx="19" cy="25" r="1.5" fill="currentColor" />
+                <circle cx="29" cy="25" r="1.5" fill="currentColor" />
+                <path d="M22 29l2 2 2-2M15 28h3M30 28h3" />
+                <path d="M12 18a4 4 0 0 0-3-4 4 4 0 0 0 4 3M36 18a4 4 0 0 1 3-4 4 4 0 0 1-4 3" />
+              </svg>
+            </button>
+
+            <!-- 3. 鱷魚 -->
+            <button data-camerapreset="croc" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="鱷魚">
+              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 26c0-6 6-9 16-9h16l-4 5 4 5H24c-8 0-16-2-16-1" />
+                <circle cx="16" cy="18" r="3" />
+                <circle cx="16" cy="18" r="1" fill="currentColor" />
+                <path d="M22 27l2-3 2 3 2-3 2 3M18 31c4 2 12 2 16 0" />
+                <path d="M14 15l2-3 3 2M22 17l2-3 3 2M30 17l2-3 3 2" />
+              </svg>
+            </button>
+
+            <!-- 4. 熊 -->
+            <button data-camerapreset="bear" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="熊">
+              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="24" cy="26" r="13" />
+                <circle cx="14" cy="16" r="4.5" />
+                <circle cx="34" cy="16" r="4.5" />
+                <circle cx="19" cy="24" r="1.5" fill="currentColor" />
+                <circle cx="29" cy="24" r="1.5" fill="currentColor" />
+                <ellipse cx="24" cy="30" rx="4.5" ry="3.5" />
+                <path d="M22.5 29h3M24 30v2" />
+              </svg>
+            </button>
+
+            <!-- 5. 貓咪 -->
+            <button data-camerapreset="cat" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="貓咪">
+              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 17l4 7h12l4-7-2 16c0 6-5 9-10 9s-10-3-10-9z" />
+                <circle cx="19" cy="27" r="1.5" fill="currentColor" />
+                <circle cx="29" cy="27" r="1.5" fill="currentColor" />
+                <path d="M24 29l-1.5 2h3zM12 28h5M12 31h5M31 28h5M31 31h5" />
+              </svg>
+            </button>
+
+            <!-- 6. 小狗 -->
+            <button data-camerapreset="dog" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="狗狗">
+              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="24" cy="25" r="12" />
+                <path d="M12 20c-3 4-4 10-1 12s5-3 5-7M36 20c3 4 4 10 1 12s-5-3-5-7" />
+                <circle cx="20" cy="23" r="1.5" fill="currentColor" />
+                <circle cx="28" cy="23" r="1.5" fill="currentColor" />
+                <ellipse cx="24" cy="27" rx="3" ry="2" fill="currentColor" />
+                <path d="M22 29c1 3 3 3 4 0M24 30v3" />
+              </svg>
+            </button>
+
+            <!-- 7. 火箭 -->
+            <button data-camerapreset="rocket" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="火箭">
+              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M24 8c-6 6-7 18-7 24h14c0-6-1-18-7-24z" />
+                <circle cx="24" cy="20" r="3" />
+                <path d="M17 26l-6 6v3h6M31 26l6 6v3h-6M20 32l-2 6 6-2 6 2-2-6" />
+              </svg>
+            </button>
+
+            <!-- 8. 房子 -->
+            <button data-camerapreset="house" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="房子">
+              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22l12-10 12 10v16H12z" />
+                <path d="M21 38v-8h6v8M19 14v-4h4v1M27 22h4v4h-4z" />
+              </svg>
+            </button>
+
+            <!-- 9. 樹木 -->
+            <button data-camerapreset="tree" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="樹木">
+              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 28v12h6V28" />
+                <path d="M16 28a7 7 0 0 1-3-11 7 7 0 0 1 11-6 8 8 0 0 1 12 3 7 7 0 0 1-1 14h-19z" />
+              </svg>
+            </button>
+
+            <!-- 10. 帆船 -->
+            <button data-camerapreset="boat" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="帆船">
+              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 32l4 6h20l4-6z" />
+                <path d="M24 10v22M24 12l10 16H24M24 16l-8 12h8" />
+                <path d="M8 41c4 1 8-1 12 0s8 1 12 0 8-1 8 0" />
+              </svg>
+            </button>
+
+            <!-- 11. 恐龍 -->
+            <button data-camerapreset="dino" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="恐龍">
+              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 14c4 0 6 2 6 8l4 2c6 0 12 4 12 10 0 0-4 4-10 1l-2 5h-4l1-5h-4l-1 5h-4l1-7c-5-2-7-6-7-10 0-6 4-9 8-9z" />
+                <circle cx="15" cy="17" r="1.5" fill="currentColor" />
+                <path d="M24 16l2 2M27 19l2 2M30 22l2 2" />
+              </svg>
+            </button>
+
+            <!-- 12. 汽車 -->
+            <button data-camerapreset="car" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="汽車">
+              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 27l4-9h16l6 9h4a3 3 0 0 1 3 3v4H7v-4a3 3 0 0 1 3-3z" />
+                <circle cx="15" cy="34" r="3.5" />
+                <circle cx="33" cy="34" r="3.5" />
+                <path d="M14 20h7v6h-9zM25 20h6l3 6h-9z" />
+              </svg>
+            </button>
+
+            <!-- 13. 飛機 -->
+            <button data-camerapreset="plane" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="飛機">
+              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M24 9c2 0 3 3 3 8l13 7v3l-13-3v8l4 4v2l-7-2-7 2v-2l4-4v-8l-13 3v-3l13-7c0-5 1-8 3-8z" />
+              </svg>
+            </button>
+
+            <!-- 14. 花朵 -->
+            <button data-camerapreset="flower" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="花朵">
+              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="24" cy="20" r="5" />
+                <circle cx="24" cy="11" r="4" />
+                <circle cx="32" cy="16" r="4" />
+                <circle cx="32" cy="25" r="4" />
+                <circle cx="24" cy="29" r="4" />
+                <circle cx="16" cy="25" r="4" />
+                <circle cx="16" cy="16" r="4" />
+                <path d="M24 33v8M24 37c3-2 6-1 7 1M24 38c-3-2-6-1-7 1" />
+              </svg>
+            </button>
+
+            <!-- 15. 太陽 -->
+            <button data-camerapreset="sun" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="太陽">
+              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="24" cy="24" r="8" />
+                <circle cx="21" cy="22" r="1" fill="currentColor" />
+                <circle cx="27" cy="22" r="1" fill="currentColor" />
+                <path d="M21 26c1 2 5 2 6 0" />
+                <path d="M24 9v4M24 35v4M9 24h4M35 24h4M13 13l3 3M32 32l3 3M13 35l3-3M32 16l3-3" />
+              </svg>
+            </button>
+
+            <!-- 16. 蝴蝶 -->
+            <button data-camerapreset="butterfly" class="cam-16-preset-btn aspect-square rounded-2xl border-2 border-stone-200 bg-white hover:border-amber-400 p-2 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer group" title="蝴蝶">
+              <svg class="w-full h-full text-stone-700 group-hover:scale-110 transition-transform" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M24 16v18M21 14l3 3 3-3" />
+                <path d="M24 18c-7-9-15-4-15 4 0 6 7 8 15 2zM24 18c7-9 15-4 15 4 0 6-7 8-15 2z" />
+                <path d="M24 24c-5 3-10 6-8 11 2 4 8 2 8-5zM24 24c5 3 10 6 8 11-2 4-8 2-8-5z" />
+              </svg>
             </button>
           </div>
         </div>
 
-        <!-- 2. 真·水彩水漬風格 -->
-        <div class="bg-stone-50 border border-stone-200 hover:border-sky-500 rounded-2xl p-2.5 flex flex-col items-center gap-2 shadow-xs transition">
-          <div class="flex items-center justify-between w-full">
-            <span class="text-xs font-bold text-sky-800">🖌️ 真·水彩暈染</span>
-            <span class="text-[10px] px-1.5 py-0.2 rounded bg-sky-100 text-sky-800 font-bold">水痕暗邊</span>
+        <!-- 右欄：二選一臨摹模式 (黑白線條草稿 vs 彩色完成樣貌) -->
+        <div class="lg:col-span-5 flex flex-col gap-3 bg-stone-50/90 border border-stone-200/90 rounded-2xl p-3.5">
+          <div class="flex items-center justify-between border-b border-stone-200 pb-2">
+            <span class="text-xs font-black text-stone-800 flex items-center gap-1.5">
+              <span>✨</span> <span>選擇臨摹方式 (二選一)</span>
+            </span>
+            <span id="currentSelectedPresetLabel" class="text-[11px] font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-full">🦁 獅子</span>
           </div>
-          <canvas id="prevWatercolor" width="260" height="180" class="w-full rounded-xl bg-white border border-stone-200 shadow-inner"></canvas>
-          <button data-pickstyle="watercolor" class="pick-style-btn w-full py-1.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold mt-auto shadow-md shadow-sky-500/20 active:scale-95 transition">
-            設為畫板底圖
-          </button>
+
+          <!-- 選項 1：黑白線條草稿 -->
+          <div class="bg-white border-2 border-stone-200 hover:border-amber-400 rounded-2xl p-3 flex flex-col gap-2 shadow-xs transition group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-stone-800 flex items-center gap-1">
+                <span>✏️</span> <span>黑白線條草稿</span>
+              </span>
+              <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-600 font-bold">適合練習勾勒線條</span>
+            </div>
+            
+            <div class="w-full aspect-[4/3] rounded-xl bg-white border border-stone-200 shadow-inner flex items-center justify-center overflow-hidden p-1">
+              <canvas id="prevSketch" width="320" height="240" class="w-full h-full object-contain"></canvas>
+            </div>
+
+            <div class="grid grid-cols-2 gap-1.5 pt-1">
+              <button id="btnSetSketchUnderlay" class="w-full py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs active:scale-95 transition shadow-2xs cursor-pointer flex items-center justify-center gap-1" title="將黑白線條設為半透明底圖">
+                <span>👁️</span> <span>設為描摹底圖</span>
+              </button>
+              <button id="btnImportSketchToPaint" class="w-full py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs shadow-md shadow-amber-500/20 active:scale-95 transition cursor-pointer flex items-center justify-center gap-1" title="直接把線條畫在當前畫布圖層上">
+                <span>🎨</span> <span>匯入線稿填色</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 選項 2：彩色完成圖 (上色樣貌) -->
+          <div class="bg-white border-2 border-stone-200 hover:border-emerald-400 rounded-2xl p-3 flex flex-col gap-2 shadow-xs transition group">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-emerald-950 flex items-center gap-1">
+                <span>🎨</span> <span>彩色完成圖 (上色成果)</span>
+              </span>
+              <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">照著顏色塗色臨摹</span>
+            </div>
+
+            <div class="w-full aspect-[4/3] rounded-xl bg-white border border-stone-200 shadow-inner flex items-center justify-center overflow-hidden p-1">
+              <canvas id="prevColor" width="320" height="240" class="w-full h-full object-contain"></canvas>
+            </div>
+
+            <button id="btnSetColorUnderlay" class="w-full py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition cursor-pointer flex items-center justify-center gap-1" title="將彩色圖片設為半透明底圖">
+              <span>🖼️</span> <span>設為彩色臨摹底圖</span>
+            </button>
+          </div>
+
+          <!-- 底圖透光度滑動微調 -->
+          <div class="flex items-center gap-2 pt-2 border-t border-stone-200">
+            <span class="text-[11px] font-bold text-stone-600 shrink-0">🎨 底圖透光度:</span>
+            <input id="styleIntensitySlider" type="range" min="10" max="100" value="70" class="flex-1 accent-amber-500 cursor-pointer h-1.5 bg-stone-200 rounded-lg" />
+            <span id="styleIntensityVal" class="text-xs font-bold text-amber-600 w-9 text-right font-mono">70%</span>
+          </div>
         </div>
 
-        <!-- 3. 真·兒童蠟筆風格 -->
-        <div class="bg-stone-50 border border-stone-200 hover:border-amber-500 rounded-2xl p-2.5 flex flex-col items-center gap-2 shadow-xs transition">
-          <div class="flex items-center justify-between w-full">
-            <span class="text-xs font-bold text-amber-800">🖍️ 真·蠟筆顆粒</span>
-            <span class="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-bold">蠟粉分層</span>
-          </div>
-          <canvas id="prevCrayon" width="260" height="180" class="w-full rounded-xl bg-white border border-stone-200 shadow-inner"></canvas>
-          <button data-pickstyle="crayon" class="pick-style-btn w-full py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold mt-auto shadow-md shadow-amber-500/20 active:scale-95 transition">
-            設為畫板底圖
-          </button>
-        </div>
-
-        <!-- 4. 真·雙頭馬克筆風格 -->
-        <div class="bg-stone-50 border border-stone-200 hover:border-indigo-500 rounded-2xl p-2.5 flex flex-col items-center gap-2 shadow-xs transition">
-          <div class="flex items-center justify-between w-full">
-            <span class="text-xs font-bold text-indigo-800">🖊️ 真·馬克筆色塊</span>
-            <span class="text-[10px] px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-800 font-bold">醇墨色階</span>
-          </div>
-          <canvas id="prevMarker" width="260" height="180" class="w-full rounded-xl bg-white border border-stone-200 shadow-inner"></canvas>
-          <button data-pickstyle="marker" class="pick-style-btn w-full py-1.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold mt-auto shadow-md shadow-indigo-500/20 active:scale-95 transition">
-            設為畫板底圖
-          </button>
-        </div>
       </div>
     </div>
   </div>
@@ -5138,6 +5309,25 @@
     sourcePhotoCanvas.width = W; sourcePhotoCanvas.height = H;
     const sourcePhotoCtx = sourcePhotoCanvas.getContext('2d');
 
+    const PRESET_NAMES = {
+      lion: "🦁 獅子",
+      tiger: "🐯 老虎",
+      croc: "🐊 鱷魚",
+      bear: "🐻 熊熊",
+      cat: "🐱 貓咪",
+      dog: "🐶 狗狗",
+      rocket: "🚀 火箭",
+      house: "🏡 房子",
+      tree: "🌳 樹木",
+      boat: "⛵ 帆船",
+      dino: "🦕 恐龍",
+      car: "🚗 汽車",
+      plane: "✈️ 飛機",
+      flower: "🌸 花朵",
+      sun: "☀️ 太陽",
+      butterfly: "🦋 蝴蝶"
+    };
+
     function drawPresetPhoto(name) {
       const ctx = sourcePhotoCtx;
       ctx.clearRect(0, 0, W, H);
@@ -5145,258 +5335,789 @@
       // 等比例向量無失真放大至 1440x1040 (放大 4 倍面積)
       ctx.scale(W / 720, H / 520);
 
-      if (name === 'dino' || name === 'shiba') {
-        // 1. 萌萌小恐龍 (圓潤綠色身體、軟萌小肚皮、橘黃背刺與靈動大眼睛，幼童臨摹首選)
-        const sky = ctx.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, '#e0f2fe');
-        sky.addColorStop(0.7, '#f0fdf4');
-        sky.addColorStop(1, '#86efac');
-        ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+      const presetKey = PRESET_NAMES[name] ? name : "lion";
 
-        // 遠景柔和草地丘陵
-        ctx.fillStyle = '#bbf7d0';
-        ctx.beginPath(); ctx.arc(180, 520, 240, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(540, 530, 260, 0, Math.PI * 2); ctx.fill();
+      if (presetKey === "lion") {
+        // 1. 獅子 (溫暖大草原背景、毛茸茸圓圓鬃毛、金色臉龐與超萌鬍鬚)
+        const bg = ctx.createLinearGradient(0, 0, 0, 520);
+        bg.addColorStop(0, "#fef3c7"); bg.addColorStop(1, "#fed7aa");
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, 720, 520);
 
-        // 漂浮軟萌白雲
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath(); ctx.arc(160, 90, 30, 0, Math.PI * 2); ctx.arc(190, 80, 40, 0, Math.PI * 2); ctx.arc(230, 90, 30, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(530, 110, 25, 0, Math.PI * 2); ctx.arc(560, 100, 35, 0, Math.PI * 2); ctx.arc(595, 110, 25, 0, Math.PI * 2); ctx.fill();
+        // 圓形波浪鬃毛 (外圍放射狀圓形花瓣組成的蓬鬆鬃毛)
+        ctx.fillStyle = "#ea580c";
+        for (let i = 0; i < 16; i++) {
+          const ang = (i / 16) * Math.PI * 2;
+          const mx = 360 + Math.cos(ang) * 135;
+          const my = 250 + Math.sin(ang) * 135;
+          ctx.beginPath(); ctx.arc(mx, my, 45, 0, Math.PI * 2); ctx.fill();
+        }
 
-        // 背部可愛橘黃背鰭骨刺
-        ctx.fillStyle = '#f97316';
-        const spikes = [[380, 130], [420, 175], [455, 230], [480, 290]];
-        spikes.forEach(([sx, sy]) => {
-          ctx.beginPath();
-          ctx.moveTo(sx - 16, sy + 14);
-          ctx.lineTo(sx + 18, sy - 14);
-          ctx.lineTo(sx + 14, sy + 24);
-          ctx.closePath();
-          ctx.fill();
-        });
+        // 內圈金黃大臉龐
+        ctx.fillStyle = "#fde047";
+        ctx.beginPath(); ctx.arc(360, 250, 110, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#ca8a04"; ctx.lineWidth = 6; ctx.stroke();
 
-        // 恐龍身體與圓圓大肚子
-        ctx.fillStyle = '#22c55e';
-        ctx.beginPath(); ctx.ellipse(360, 280, 115, 110, 0, 0, Math.PI * 2); ctx.fill();
-
-        // 恐龍可愛大頭
-        ctx.beginPath(); ctx.ellipse(305, 185, 75, 70, -0.15, 0, Math.PI * 2); ctx.fill();
-
-        // 恐龍尾巴
-        ctx.beginPath();
-        ctx.moveTo(440, 310);
-        ctx.quadraticCurveTo(530, 330, 545, 275);
-        ctx.quadraticCurveTo(490, 360, 420, 365);
-        ctx.closePath();
-        ctx.fill();
-
-        // 圓滾滾嫩黃色小肚皮
-        ctx.fillStyle = '#fef08a';
-        ctx.beginPath(); ctx.ellipse(365, 300, 60, 68, 0.1, 0, Math.PI * 2); ctx.fill();
-
-        // 恐龍胖乎乎小腳
-        ctx.fillStyle = '#16a34a';
-        ctx.beginPath(); ctx.ellipse(310, 385, 32, 22, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.ellipse(400, 385, 32, 22, 0, 0, Math.PI * 2); ctx.fill();
+        // 圓圓耳朵
+        ctx.fillStyle = "#fde047";
+        ctx.beginPath(); ctx.arc(280, 160, 28, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(440, 160, 28, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#f472b6";
+        ctx.beginPath(); ctx.arc(280, 160, 16, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(440, 160, 16, 0, Math.PI * 2); ctx.fill();
 
         // 靈動大眼睛
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath(); ctx.arc(285, 165, 20, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#0f172a';
-        ctx.beginPath(); ctx.arc(288, 165, 12, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath(); ctx.arc(292, 161, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#0f172a";
+        ctx.beginPath(); ctx.arc(320, 230, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(400, 230, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.arc(323, 226, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(403, 226, 4, 0, Math.PI * 2); ctx.fill();
 
-        // 害羞粉紅小腮紅與微笑
-        ctx.fillStyle = 'rgba(251, 113, 133, 0.7)';
-        ctx.beginPath(); ctx.arc(260, 195, 12, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+        // 可愛倒三角粉橘鼻子
+        ctx.fillStyle = "#ea580c";
+        ctx.beginPath();
+        ctx.moveTo(345, 255); ctx.lineTo(375, 255); ctx.lineTo(360, 275);
+        ctx.closePath(); ctx.fill();
+
+        // 微笑嘴嘴
+        ctx.strokeStyle = "#78350f"; ctx.lineWidth = 4; ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(360, 275); ctx.lineTo(360, 285);
+        ctx.arc(348, 285, 12, 0, Math.PI * 0.85);
+        ctx.moveTo(360, 285);
+        ctx.arc(372, 285, 12, Math.PI * 0.15, Math.PI);
+        ctx.stroke();
+
+        // 俏皮鬍鬚
+        ctx.beginPath();
+        ctx.moveTo(270, 265); ctx.lineTo(320, 268);
+        ctx.moveTo(265, 285); ctx.lineTo(320, 280);
+        ctx.moveTo(450, 265); ctx.lineTo(400, 268);
+        ctx.moveTo(455, 285); ctx.lineTo(400, 280);
+        ctx.stroke();
+
+        // 腮紅
+        ctx.fillStyle = "rgba(251, 113, 133, 0.6)";
+        ctx.beginPath(); ctx.arc(295, 260, 14, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(425, 260, 14, 0, Math.PI * 2); ctx.fill();
+
+      } else if (presetKey === "tiger") {
+        // 2. 老虎 (陽光森林、橘黃條紋、霸氣又可愛的小萌虎)
+        const bg = ctx.createLinearGradient(0, 0, 0, 520);
+        bg.addColorStop(0, "#fef9c3"); bg.addColorStop(1, "#ffedd5");
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, 720, 520);
+
+        // 虎耳
+        ctx.fillStyle = "#ea580c"; ctx.strokeStyle = "#9a3412"; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.arc(260, 170, 32, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(460, 170, 32, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#fff7ed";
+        ctx.beginPath(); ctx.arc(260, 170, 18, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(460, 170, 18, 0, Math.PI * 2); ctx.fill();
+
+        // 老虎圓臉龐
+        ctx.fillStyle = "#f97316";
+        ctx.beginPath(); ctx.arc(360, 260, 130, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+        // 額頭霸氣「王」字與虎斑條紋
+        ctx.fillStyle = "#1e1b4b";
+        ctx.beginPath();
+        ctx.rect(325, 155, 70, 8);
+        ctx.rect(335, 175, 50, 8);
+        ctx.rect(320, 195, 80, 8);
+        ctx.rect(355, 150, 10, 55);
+        ctx.fill();
+
+        // 兩側條紋
+        ctx.beginPath();
+        ctx.moveTo(235, 240); ctx.lineTo(275, 250); ctx.lineTo(235, 260); ctx.closePath();
+        ctx.moveTo(235, 275); ctx.lineTo(270, 285); ctx.lineTo(235, 295); ctx.closePath();
+        ctx.moveTo(485, 240); ctx.lineTo(445, 250); ctx.lineTo(485, 260); ctx.closePath();
+        ctx.moveTo(485, 275); ctx.lineTo(450, 285); ctx.lineTo(485, 295); ctx.closePath();
+        ctx.fill();
+
+        // 白白鼓起的嘴吻部
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.ellipse(360, 310, 55, 38, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#c2410c"; ctx.lineWidth = 3; ctx.stroke();
+
+        // 眼睛
+        ctx.fillStyle = "#0f172a";
+        ctx.beginPath(); ctx.arc(310, 245, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(410, 245, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.arc(313, 241, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(413, 241, 5, 0, Math.PI * 2); ctx.fill();
+
+        // 鼻子嘴巴
+        ctx.fillStyle = "#ec4899";
+        ctx.beginPath(); ctx.ellipse(360, 290, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#1e1b4b"; ctx.lineWidth = 4; ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(360, 300); ctx.lineTo(360, 315);
+        ctx.arc(348, 315, 12, 0, Math.PI * 0.8);
+        ctx.moveTo(360, 315);
+        ctx.arc(372, 315, 12, Math.PI * 0.2, Math.PI);
+        ctx.stroke();
+
+      } else if (presetKey === "croc") {
+        // 3. 鱷魚 (池塘蓮花、大嘴巴、萌趣背鰭骨板與大眼睛)
+        const bg = ctx.createLinearGradient(0, 0, 0, 520);
+        bg.addColorStop(0, "#cffafe"); bg.addColorStop(1, "#a7f3d0");
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, 720, 520);
+
+        // 荷葉漣漪
+        ctx.fillStyle = "#6ee7b7";
+        ctx.beginPath(); ctx.ellipse(560, 420, 80, 25, 0, 0, Math.PI * 2); ctx.fill();
+
+        // 鱷魚背部背鰭尖角
+        ctx.fillStyle = "#15803d";
+        for (let i = 0; i < 7; i++) {
+          const sx = 290 + i * 40;
+          ctx.beginPath();
+          ctx.moveTo(sx - 15, 230); ctx.lineTo(sx, 195); ctx.lineTo(sx + 15, 230);
+          ctx.closePath(); ctx.fill();
+        }
+
+        // 鱷魚主體 (長型圓潤大嘴巴與身軀)
+        ctx.fillStyle = "#22c55e";
+        ctx.beginPath();
+        ctx.moveTo(150, 290);
+        ctx.quadraticCurveTo(150, 230, 270, 230);
+        ctx.lineTo(580, 230);
+        ctx.quadraticCurveTo(620, 270, 580, 350);
+        ctx.lineTo(240, 350);
+        ctx.quadraticCurveTo(150, 350, 150, 290);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = "#166534"; ctx.lineWidth = 6; ctx.stroke();
+
+        // 鱷魚大嘴巴開口裂線
+        ctx.strokeStyle = "#14532d"; ctx.lineWidth = 5; ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(150, 290);
+        ctx.lineTo(440, 290);
+        ctx.stroke();
+
+        // 可愛小白牙 (上齒與下齒)
+        ctx.fillStyle = "#ffffff";
+        const teeth = [200, 240, 280, 320, 360, 400];
+        teeth.forEach(tx => {
+          ctx.beginPath();
+          ctx.moveTo(tx - 8, 290); ctx.lineTo(tx, 276); ctx.lineTo(tx + 8, 290);
+          ctx.closePath(); ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(tx + 12, 290); ctx.lineTo(tx + 20, 304); ctx.lineTo(tx + 28, 290);
+          ctx.closePath(); ctx.fill();
+        });
+
+        // 凸出頭頂的超萌大眼睛
+        ctx.fillStyle = "#22c55e";
+        ctx.beginPath(); ctx.arc(430, 195, 32, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(490, 195, 32, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.arc(430, 195, 20, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(490, 195, 20, 0, Math.PI * 2); ctx.fill();
+
+        ctx.fillStyle = "#0f172a";
+        ctx.beginPath(); ctx.arc(430, 195, 11, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(490, 195, 11, 0, Math.PI * 2); ctx.fill();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.arc(433, 192, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(493, 192, 4, 0, Math.PI * 2); ctx.fill();
+
+        // 鼻孔
+        ctx.fillStyle = "#14532d";
+        ctx.beginPath(); ctx.arc(180, 260, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(205, 260, 6, 0, Math.PI * 2); ctx.fill();
+
+        // 軟萌四肢腳掌
+        ctx.fillStyle = "#16a34a";
+        ctx.beginPath(); ctx.ellipse(260, 360, 24, 16, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(520, 360, 24, 16, 0, 0, Math.PI * 2); ctx.fill();
+
+      } else if (presetKey === "bear") {
+        // 4. 熊 (泰迪小棕熊、圓滾滾大耳朵、微笑暖心毛茸茸)
+        const bg = ctx.createLinearGradient(0, 0, 0, 520);
+        bg.addColorStop(0, "#fef3c7"); bg.addColorStop(1, "#fde68a");
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, 720, 520);
+
+        // 熊耳朵
+        ctx.fillStyle = "#92400e"; ctx.strokeStyle = "#78350f"; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.arc(260, 160, 42, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(460, 160, 42, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#fde68a";
+        ctx.beginPath(); ctx.arc(260, 160, 24, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(460, 160, 24, 0, Math.PI * 2); ctx.fill();
+
+        // 熊熊胖身體
+        ctx.fillStyle = "#92400e";
+        ctx.beginPath(); ctx.ellipse(360, 370, 120, 110, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        // 肚皮
+        ctx.fillStyle = "#fef3c7";
+        ctx.beginPath(); ctx.ellipse(360, 375, 75, 70, 0, 0, Math.PI * 2); ctx.fill();
+
+        // 熊熊大頭
+        ctx.fillStyle = "#92400e";
+        ctx.beginPath(); ctx.arc(360, 240, 120, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+        // 米白吻部
+        ctx.fillStyle = "#fef3c7";
+        ctx.beginPath(); ctx.ellipse(360, 275, 60, 45, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#b45309"; ctx.lineWidth = 3; ctx.stroke();
+
+        // 大黑鼻子
+        ctx.fillStyle = "#1e1b4b";
+        ctx.beginPath(); ctx.ellipse(360, 255, 18, 12, 0, 0, Math.PI * 2); ctx.fill();
+
+        // 微笑嘴
+        ctx.strokeStyle = "#1e1b4b"; ctx.lineWidth = 4; ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(360, 267); ctx.lineTo(360, 285);
+        ctx.arc(348, 285, 12, 0, Math.PI * 0.85);
+        ctx.moveTo(360, 285);
+        ctx.arc(372, 285, 12, Math.PI * 0.15, Math.PI);
+        ctx.stroke();
+
+        // 黑溜溜亮晶晶大眼
+        ctx.fillStyle = "#0f172a";
+        ctx.beginPath(); ctx.arc(305, 215, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(415, 215, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.arc(308, 212, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(418, 212, 4, 0, Math.PI * 2); ctx.fill();
+
+        // 腮紅
+        ctx.fillStyle = "rgba(251, 113, 133, 0.7)";
+        ctx.beginPath(); ctx.arc(280, 260, 14, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(440, 260, 14, 0, Math.PI * 2); ctx.fill();
+
+      } else if (presetKey === "cat") {
+        // 5. 貓咪 (粉嫩背景、尖尖耳朵、靈動貓鬚與俏皮長尾巴)
+        const bg = ctx.createLinearGradient(0, 0, 0, 520);
+        bg.addColorStop(0, "#fdf2f8"); bg.addColorStop(1, "#fce7f3");
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, 720, 520);
+
+        // 貓咪捲尾巴
+        ctx.strokeStyle = "#fb923c"; ctx.lineWidth = 20; ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(460, 380);
+        ctx.bezierCurveTo(550, 390, 580, 290, 520, 260);
+        ctx.stroke();
+
+        // 貓尖耳
+        ctx.fillStyle = "#fb923c"; ctx.strokeStyle = "#ea580c"; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(250, 200); ctx.lineTo(270, 95); ctx.lineTo(330, 175); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(470, 200); ctx.lineTo(450, 95); ctx.lineTo(390, 175); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#fda4af";
+        ctx.beginPath(); ctx.moveTo(265, 185); ctx.lineTo(278, 120); ctx.lineTo(315, 175); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(455, 185); ctx.lineTo(442, 120); ctx.lineTo(405, 175); ctx.closePath(); ctx.fill();
+
+        // 貓身
+        ctx.fillStyle = "#fb923c";
+        ctx.beginPath(); ctx.ellipse(360, 370, 95, 80, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.ellipse(360, 375, 55, 60, 0, 0, Math.PI * 2); ctx.fill();
+
+        // 貓頭
+        ctx.fillStyle = "#fb923c";
+        ctx.beginPath(); ctx.ellipse(360, 240, 115, 95, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+        // 貓眼 (清澈大眼)
+        ctx.fillStyle = "#38bdf8";
+        ctx.beginPath(); ctx.ellipse(310, 220, 16, 22, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(410, 220, 16, 22, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#0f172a";
+        ctx.beginPath(); ctx.ellipse(310, 220, 8, 18, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(410, 220, 8, 18, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.arc(313, 214, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(413, 214, 4, 0, Math.PI * 2); ctx.fill();
+
+        // 粉紅鼻子與三瓣嘴
+        ctx.fillStyle = "#f43f5e";
+        ctx.beginPath();
+        ctx.moveTo(353, 250); ctx.lineTo(367, 250); ctx.lineTo(360, 258); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = "#431407"; ctx.lineWidth = 3.5; ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(360, 258); ctx.lineTo(360, 268);
+        ctx.arc(352, 268, 8, 0, Math.PI * 0.85);
+        ctx.moveTo(360, 268);
+        ctx.arc(368, 268, 8, Math.PI * 0.15, Math.PI);
+        ctx.stroke();
+
+        // 六根俏皮鬍鬚
+        ctx.strokeStyle = "#431407"; ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(270, 255); ctx.lineTo(210, 245);
+        ctx.moveTo(270, 268); ctx.lineTo(205, 270);
+        ctx.moveTo(270, 280); ctx.lineTo(215, 295);
+        ctx.moveTo(450, 255); ctx.lineTo(510, 245);
+        ctx.moveTo(450, 268); ctx.lineTo(515, 270);
+        ctx.moveTo(450, 280); ctx.lineTo(505, 295);
+        ctx.stroke();
+
+      } else if (presetKey === "dog") {
+        // 6. 狗狗 (青青草原、垂垂大耳朵、吐舌頭的快樂小柴犬)
+        const bg = ctx.createLinearGradient(0, 0, 0, 520);
+        bg.addColorStop(0, "#e0f2fe"); bg.addColorStop(0.7, "#dcfce7"); bg.addColorStop(1, "#86efac");
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, 720, 520);
+
+        // 垂垂耳朵
+        ctx.fillStyle = "#b45309"; ctx.strokeStyle = "#78350f"; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.ellipse(250, 240, 32, 65, 0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(470, 240, 32, 65, -0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+        // 狗頭
+        ctx.fillStyle = "#f59e0b";
+        ctx.beginPath(); ctx.arc(360, 240, 115, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+        // 白白吻部
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.ellipse(360, 280, 58, 42, 0, 0, Math.PI * 2); ctx.fill();
+
+        // 狗鼻子
+        ctx.fillStyle = "#0f172a";
+        ctx.beginPath(); ctx.ellipse(360, 258, 16, 12, 0, 0, Math.PI * 2); ctx.fill();
+
+        // 吐舌頭嘴巴
+        ctx.fillStyle = "#fb7185";
+        ctx.beginPath(); ctx.ellipse(360, 305, 16, 22, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#e11d48"; ctx.lineWidth = 2; ctx.stroke();
+        ctx.strokeStyle = "#78350f"; ctx.lineWidth = 4; ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(360, 270); ctx.lineTo(360, 290);
+        ctx.arc(348, 290, 12, 0, Math.PI * 0.8);
+        ctx.moveTo(360, 290);
+        ctx.arc(372, 290, 12, Math.PI * 0.2, Math.PI);
+        ctx.stroke();
+
+        // 晶亮大眼睛
+        ctx.fillStyle = "#0f172a";
+        ctx.beginPath(); ctx.arc(308, 215, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(412, 215, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.arc(311, 211, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(415, 211, 4, 0, Math.PI * 2); ctx.fill();
+
+        // 腮紅
+        ctx.fillStyle = "rgba(251, 113, 133, 0.6)";
+        ctx.beginPath(); ctx.arc(285, 260, 14, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(435, 260, 14, 0, Math.PI * 2); ctx.fill();
+
+      } else if (presetKey === "rocket") {
+        // 7. 火箭 (深邃太空、閃耀群星、經典紅白火箭與噴射尾焰)
+        const space = ctx.createLinearGradient(0, 0, 0, 520);
+        space.addColorStop(0, "#0f172a"); space.addColorStop(0.6, "#1e1b4b"); space.addColorStop(1, "#312e81");
+        ctx.fillStyle = space; ctx.fillRect(0, 0, 720, 520);
+
+        // 星星
+        ctx.fillStyle = "#fde047";
+        const stars = [[120, 80, 4], [220, 130, 5], [160, 260, 3], [100, 420, 4], [580, 90, 5], [640, 220, 3], [590, 380, 5], [520, 470, 3]];
+        stars.forEach(([sx, sy, r]) => { ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI * 2); ctx.fill(); });
+
+        // 彎月
+        ctx.fillStyle = "#fde047"; ctx.beginPath(); ctx.arc(580, 120, 40, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#1e1b4b"; ctx.beginPath(); ctx.arc(568, 114, 34, 0, Math.PI * 2); ctx.fill();
+
+        // 尾焰
+        const flame = ctx.createLinearGradient(360, 360, 360, 480);
+        flame.addColorStop(0, "#fef08a"); flame.addColorStop(0.4, "#f59e0b"); flame.addColorStop(1, "#ef4444");
+        ctx.fillStyle = flame;
+        ctx.beginPath(); ctx.moveTo(330, 360); ctx.quadraticCurveTo(310, 440, 360, 480); ctx.quadraticCurveTo(410, 440, 390, 360); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.moveTo(345, 360); ctx.quadraticCurveTo(335, 415, 360, 435); ctx.quadraticCurveTo(385, 415, 375, 360); ctx.closePath(); ctx.fill();
+
+        // 兩側穩定翼
+        ctx.fillStyle = "#dc2626"; ctx.strokeStyle = "#991b1b"; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(315, 275); ctx.lineTo(255, 370); ctx.lineTo(315, 355); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(405, 275); ctx.lineTo(465, 370); ctx.lineTo(405, 355); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+        // 機身
+        ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(315, 170); ctx.quadraticCurveTo(360, 155, 405, 170); ctx.lineTo(405, 360); ctx.lineTo(315, 360); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+        // 鼻錐
+        ctx.fillStyle = "#ef4444"; ctx.strokeStyle = "#b91c1c";
+        ctx.beginPath(); ctx.moveTo(315, 170); ctx.quadraticCurveTo(360, 80, 360, 80); ctx.quadraticCurveTo(360, 80, 405, 170); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+        // 舷窗
+        ctx.fillStyle = "#38bdf8"; ctx.strokeStyle = "#0284c7"; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.arc(360, 240, 30, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#fde047"; ctx.beginPath(); ctx.arc(360, 240, 10, 0, Math.PI * 2); ctx.fill();
+
+      } else if (presetKey === "house") {
+        // 8. 房子 (藍天白雲綠草地、紅磚屋頂煙囪與溫馨窗戶)
+        const sky = ctx.createLinearGradient(0, 0, 0, 520);
+        sky.addColorStop(0, "#bae6fd"); sky.addColorStop(0.7, "#f0fdf4"); sky.addColorStop(1, "#86efac");
+        ctx.fillStyle = sky; ctx.fillRect(0, 0, 720, 520);
+
+        // 綠丘陵
+        ctx.fillStyle = "#4ade80";
+        ctx.beginPath(); ctx.arc(360, 680, 380, 0, Math.PI * 2); ctx.fill();
+
+        // 煙囪與裊裊白煙
+        ctx.fillStyle = "#b91c1c"; ctx.fillRect(430, 140, 38, 70);
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.arc(450, 115, 14, 0, Math.PI * 2); ctx.arc(465, 95, 18, 0, Math.PI * 2); ctx.arc(485, 75, 22, 0, Math.PI * 2); ctx.fill();
+
+        // 房屋主體黃牆
+        ctx.fillStyle = "#fef08a"; ctx.strokeStyle = "#ca8a04"; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.rect(240, 230, 240, 170); ctx.fill(); ctx.stroke();
+
+        // 三角形紅色大屋頂
+        ctx.fillStyle = "#ef4444"; ctx.strokeStyle = "#b91c1c"; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.moveTo(210, 235); ctx.lineTo(360, 120); ctx.lineTo(510, 235); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+        // 拱門
+        ctx.fillStyle = "#b45309"; ctx.strokeStyle = "#78350f"; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.rect(330, 300, 60, 100); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#fde047"; ctx.beginPath(); ctx.arc(380, 350, 6, 0, Math.PI * 2); ctx.fill(); // 門把
+
+        // 左右方窗
+        const drawWindow = (wx, wy) => {
+          ctx.fillStyle = "#7dd3fc"; ctx.strokeStyle = "#0284c7"; ctx.lineWidth = 5;
+          ctx.fillRect(wx, wy, 50, 50); ctx.strokeRect(wx, wy, 50, 50);
+          ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 3;
+          ctx.beginPath(); ctx.moveTo(wx + 25, wy); ctx.lineTo(wx + 25, wy + 50); ctx.moveTo(wx, wy + 25); ctx.lineTo(wx + 50, wy + 25); ctx.stroke();
+        };
+        drawWindow(260, 260);
+        drawWindow(410, 260);
+
+      } else if (presetKey === "tree") {
+        // 9. 樹木 (綠意盎然的大樹、結實纍纍的紅蘋果與悠閒草坪)
+        const bg = ctx.createLinearGradient(0, 0, 0, 520);
+        bg.addColorStop(0, "#e0f2fe"); bg.addColorStop(0.8, "#f0fdf4"); bg.addColorStop(1, "#86efac");
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, 720, 520);
+
+        // 樹幹
+        ctx.fillStyle = "#78350f"; ctx.strokeStyle = "#451a03"; ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(330, 440); ctx.lineTo(335, 270);
+        ctx.lineTo(290, 220); ctx.lineTo(345, 240);
+        ctx.lineTo(360, 200);
+        ctx.lineTo(375, 240); ctx.lineTo(430, 220);
+        ctx.lineTo(385, 270); ctx.lineTo(390, 440);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+
+        // 茂密樹冠蓬鬆雲朵狀
+        ctx.fillStyle = "#22c55e"; ctx.strokeStyle = "#15803d"; ctx.lineWidth = 6;
+        const leaves = [
+          [360, 160, 95], [270, 210, 80], [450, 210, 80],
+          [310, 280, 85], [410, 280, 85], [360, 230, 90]
+        ];
+        leaves.forEach(([lx, ly, lr]) => {
+          ctx.beginPath(); ctx.arc(lx, ly, lr, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        });
+
+        // 鮮豔紅蘋果
+        ctx.fillStyle = "#ef4444"; ctx.strokeStyle = "#b91c1c"; ctx.lineWidth = 3;
+        const apples = [[280, 190], [350, 140], [430, 180], [310, 270], [400, 260], [360, 210]];
+        apples.forEach(([ax, ay]) => {
+          ctx.beginPath(); ctx.arc(ax, ay, 15, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = "#15803d";
+          ctx.beginPath(); ctx.ellipse(ax + 5, ay - 14, 6, 3, -0.4, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#ef4444";
+        });
+
+      } else if (presetKey === "boat") {
+        // 10. 帆船 (碧藍大海微風翻浪、紅白色船身與高聳彩色風帆)
+        const sky = ctx.createLinearGradient(0, 0, 0, 520);
+        sky.addColorStop(0, "#bae6fd"); sky.addColorStop(0.65, "#e0f2fe"); sky.addColorStop(1, "#0284c7");
+        ctx.fillStyle = sky; ctx.fillRect(0, 0, 720, 520);
+
+        // 蔚藍海水
+        ctx.fillStyle = "#0284c7";
+        ctx.beginPath();
+        ctx.moveTo(0, 360);
+        for (let x = 0; x <= 720; x += 60) {
+          ctx.quadraticCurveTo(x + 30, 340, x + 60, 360);
+        }
+        ctx.lineTo(720, 520); ctx.lineTo(0, 520); ctx.closePath(); ctx.fill();
+
+        // 桅杆
+        ctx.fillStyle = "#78350f"; ctx.fillRect(352, 110, 12, 230);
+
+        // 主帆 (大三角形風帆)
+        ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#0284c7"; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(370, 120); ctx.lineTo(480, 290); ctx.lineTo(370, 290); ctx.closePath(); ctx.fill(); ctx.stroke();
+        // 前小帆
+        ctx.fillStyle = "#38bdf8";
+        ctx.beginPath(); ctx.moveTo(345, 150); ctx.lineTo(240, 290); ctx.lineTo(345, 290); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+        // 頂部飄揚小旗幟
+        ctx.fillStyle = "#facc15";
+        ctx.beginPath(); ctx.moveTo(364, 110); ctx.lineTo(410, 125); ctx.lineTo(364, 140); ctx.closePath(); ctx.fill();
+
+        // 船身
+        ctx.fillStyle = "#ef4444"; ctx.strokeStyle = "#b91c1c"; ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(200, 320); ctx.lineTo(520, 320); ctx.lineTo(460, 380); ctx.lineTo(260, 380); ctx.closePath();
+        ctx.fill(); ctx.stroke();
+
+      } else if (presetKey === "dino") {
+        // 11. 恐龍 (可愛綠色小恐龍、橘黃背脊刺刺與圓滾肚皮)
+        const sky = ctx.createLinearGradient(0, 0, 0, 520);
+        sky.addColorStop(0, "#e0f2fe"); sky.addColorStop(0.7, "#f0fdf4"); sky.addColorStop(1, "#86efac");
+        ctx.fillStyle = sky; ctx.fillRect(0, 0, 720, 520);
+
+        // 背鰭
+        ctx.fillStyle = "#f97316";
+        const spikes = [[380, 130], [420, 175], [455, 230], [480, 290]];
+        spikes.forEach(([sx, sy]) => {
+          ctx.beginPath(); ctx.moveTo(sx - 16, sy + 14); ctx.lineTo(sx + 18, sy - 14); ctx.lineTo(sx + 14, sy + 24); ctx.closePath(); ctx.fill();
+        });
+
+        // 恐龍身體
+        ctx.fillStyle = "#22c55e"; ctx.strokeStyle = "#15803d"; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.ellipse(360, 280, 115, 110, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        // 恐龍頭
+        ctx.beginPath(); ctx.ellipse(305, 185, 75, 70, -0.15, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        // 尾巴
+        ctx.beginPath(); ctx.moveTo(440, 310); ctx.quadraticCurveTo(530, 330, 545, 275); ctx.quadraticCurveTo(490, 360, 420, 365); ctx.closePath(); ctx.fill(); ctx.stroke();
+        // 肚肚
+        ctx.fillStyle = "#fef08a"; ctx.beginPath(); ctx.ellipse(365, 300, 60, 68, 0.1, 0, Math.PI * 2); ctx.fill();
+        // 胖胖小腿
+        ctx.fillStyle = "#16a34a";
+        ctx.beginPath(); ctx.ellipse(310, 385, 32, 22, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(400, 385, 32, 22, 0, 0, Math.PI * 2); ctx.fill();
+        // 眼睛
+        ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(285, 165, 20, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#0f172a"; ctx.beginPath(); ctx.arc(288, 165, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(292, 161, 5, 0, Math.PI * 2); ctx.fill();
+        // 腮紅微笑
+        ctx.fillStyle = "rgba(251, 113, 133, 0.7)"; ctx.beginPath(); ctx.arc(260, 195, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 4; ctx.lineCap = "round";
         ctx.beginPath(); ctx.arc(285, 195, 16, 0.1 * Math.PI, 0.75 * Math.PI); ctx.stroke();
 
-      } else if (name === 'donut' || name === 'sunflower') {
-        // 2. 美味草莓甜甜圈 (粉紅波浪糖霜、彩虹糖針與超萌笑臉，幾何圓形極易描摹)
-        const bg = ctx.createRadialGradient(360, 260, 40, 360, 260, 340);
-        bg.addColorStop(0, '#ffffff');
-        bg.addColorStop(0.6, '#fdf2f8');
-        bg.addColorStop(1, '#f5d0fe');
-        ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+      } else if (presetKey === "car") {
+        // 12. 汽車 (可愛紅色復古金龜車、旋轉大輪胎與亮亮車燈)
+        const bg = ctx.createLinearGradient(0, 0, 0, 520);
+        bg.addColorStop(0, "#e0f2fe"); bg.addColorStop(0.7, "#f1f5f9"); bg.addColorStop(1, "#94a3b8");
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, 720, 520);
 
-        // 甜甜圈金黃烘焙本體
-        ctx.fillStyle = '#d97706';
-        ctx.beginPath(); ctx.arc(360, 260, 150, 0, Math.PI * 2); ctx.fill();
+        // 馬路
+        ctx.fillStyle = "#334155"; ctx.fillRect(0, 380, 720, 140);
+        ctx.fillStyle = "#f8fafc";
+        for (let x = 40; x < 720; x += 120) ctx.fillRect(x, 440, 60, 12);
 
-        // 甜甜圈淺黃烘焙內圈陰影
-        ctx.fillStyle = '#fde68a';
-        ctx.beginPath(); ctx.arc(360, 260, 142, 0, Math.PI * 2); ctx.fill();
+        // 車身
+        ctx.fillStyle = "#ef4444"; ctx.strokeStyle = "#b91c1c"; ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(140, 370);
+        ctx.lineTo(140, 310);
+        ctx.quadraticCurveTo(150, 280, 240, 270);
+        ctx.quadraticCurveTo(320, 170, 480, 170);
+        ctx.quadraticCurveTo(560, 180, 590, 290);
+        ctx.lineTo(600, 370);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
 
-        // 草莓粉紅糖霜厚層
-        ctx.fillStyle = '#f472b6';
-        ctx.beginPath(); ctx.arc(360, 260, 136, 0, Math.PI * 2); ctx.fill();
+        // 圓拱車窗
+        ctx.fillStyle = "#7dd3fc"; ctx.strokeStyle = "#0284c7"; ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(270, 270); ctx.lineTo(350, 190); ctx.lineTo(350, 270); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(370, 190); ctx.lineTo(460, 190); ctx.lineTo(520, 270); ctx.lineTo(370, 270); ctx.closePath(); ctx.fill(); ctx.stroke();
 
-        // 糖霜高光立體層
-        ctx.fillStyle = '#fb7185';
-        ctx.beginPath(); ctx.arc(356, 256, 125, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#f472b6';
-        ctx.beginPath(); ctx.arc(364, 264, 122, 0, Math.PI * 2); ctx.fill();
+        // 車燈
+        ctx.fillStyle = "#fef08a"; ctx.strokeStyle = "#eab308"; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.ellipse(140, 320, 16, 22, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
 
-        // 甜甜圈中心圓孔 (挖空透出背景)
-        ctx.fillStyle = '#fdf2f8';
-        ctx.beginPath(); ctx.arc(360, 260, 52, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#d97706'; ctx.lineWidth = 6;
-        ctx.beginPath(); ctx.arc(360, 260, 53, 0, Math.PI * 2); ctx.stroke();
+        // 黑色大輪胎
+        const drawWheel = (wx, wy) => {
+          ctx.fillStyle = "#0f172a"; ctx.beginPath(); ctx.arc(wx, wy, 44, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#cbd5e1"; ctx.beginPath(); ctx.arc(wx, wy, 24, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#475569"; ctx.beginPath(); ctx.arc(wx, wy, 10, 0, Math.PI * 2); ctx.fill();
+        };
+        drawWheel(240, 380);
+        drawWheel(500, 380);
 
-        // 五彩繽紛糖針 (彩虹糖果顆粒灑落)
-        const sprinkles = [
-          [310, 180, '#38bdf8', 0.5], [370, 155, '#facc15', -0.3], [420, 185, '#ffffff', 0.8],
-          [270, 240, '#a855f7', 0.2], [450, 235, '#22c55e', -0.6], [290, 310, '#facc15', -0.4],
-          [425, 315, '#38bdf8', 0.7], [355, 360, '#ffffff', 0.1], [390, 350, '#a855f7', -0.5],
-          [250, 275, '#f97316', 0.6], [470, 275, '#fb7185', -0.2], [335, 140, '#22c55e', 0.9]
-        ];
-        sprinkles.forEach(([px, py, col, rot]) => {
-          ctx.save();
-          ctx.translate(px, py);
-          ctx.rotate(rot);
-          ctx.fillStyle = col;
-          ctx.beginPath();
-          if (ctx.roundRect) {
-            ctx.roundRect(-10, -3.5, 20, 7, 3.5);
-          } else {
-            ctx.rect(-10, -3.5, 20, 7);
-          }
-          ctx.fill();
-          ctx.restore();
-        });
+      } else if (presetKey === "plane") {
+        // 13. 飛機 (藍天雲層、穿雲而過的小客機與彩色機翼)
+        const sky = ctx.createLinearGradient(0, 0, 0, 520);
+        sky.addColorStop(0, "#38bdf8"); sky.addColorStop(0.5, "#7dd3fc"); sky.addColorStop(1, "#bae6fd");
+        ctx.fillStyle = sky; ctx.fillRect(0, 0, 720, 520);
 
-        // 甜甜圈超萌微笑表情
-        ctx.fillStyle = '#1e1b4b';
-        ctx.beginPath(); ctx.arc(325, 245, 7, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(395, 245, 7, 0, Math.PI * 2); ctx.fill();
+        // 軟綿綿白雲
+        ctx.fillStyle = "#ffffff";
+        const clouds = [[140, 120, 45], [190, 100, 60], [250, 120, 45], [540, 380, 50], [590, 360, 65], [650, 380, 50]];
+        clouds.forEach(([cx0, cy0, cr]) => { ctx.beginPath(); ctx.arc(cx0, cy0, cr, 0, Math.PI * 2); ctx.fill(); });
+
+        // 機身
+        ctx.save();
+        ctx.translate(360, 260); ctx.rotate(-0.15);
+        // 後尾翼
+        ctx.fillStyle = "#ef4444"; ctx.strokeStyle = "#b91c1c"; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(-160, 0); ctx.lineTo(-200, -80); ctx.lineTo(-140, -80); ctx.lineTo(-110, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+        // 下主機翼
+        ctx.fillStyle = "#2563eb"; ctx.strokeStyle = "#1d4ed8"; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(-30, 20); ctx.lineTo(-70, 100); ctx.lineTo(10, 80); ctx.lineTo(30, 20); ctx.closePath(); ctx.fill(); ctx.stroke();
+        // 主機身
+        ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#64748b"; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.ellipse(0, 0, 190, 48, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        // 駕駛艙窗戶
+        ctx.fillStyle = "#0284c7"; ctx.beginPath(); ctx.ellipse(140, -10, 26, 18, 0.4, 0, Math.PI * 2); ctx.fill();
+        // 乘客圓圓窗
+        for (let x = -80; x <= 80; x += 40) {
+          ctx.fillStyle = "#38bdf8"; ctx.beginPath(); ctx.arc(x, -8, 12, 0, Math.PI * 2); ctx.fill();
+        }
+        // 上主機翼
+        ctx.fillStyle = "#3b82f6"; ctx.strokeStyle = "#1d4ed8"; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(-20, -20); ctx.lineTo(-60, -110); ctx.lineTo(15, -95); ctx.lineTo(40, -20); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.restore();
+
+      } else if (presetKey === "flower") {
+        // 14. 花朵 (燦爛向日葵、綠葉與滿滿陽光活力)
+        const bg = ctx.createLinearGradient(0, 0, 0, 520);
+        bg.addColorStop(0, "#fef08a"); bg.addColorStop(0.7, "#fef9c3"); bg.addColorStop(1, "#bbf7d0");
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, 720, 520);
+
+        // 粗壯綠莖
+        ctx.fillStyle = "#16a34a"; ctx.strokeStyle = "#15803d"; ctx.lineWidth = 6;
+        ctx.fillRect(348, 260, 24, 220); ctx.strokeRect(348, 260, 24, 220);
+
+        // 左右大綠葉
+        ctx.beginPath(); ctx.ellipse(260, 360, 75, 35, -0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(460, 380, 75, 35, 0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+        // 放射狀金黃花瓣
+        ctx.fillStyle = "#f59e0b"; ctx.strokeStyle = "#d97706"; ctx.lineWidth = 4;
+        for (let i = 0; i < 12; i++) {
+          const ang = (i / 12) * Math.PI * 2;
+          const px = 360 + Math.cos(ang) * 95;
+          const py = 210 + Math.sin(ang) * 95;
+          ctx.beginPath(); ctx.ellipse(px, py, 45, 26, ang, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        }
+
+        // 花心大圓
+        ctx.fillStyle = "#78350f"; ctx.strokeStyle = "#451a03"; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.arc(360, 210, 68, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+        // 花心可愛笑臉
+        ctx.fillStyle = "#fef3c7";
+        ctx.beginPath(); ctx.arc(335, 195, 10, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(385, 195, 10, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#fef3c7"; ctx.lineWidth = 4; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.arc(360, 215, 20, 0.2 * Math.PI, 0.8 * Math.PI); ctx.stroke();
+
+      } else if (presetKey === "sun") {
+        // 15. 太陽 (燦爛陽光、光芒四射、軟萌微笑與彩虹相伴)
+        const bg = ctx.createLinearGradient(0, 0, 0, 520);
+        bg.addColorStop(0, "#fed7aa"); bg.addColorStop(0.5, "#fef08a"); bg.addColorStop(1, "#bae6fd");
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, 720, 520);
+
+        // 太陽三角形光芒
+        ctx.fillStyle = "#f97316"; ctx.strokeStyle = "#ea580c"; ctx.lineWidth = 5;
+        for (let i = 0; i < 16; i++) {
+          const ang = (i / 16) * Math.PI * 2;
+          const r1 = 145, r2 = (i % 2 === 0 ? 190 : 170);
+          const p1x = 360 + Math.cos(ang - 0.12) * r1, p1y = 260 + Math.sin(ang - 0.12) * r1;
+          const p2x = 360 + Math.cos(ang) * r2, p2y = 260 + Math.sin(ang) * r2;
+          const p3x = 360 + Math.cos(ang + 0.12) * r1, p3y = 260 + Math.sin(ang + 0.12) * r1;
+          ctx.beginPath(); ctx.moveTo(p1x, p1y); ctx.lineTo(p2x, p2y); ctx.lineTo(p3x, p3y); ctx.closePath(); ctx.fill(); ctx.stroke();
+        }
+
+        // 太陽大圓
+        ctx.fillStyle = "#fde047"; ctx.strokeStyle = "#eab308"; ctx.lineWidth = 7;
+        ctx.beginPath(); ctx.arc(360, 260, 130, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+        // 眼睛
+        ctx.fillStyle = "#0f172a";
+        ctx.beginPath(); ctx.arc(310, 240, 14, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(410, 240, 14, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.arc(314, 235, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(414, 235, 5, 0, Math.PI * 2); ctx.fill();
+
+        // 甜甜微笑
+        ctx.strokeStyle = "#c2410c"; ctx.lineWidth = 6; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.arc(360, 260, 36, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+
         // 腮紅
-        ctx.fillStyle = 'rgba(236, 72, 153, 0.75)';
-        ctx.beginPath(); ctx.arc(308, 255, 10, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(412, 255, 10, 0, Math.PI * 2); ctx.fill();
-        // 彎彎小笑嘴
-        ctx.strokeStyle = '#1e1b4b'; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.arc(360, 260, 12, 0.1 * Math.PI, 0.9 * Math.PI); ctx.stroke();
+        ctx.fillStyle = "#fb7185";
+        ctx.beginPath(); ctx.arc(280, 275, 18, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(440, 275, 18, 0, Math.PI * 2); ctx.fill();
 
-      } else if (name === 'rocket' || name === 'balloon') {
-        // 3. 宇宙小火箭與璀璨星芒 (紅白經典火箭、舷窗萌星、噴射尾焰，激發航天探索想像力)
-        const space = ctx.createLinearGradient(0, 0, 0, H);
-        space.addColorStop(0, '#0f172a');
-        space.addColorStop(0.6, '#1e1b4b');
-        space.addColorStop(1, '#312e81');
-        ctx.fillStyle = space; ctx.fillRect(0, 0, W, H);
+      } else if (presetKey === "butterfly") {
+        // 16. 蝴蝶 (夢幻花園、對稱華麗大翅膀與五彩斑斕同心圓花紋)
+        const bg = ctx.createLinearGradient(0, 0, 0, 520);
+        bg.addColorStop(0, "#fae8ff"); bg.addColorStop(0.5, "#f5d0fe"); bg.addColorStop(1, "#ddd6fe");
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, 720, 520);
 
-        // 閃耀星星
-        const stars = [
-          [120, 80, 3], [220, 130, 4.5], [160, 260, 2.5], [100, 420, 3.5],
-          [580, 90, 4], [640, 220, 3], [590, 380, 4.5], [520, 470, 2.5],
-          [270, 60, 2], [450, 70, 2.5]
-        ];
-        ctx.fillStyle = '#fde047';
-        stars.forEach(([sx, sy, r]) => {
-          ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI * 2); ctx.fill();
-        });
+        // 繪製對稱翅膀
+        const drawWing = (side) => {
+          ctx.save();
+          ctx.translate(360, 260);
+          ctx.scale(side, 1);
 
-        // 右上方微笑金黃彎月
-        ctx.fillStyle = '#fde047';
-        ctx.beginPath(); ctx.arc(580, 120, 40, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#1e1b4b';
-        ctx.beginPath(); ctx.arc(568, 114, 34, 0, Math.PI * 2); ctx.fill();
+          // 上大翅膀
+          ctx.fillStyle = "#f472b6"; ctx.strokeStyle = "#db2777"; ctx.lineWidth = 6;
+          ctx.beginPath();
+          ctx.moveTo(15, -20);
+          ctx.bezierCurveTo(90, -170, 230, -130, 230, -10);
+          ctx.bezierCurveTo(230, 80, 90, 80, 15, 0);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
 
-        // 火箭尾焰噴射火光 (紅黃漸變)
-        const flame = ctx.createLinearGradient(360, 360, 360, 480);
-        flame.addColorStop(0, '#fef08a');
-        flame.addColorStop(0.35, '#f59e0b');
-        flame.addColorStop(1, '#ef4444');
-        ctx.fillStyle = flame;
-        ctx.beginPath();
-        ctx.moveTo(330, 360);
-        ctx.quadraticCurveTo(310, 440, 360, 480);
-        ctx.quadraticCurveTo(410, 440, 390, 360);
-        ctx.closePath();
-        ctx.fill();
+          // 翅膀花紋
+          ctx.fillStyle = "#fde047"; ctx.beginPath(); ctx.arc(140, -40, 28, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = "#38bdf8"; ctx.beginPath(); ctx.arc(140, -40, 16, 0, Math.PI * 2); ctx.fill();
 
-        // 內層高溫亮黃小火焰
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.moveTo(345, 360);
-        ctx.quadraticCurveTo(335, 415, 360, 435);
-        ctx.quadraticCurveTo(385, 415, 375, 360);
-        ctx.closePath();
-        ctx.fill();
+          // 下小翅膀
+          ctx.fillStyle = "#a855f7"; ctx.strokeStyle = "#7e22ce"; ctx.lineWidth = 6;
+          ctx.beginPath();
+          ctx.moveTo(15, 10);
+          ctx.bezierCurveTo(90, 50, 190, 110, 160, 180);
+          ctx.bezierCurveTo(120, 220, 40, 180, 10, 50);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
 
-        // 火箭兩側紅色穩定尾翼
-        ctx.fillStyle = '#dc2626';
-        ctx.beginPath();
-        ctx.moveTo(315, 275);
-        ctx.lineTo(255, 370);
-        ctx.lineTo(315, 355);
-        ctx.closePath();
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(405, 275);
-        ctx.lineTo(465, 370);
-        ctx.lineTo(405, 355);
-        ctx.closePath();
-        ctx.fill();
+          // 下翅膀斑紋
+          ctx.fillStyle = "#f43f5e"; ctx.beginPath(); ctx.arc(110, 140, 18, 0, Math.PI * 2); ctx.fill();
 
-        // 火箭主體機身 (純白圓滑火箭柱體)
-        ctx.fillStyle = '#f8fafc';
-        ctx.beginPath();
-        ctx.moveTo(315, 170);
-        ctx.quadraticCurveTo(360, 155, 405, 170);
-        ctx.lineTo(405, 360);
-        ctx.lineTo(315, 360);
-        ctx.closePath();
-        ctx.fill();
+          ctx.restore();
+        };
+        drawWing(1);
+        drawWing(-1);
 
-        // 火箭頂部鮮紅鼻錐
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath();
-        ctx.moveTo(315, 170);
-        ctx.quadraticCurveTo(360, 80, 360, 80);
-        ctx.quadraticCurveTo(360, 80, 405, 170);
-        ctx.closePath();
-        ctx.fill();
-
-        // 機身裝飾條紋
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillRect(315, 320, 90, 10);
-
-        // 火箭圓形觀景舷窗
-        ctx.fillStyle = '#94a3b8';
-        ctx.beginPath(); ctx.arc(360, 240, 32, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#0284c7';
-        ctx.beginPath(); ctx.arc(360, 240, 25, 0, Math.PI * 2); ctx.fill();
-        // 窗戶反光流光
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-        ctx.beginPath(); ctx.arc(354, 234, 18, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#0284c7';
-        ctx.beginPath(); ctx.arc(358, 238, 17, 0, Math.PI * 2); ctx.fill();
-        // 舷窗內向外張望的可愛萌星
-        ctx.fillStyle = '#fde047';
-        ctx.beginPath(); ctx.arc(360, 240, 10, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#0f172a';
-        ctx.beginPath(); ctx.arc(357, 238, 2, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(363, 238, 2, 0, Math.PI * 2); ctx.fill();
+        // 蝴蝶身體與觸角
+        ctx.fillStyle = "#451a03"; ctx.strokeStyle = "#1e1b4b"; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.ellipse(360, 260, 18, 90, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        // 蝴蝶頭部
+        ctx.beginPath(); ctx.arc(360, 160, 24, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        // 彎曲觸角與頂端圓珠
+        ctx.strokeStyle = "#451a03"; ctx.lineWidth = 4; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(350, 145); ctx.quadraticCurveTo(320, 100, 310, 110); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(370, 145); ctx.quadraticCurveTo(400, 100, 410, 110); ctx.stroke();
+        ctx.fillStyle = "#f59e0b";
+        ctx.beginPath(); ctx.arc(310, 110, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(410, 110, 7, 0, Math.PI * 2); ctx.fill();
       }
+
       ctx.restore();
       renderAllStylePreviews();
       renderRefCanvas();
     }
 
     function applyFilterTo(targetCanvas, styleType, strengthVal) {
+      if (!targetCanvas) return;
       const tw = targetCanvas.width, th = targetCanvas.height;
-      const tCtx = targetCanvas.getContext('2d');
+      const tCtx = targetCanvas.getContext("2d");
+      tCtx.clearRect(0, 0, tw, th);
       tCtx.drawImage(sourcePhotoCanvas, 0, 0, tw, th);
-      const str = Math.max(0.1, strengthVal / 100);
 
+      if (styleType === "color") {
+        // 彩色完成樣貌模式：保留完整色彩
+        return;
+      }
+
+      const str = Math.max(0.1, (strengthVal || 70) / 100);
       const imgData = tCtx.getImageData(0, 0, tw, th);
       const s = new Uint8ClampedArray(imgData.data);
       const d = imgData.data;
 
-      if (styleType === 'sketch') {
+      if (styleType === "sketch") {
         for (let y = 1; y < th - 1; y++) {
           for (let x = 1; x < tw - 1; x++) {
             const idx = (y * tw + x) * 4;
@@ -5419,113 +6140,26 @@
             d[idx + 2] = v;
           }
         }
-      } else if (styleType === 'watercolor') {
-        const blur = new Uint8ClampedArray(s);
-        for (let y = 1; y < th - 1; y++) {
-          for (let x = 1; x < tw - 1; x++) {
-            const idx = (y * tw + x) * 4;
-            let rSum = 0, gSum = 0, bSum = 0;
-            for (let dy = -1; dy <= 1; dy++) {
-              for (let dx = -1; dx <= 1; dx++) {
-                const qi = ((y + dy) * tw + (x + dx)) * 4;
-                rSum += s[qi]; gSum += s[qi+1]; bSum += s[qi+2];
-              }
-            }
-            blur[idx] = rSum / 9; blur[idx+1] = gSum / 9; blur[idx+2] = bSum / 9;
-          }
-        }
-
-        for (let y = 1; y < th - 1; y++) {
-          for (let x = 1; x < tw - 1; x++) {
-            const idx = (y * tw + x) * 4;
-            const lum  = (blur[idx] * 0.299 + blur[idx+1] * 0.587 + blur[idx+2] * 0.114);
-            const lumR = (blur[idx+4] * 0.299 + blur[idx+5] * 0.587 + blur[idx+6] * 0.114);
-            const lumD = (blur[idx+tw*4] * 0.299 + blur[idx+tw*4+1] * 0.587 + blur[idx+tw*4+2] * 0.114);
-
-            const edgeMag = Math.hypot(lum - lumR, lum - lumD);
-            const darkEdge = Math.min(50, edgeMag * 2.2 * str);
-            const grainNoise = ((Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1);
-            const granulation = (grainNoise - 0.5) * 32 * str * (1.0 - lum / 260);
-
-            let r = blur[idx] - darkEdge + granulation + 6 * str;
-            let g = blur[idx+1] - darkEdge + granulation + 3 * str;
-            let b = blur[idx+2] - darkEdge + granulation;
-
-            d[idx]     = Math.min(255, Math.max(0, r));
-            d[idx + 1] = Math.min(255, Math.max(0, g));
-            d[idx + 2] = Math.min(255, Math.max(0, b));
-          }
-        }
-      } else if (styleType === 'crayon') {
-        for (let y = 0; y < th; y++) {
-          for (let x = 0; x < tw; x++) {
-            const idx = (y * tw + x) * 4;
-            const step = 36;
-            let r = Math.round(s[idx] / step) * step;
-            let g = Math.round(s[idx+1] / step) * step;
-            let b = Math.round(s[idx+2] / step) * step;
-
-            const strokeLine = Math.sin((x + y) * 0.45) * 0.5 + 0.5;
-            const tooth = ((Math.sin(x * 15.3 + y * 3.7) * 43758.54) % 1 + 1) * 0.5;
-            const waxDeposit = (tooth * 0.6 + strokeLine * 0.4);
-
-            const threshold = 0.32 + (1.0 - str) * 0.3;
-            if (waxDeposit < threshold) {
-              d[idx]     = Math.min(255, r * 0.6 + 248 * 0.4);
-              d[idx + 1] = Math.min(255, g * 0.6 + 244 * 0.4);
-              d[idx + 2] = Math.min(255, b * 0.6 + 236 * 0.4);
-            } else {
-              d[idx]     = Math.min(255, r * 1.08);
-              d[idx + 1] = Math.min(255, g * 1.08);
-              d[idx + 2] = Math.min(255, b * 1.08);
-            }
-          }
-        }
-      } else if (styleType === 'marker') {
-        for (let y = 1; y < th - 1; y++) {
-          for (let x = 1; x < tw - 1; x++) {
-            const idx = (y * tw + x) * 4;
-            const step = 42;
-            let r = Math.round(s[idx] / step) * step;
-            let g = Math.round(s[idx+1] / step) * step;
-            let b = Math.round(s[idx+2] / step) * step;
-
-            const diff = Math.abs(s[idx] - s[idx+4]) + Math.abs(s[idx+1] - s[idx+5]) + Math.abs(s[idx+2] - s[idx+6]);
-            if (diff > 48 * (1.1 - str * 0.4)) {
-              r = Math.max(0, r * 0.55);
-              g = Math.max(0, g * 0.55);
-              b = Math.max(0, b * 0.55);
-            } else {
-              r = Math.min(255, r * 1.06);
-              g = Math.min(255, g * 1.06);
-              b = Math.min(255, b * 1.06);
-            }
-
-            d[idx]     = r;
-            d[idx + 1] = g;
-            d[idx + 2] = b;
-          }
-        }
       }
 
       tCtx.putImageData(imgData, 0, 0);
     }
 
     function renderAllStylePreviews() {
-      const strength = Number(document.getElementById('styleIntensitySlider').value);
-      applyFilterTo(document.getElementById('prevSketch'), 'sketch', strength);
-      applyFilterTo(document.getElementById('prevWatercolor'), 'watercolor', strength);
-      applyFilterTo(document.getElementById('prevCrayon'), 'crayon', strength);
-      applyFilterTo(document.getElementById('prevMarker'), 'marker', strength);
+      const strength = Number(document.getElementById("styleIntensitySlider")?.value || 70);
+      const sketchCanvas = document.getElementById("prevSketch");
+      if (sketchCanvas) applyFilterTo(sketchCanvas, "sketch", strength);
+      const colorCanvas = document.getElementById("prevColor");
+      if (colorCanvas) applyFilterTo(colorCanvas, "color", strength);
     }
 
-    const styledBuf = document.createElement('canvas');
+    const styledBuf = document.createElement("canvas");
     styledBuf.width = W; styledBuf.height = H;
 
     function renderRefCanvas() {
       refCtx.clearRect(0, 0, W, H);
       if (!refVisible) return;
-      const strength = Number(document.getElementById('styleIntensitySlider').value);
+      const strength = Number(document.getElementById("styleIntensitySlider")?.value || 70);
       applyFilterTo(styledBuf, refStyle, strength);
       refCtx.save();
       refCtx.globalAlpha = refOpacity / 100;
@@ -5533,61 +6167,103 @@
       refCtx.restore();
     }
 
-    const camModal = document.getElementById('cameraModal');
-    document.getElementById('btnOpenCameraModal').addEventListener('click', () => {
-      camModal.classList.remove('hidden'); camModal.classList.add('flex');
+    const camModal = document.getElementById("cameraModal");
+    document.getElementById("btnOpenCameraModal").addEventListener("click", () => {
+      camModal.classList.remove("hidden"); camModal.classList.add("flex");
       renderAllStylePreviews();
     });
-    document.getElementById('btnCloseCameraModal').addEventListener('click', () => {
-      camModal.classList.add('hidden'); camModal.classList.remove('flex');
-      if (typeof fitCanvasToScreen === 'function') fitCanvasToScreen();
-      if (typeof onTourTargetClosed === 'function') onTourTargetClosed(0);
+    document.getElementById("btnCloseCameraModal").addEventListener("click", () => {
+      camModal.classList.add("hidden"); camModal.classList.remove("flex");
+      if (typeof fitCanvasToScreen === "function") fitCanvasToScreen();
+      if (typeof onTourTargetClosed === "function") onTourTargetClosed(0);
     });
 
     // 跳過拍照直接進入畫布繪畫 (支援右上角放大按鍵與說明條按鍵)
     const onSkipPhotoDirectDraw = (e) => {
       e?.stopPropagation?.();
-      camModal.classList.add('hidden');
-      camModal.classList.remove('flex');
-      if (typeof fitCanvasToScreen === 'function') fitCanvasToScreen();
-      if (typeof playSuctionPopSound === 'function') playSuctionPopSound(520, 0.08);
-      showToast('🎨 祝您創作愉快！已直接進入畫室畫布。');
-      if (typeof onTourTargetClosed === 'function') onTourTargetClosed(0);
+      camModal.classList.add("hidden");
+      camModal.classList.remove("flex");
+      if (typeof fitCanvasToScreen === "function") fitCanvasToScreen();
+      if (typeof playSuctionPopSound === "function") playSuctionPopSound(520, 0.08);
+      showToast("🎨 祝您創作愉快！已直接進入畫室畫布。");
+      if (typeof onTourTargetClosed === "function") onTourTargetClosed(0);
     };
-    document.getElementById('btnSkipPhotoDirectDraw')?.addEventListener('click', onSkipPhotoDirectDraw);
-    document.getElementById('btnSkipPhotoDirectDrawTop')?.addEventListener('click', onSkipPhotoDirectDraw);
+    document.getElementById("btnSkipPhotoDirectDraw")?.addEventListener("click", onSkipPhotoDirectDraw);
+    document.getElementById("btnSkipPhotoDirectDrawTop")?.addEventListener("click", onSkipPhotoDirectDraw);
 
-    document.querySelectorAll('.cam-preset-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.cam-preset-btn').forEach(b => {
-          b.className = 'cam-preset-btn px-3 py-1.5 rounded-xl bg-white border border-stone-200 text-stone-700 font-semibold active:scale-95 transition shadow-xs';
+    // 16 格小朋友範例點選切換
+    document.querySelectorAll(".cam-16-preset-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".cam-16-preset-btn").forEach(b => {
+          b.classList.remove("border-amber-500", "bg-amber-50/70", "ring-2", "ring-amber-400/50");
+          b.classList.add("border-stone-200", "bg-white");
+          const svg = b.querySelector("svg");
+          if (svg) {
+            svg.classList.remove("text-amber-900");
+            svg.classList.add("text-stone-700");
+          }
         });
-        btn.className = 'cam-preset-btn px-3 py-1.5 rounded-xl bg-amber-500 text-white font-bold active:scale-95 transition shadow-xs';
-        drawPresetPhoto(btn.dataset.camerapreset);
+        btn.classList.remove("border-stone-200", "bg-white");
+        btn.classList.add("border-amber-500", "bg-amber-50/70", "ring-2", "ring-amber-400/50");
+        const svg = btn.querySelector("svg");
+        if (svg) {
+          svg.classList.remove("text-stone-700");
+          svg.classList.add("text-amber-900");
+        }
+        const key = btn.dataset.camerapreset;
+        const labelEl = document.getElementById("currentSelectedPresetLabel");
+        if (labelEl && PRESET_NAMES[key]) {
+          labelEl.textContent = PRESET_NAMES[key];
+        }
+        drawPresetPhoto(key);
       });
     });
 
-    document.getElementById('styleIntensitySlider').addEventListener('input', (e) => {
-      document.getElementById('styleIntensityVal').textContent = `${e.target.value}%`;
+    // 底圖微調滑桿
+    document.getElementById("styleIntensitySlider")?.addEventListener("input", (e) => {
+      const val = e.target.value;
+      const valEl = document.getElementById("styleIntensityVal");
+      if (valEl) valEl.textContent = `${val}%`;
+      refOpacity = Number(val);
       renderAllStylePreviews();
       renderRefCanvas();
     });
 
-    document.querySelectorAll('.pick-style-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        refStyle = btn.dataset.pickstyle;
-        refVisible = true;
-        renderRefCanvas();
-        camModal.classList.add('hidden'); camModal.classList.remove('flex');
-      });
+    // 設為黑白線條描摹底圖
+    document.getElementById("btnSetSketchUnderlay")?.addEventListener("click", () => {
+      refStyle = "sketch";
+      refVisible = true;
+      renderRefCanvas();
+      camModal.classList.add("hidden"); camModal.classList.remove("flex");
+      if (typeof fitCanvasToScreen === "function") fitCanvasToScreen();
+      showToast("✏️ 已將黑白線條設為臨摹底圖");
     });
 
-    document.getElementById('btnImportSketchToPaint').addEventListener('click', () => {
+    // 匯入黑白線稿至畫布圖層直接填色
+    document.getElementById("btnImportSketchToPaint")?.addEventListener("click", () => {
       saveUndoState();
-      const strength = Number(document.getElementById('styleIntensitySlider').value);
-      applyFilterTo(styledBuf, 'sketch', strength);
-      paintCtx.drawImage(styledBuf, 0, 0, W, H);
-      camModal.classList.add('hidden'); camModal.classList.remove('flex');
+      const strength = Number(document.getElementById("styleIntensitySlider")?.value || 70);
+      applyFilterTo(styledBuf, "sketch", strength);
+      const targetLayer = (typeof activeLayer !== "undefined" && activeLayer) ? activeLayer : (layers && layers[0]);
+      if (targetLayer && targetLayer.ctx) {
+        targetLayer.ctx.drawImage(styledBuf, 0, 0, W, H);
+        if (typeof renderComposite === "function") renderComposite();
+      } else if (typeof paintCtx !== "undefined") {
+        paintCtx.drawImage(styledBuf, 0, 0, W, H);
+      }
+      camModal.classList.add("hidden"); camModal.classList.remove("flex");
+      if (typeof fitCanvasToScreen === "function") fitCanvasToScreen();
+      showToast("🎨 已將黑白線條匯入當前圖層！快開始著色吧");
+    });
+
+    // 設為彩色完成圖臨摹底圖
+    document.getElementById("btnSetColorUnderlay")?.addEventListener("click", () => {
+      refStyle = "color";
+      refVisible = true;
+      renderRefCanvas();
+      camModal.classList.add("hidden"); camModal.classList.remove("flex");
+      if (typeof fitCanvasToScreen === "function") fitCanvasToScreen();
+      showToast("🖼️ 已將彩色完成圖設為臨摹底圖");
     });
 
     document.getElementById('btnToggleRef').addEventListener('click', () => {
@@ -8458,7 +9134,7 @@
     renderMarkerRack();
     renderPaperModalCards();
     initPorcelainPalette();
-    drawPresetPhoto('dino');
+    drawPresetPhoto('lion');
     applyBrushColor([20, 85, 210]);
     renderRecentColorsUI();
     switchBrushMedium('watercolor');
