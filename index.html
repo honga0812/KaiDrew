@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.125 · Pro Edition
+      B.26.11.126 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -404,7 +404,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.125 · Pro Edition
+        B.26.11.126 · Pro Edition
       </div>
     </div>
 
@@ -2355,6 +2355,34 @@
 
           container.appendChild(card);
         }
+
+        // 渲染參考底圖專屬條目 (可直接點選眼睛隱藏/顯示底圖)
+        const hasPhoto = typeof sourcePhotoCanvas !== 'undefined' && sourcePhotoCanvas.width > 0;
+        if (hasPhoto || refVisible) {
+          const refCard = document.createElement('div');
+          refCard.className = `p-2 rounded-xl border transition flex items-center justify-between gap-2 select-none ${
+            refVisible 
+              ? 'bg-amber-50/90 border-amber-300 shadow-2xs' 
+              : 'bg-stone-50 border-stone-200/70 opacity-60'
+          }`;
+          refCard.innerHTML = `
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+              <span class="text-xs">🖼️</span>
+              <div class="flex flex-col min-w-0">
+                <span class="text-xs font-bold ${refVisible ? 'text-amber-900' : 'text-stone-600'}">參考底圖 (臨摹)</span>
+                <span class="text-[9.5px] ${refVisible ? 'text-amber-700 font-semibold' : 'text-stone-400'}">${refVisible ? '👁️ 底圖顯示中' : '🚫 底圖已關閉'}</span>
+              </div>
+            </div>
+            <button class="btn-toggle-ref-underlay-eye p-1.5 rounded-lg hover:bg-stone-200 text-xs transition active:scale-90 cursor-pointer" title="${refVisible ? '隱藏底圖' : '顯示底圖'}">
+              ${refVisible ? '👁️' : '🚫'}
+            </button>
+          `;
+          refCard.querySelector('.btn-toggle-ref-underlay-eye').addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleRefVisibility();
+          });
+          container.appendChild(refCard);
+        }
       }
 
       // 同時也同步渲染縮小版長形迷你圖層預覽條 (miniLayersListContainer)
@@ -2426,6 +2454,30 @@
           }
 
           miniContainer.appendChild(row);
+        }
+
+        const hasPhoto = typeof sourcePhotoCanvas !== 'undefined' && sourcePhotoCanvas.width > 0;
+        if (hasPhoto || refVisible) {
+          const miniRefRow = document.createElement('div');
+          miniRefRow.className = `flex items-center justify-between p-1 rounded-xl border text-xs transition select-none ${
+            refVisible 
+              ? 'bg-amber-50/80 border-amber-300 font-semibold text-amber-950' 
+              : 'bg-stone-50/60 border-stone-200/60 opacity-60 text-stone-500'
+          }`;
+          miniRefRow.innerHTML = `
+            <div class="flex items-center gap-1 flex-1 min-w-0">
+              <span class="text-[10px]">🖼️</span>
+              <span class="text-[10px] truncate">參考底圖</span>
+            </div>
+            <button class="btn-toggle-mini-ref-eye w-5 h-5 rounded hover:bg-stone-200 flex items-center justify-center text-[10px] text-stone-600 cursor-pointer" title="${refVisible ? '隱藏底圖' : '顯示底圖'}">
+              ${refVisible ? '👁️' : '🚫'}
+            </button>
+          `;
+          miniRefRow.querySelector('.btn-toggle-mini-ref-eye').addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleRefVisibility();
+          });
+          miniContainer.appendChild(miniRefRow);
         }
       }
     }
@@ -6162,6 +6214,73 @@
     const styledBuf = document.createElement("canvas");
     styledBuf.width = W; styledBuf.height = H;
 
+    function updateRefEyeUI() {
+      const dockEye = document.getElementById('dockRefEyeIcon');
+      const dockBtn = document.getElementById('dockBtnToggleRef');
+      const topEye = document.getElementById('refEyeIcon');
+      const topBtn = document.getElementById('btnToggleRef');
+
+      if (dockEye) {
+        dockEye.textContent = refVisible ? '👁️' : '🚫';
+      }
+      if (dockBtn) {
+        dockBtn.title = refVisible ? '底圖顯示中 (點擊關閉底圖)' : '底圖已關閉 (點擊開啟底圖)';
+        if (refVisible) {
+          dockBtn.classList.add('bg-amber-100', 'text-amber-800', 'border-amber-300', 'ring-1', 'ring-amber-400/50');
+          dockBtn.classList.remove('bg-stone-100', 'text-stone-700', 'border-stone-200/50');
+        } else {
+          dockBtn.classList.remove('bg-amber-100', 'text-amber-800', 'border-amber-300', 'ring-1', 'ring-amber-400/50');
+          dockBtn.classList.add('bg-stone-100', 'text-stone-700', 'border-stone-200/50');
+        }
+      }
+
+      if (topEye) {
+        topEye.textContent = refVisible ? '👁️' : '🚫';
+      }
+      if (topBtn) {
+        topBtn.title = refVisible ? '底圖顯示中 (點擊隱藏底圖)' : '底圖已隱藏 (點擊開啟底圖)';
+        if (refVisible) {
+          topBtn.classList.add('bg-amber-100', 'text-amber-800');
+        } else {
+          topBtn.classList.remove('bg-amber-100', 'text-amber-800');
+        }
+      }
+
+      if (typeof renderLayersUI === 'function') {
+        renderLayersUI();
+      }
+    }
+
+    function toggleRefVisibility(forced) {
+      if (typeof forced === 'boolean') {
+        refVisible = forced;
+      } else {
+        refVisible = !refVisible;
+      }
+
+      // 1. 底圖畫布 (refCanvas) 硬體層與上下文即時同步切換
+      if (refCanvas) {
+        refCanvas.style.display = refVisible ? 'block' : 'none';
+      }
+      renderRefCanvas();
+
+      // 2. 若存在專屬範例線稿圖層 (l.isSketchTemplate)，同步切換該圖層顯示狀態
+      if (typeof layers !== 'undefined' && layers && layers.length > 0) {
+        layers.forEach(l => {
+          if (l.isSketchTemplate && l.canvas) {
+            l.visible = refVisible;
+            l.canvas.style.display = refVisible ? 'block' : 'none';
+          }
+        });
+      }
+
+      // 3. 即時更新所有介面眼睛圖示與高亮狀態
+      updateRefEyeUI();
+
+      // 4. 清晰 Toast 提示
+      showToast(refVisible ? '👁️ 底圖已開啟' : '🚫 底圖已關閉');
+    }
+
     function renderRefCanvas() {
       refCtx.clearRect(0, 0, W, H);
       if (!refVisible) return;
@@ -6238,44 +6357,41 @@
     // 設為黑白線條描摹底圖
     document.getElementById("btnSetSketchUnderlay")?.addEventListener("click", () => {
       refStyle = "sketch";
-      refVisible = true;
-      renderRefCanvas();
+      toggleRefVisibility(true);
       camModal.classList.add("hidden"); camModal.classList.remove("flex");
       if (typeof fitCanvasToScreen === "function") fitCanvasToScreen();
-      showToast("✏️ 已將黑白線條設為臨摹底圖");
     });
 
-    // 匯入黑白線稿至畫布圖層直接填色
+    // 匯入黑白線稿至獨立圖層直接填色 (可透過眼睛自由關閉/開啟底圖)
     document.getElementById("btnImportSketchToPaint")?.addEventListener("click", () => {
       saveUndoState();
       const strength = Number(document.getElementById("styleIntensitySlider")?.value || 70);
       applyFilterTo(styledBuf, "sketch", strength);
-      const targetLayer = (typeof activeLayer !== "undefined" && activeLayer) ? activeLayer : (layers && layers[0]);
-      if (targetLayer && targetLayer.ctx) {
-        targetLayer.ctx.drawImage(styledBuf, 0, 0, W, H);
-        if (typeof renderComposite === "function") renderComposite();
-      } else if (typeof paintCtx !== "undefined") {
-        paintCtx.drawImage(styledBuf, 0, 0, W, H);
-      }
+
+      const label = document.getElementById("currentSelectedPresetLabel")?.textContent?.trim() || "線稿";
+      // 建立獨立的範例線稿圖層，標記 isSketchTemplate，讓眼睛可獨立控制關閉與開啟
+      const sketchLayer = createLayer(`✏️ ${label}線稿`, false, styledBuf);
+      sketchLayer.isSketchTemplate = true;
+
+      // 同時在上方建立全新繪畫上色層，並切換至該層開始著色
+      const paintLayer = createLayer(`🎨 手繪上色層`);
+      setActiveLayer(layers.indexOf(paintLayer));
+
+      toggleRefVisibility(true);
       camModal.classList.add("hidden"); camModal.classList.remove("flex");
       if (typeof fitCanvasToScreen === "function") fitCanvasToScreen();
-      showToast("🎨 已將黑白線條匯入當前圖層！快開始著色吧");
     });
 
     // 設為彩色完成圖臨摹底圖
     document.getElementById("btnSetColorUnderlay")?.addEventListener("click", () => {
       refStyle = "color";
-      refVisible = true;
-      renderRefCanvas();
+      toggleRefVisibility(true);
       camModal.classList.add("hidden"); camModal.classList.remove("flex");
       if (typeof fitCanvasToScreen === "function") fitCanvasToScreen();
-      showToast("🖼️ 已將彩色完成圖設為臨摹底圖");
     });
 
-    document.getElementById('btnToggleRef').addEventListener('click', () => {
-      refVisible = !refVisible;
-      document.getElementById('refEyeIcon').textContent = refVisible ? '👁️' : '✨';
-      renderRefCanvas();
+    document.getElementById('btnToggleRef')?.addEventListener('click', () => {
+      toggleRefVisibility();
     });
 
     document.getElementById('fileUploadInput').addEventListener('change', (e) => {
@@ -8270,11 +8386,7 @@
     document.getElementById('dockBtnToggleRef')?.addEventListener('click', (e) => {
       e.stopPropagation();
       playSuctionPopSound(440, 0.08);
-      document.getElementById('btnToggleRef')?.click();
-      const refEye = document.getElementById('dockRefEyeIcon');
-      if (refEye) {
-        refEye.textContent = refVisible ? '👁️' : '✨';
-      }
+      toggleRefVisibility();
     });
 
     // 翻書過場動效與新建畫紙
