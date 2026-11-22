@@ -140,7 +140,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext(); this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="轻点立即进入画室">
     <!-- 顶部居中极简版本编号 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.105 · Pro Edition
+      B.26.11.106 · Pro Edition
     </div>
 
     <!-- 中心纯净 KaiDraw Logo (纯白无界背景) -->
@@ -290,7 +290,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.105 · Pro Edition
+        B.26.11.106 · Pro Edition
       </div>
     </div>
 
@@ -449,13 +449,32 @@
         </div>
       </div>
 
-      <!-- 笔头图示展示区 (在常用色下方展示当前画笔笔头形象，去除非必要文字与留白，放大质感，笔头随选中颜色动态变色) -->
-      <div id="dockBrushTipContainer" class="flex flex-col items-center pt-1 border-t border-stone-100 w-full" title="当前画笔笔头 (点选快速展开画笔与颜色设置)">
-        <button id="dockBrushTipBtn" class="w-full aspect-square rounded-xl bg-stone-50/90 hover:bg-stone-100/90 border border-stone-200/70 shadow-2xs flex items-center justify-center p-0.5 active:scale-95 transition cursor-pointer overflow-hidden relative group" title="点击展开画风与画具选择">
+      <!-- 笔头图示展示区 (触控笔点按即放大约3倍高精特写，放开即消失) -->
+      <div id="dockBrushTipContainer" class="flex flex-col items-center pt-1 border-t border-stone-100 w-full relative" title="触控笔长按检视约3倍高精笔头特写，放开消失">
+        <button id="dockBrushTipBtn" class="w-full aspect-square rounded-xl bg-stone-50/90 hover:bg-stone-100/90 border border-stone-200/70 shadow-2xs flex items-center justify-center p-0.5 active:scale-95 transition cursor-pointer overflow-hidden relative group select-none touch-none" style="touch-action: none;" title="触控笔按住即放大约3倍检视完整笔头">
           <canvas id="dockBrushTipCanvas" width="128" height="128" class="w-full h-full object-contain drop-shadow-xs transition-transform group-hover:scale-105 pointer-events-none"></canvas>
           <img id="dockBrushTipCustomImg" src="images/brush_watercolor.png" alt="Brush Tip" class="hidden w-full h-full object-contain drop-shadow-xs pointer-events-none" />
           <div id="dockBrushTipVector" class="hidden w-8 h-8 flex items-center justify-center text-amber-600"></div>
         </button>
+
+        <!-- 3倍放大高保真笔头悬浮透镜检视卡片 (触控笔点住出现，放开消失) -->
+        <div id="dockBrushTipZoomCard" class="hidden pointer-events-none absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2 z-50 flex items-center select-none transition-all duration-150 transform origin-left scale-95 opacity-0">
+          <div class="relative bg-white/95 backdrop-blur-2xl border-2 border-amber-400/90 rounded-2xl p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.25),0_0_20px_rgba(245,158,11,0.2)] flex flex-col items-center gap-1.5 w-36 shrink-0">
+            <!-- 指向左侧工具坞的尖角小三角 -->
+            <div class="absolute -left-2 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[7px] border-t-transparent border-b-[7px] border-b-transparent border-r-[8px] border-r-amber-400"></div>
+            
+            <!-- 3倍放大高清晰度 Canvas (256x256 渲染，卡片尺寸 128x128，刚好是原图 44px 的 ~3 倍！) -->
+            <div class="w-32 h-32 rounded-xl bg-stone-50/90 border border-stone-200/80 p-1 flex items-center justify-center shadow-inner overflow-hidden relative">
+              <canvas id="dockBrushTipZoomCanvas" width="256" height="256" class="w-full h-full object-contain drop-shadow-md"></canvas>
+            </div>
+
+            <!-- 底部笔头名称与物理质感特性标签 -->
+            <div class="flex flex-col items-center w-full text-center">
+              <span id="dockBrushTipZoomName" class="text-xs font-black text-stone-900 tracking-tight">湿画水彩笔</span>
+              <span id="dockBrushTipZoomDesc" class="text-[9px] font-bold text-amber-700 bg-amber-100/90 px-1.5 py-0.5 rounded-full mt-0.5 scale-95">3x 笔头特写</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 快捷增加图层按键 -->
@@ -3556,9 +3575,16 @@
         drawerVector.style.color = isEraser ? '#E11D48' : currentColorHex;
       }
 
-      // 3. 动态使用笔头着色渲染引擎 (常用工具坞与抽屉卡片)
+      // 3. 动态使用笔头着色渲染引擎 (常用工具坞、抽屉卡片与 3x 放大悬浮透镜)
+      const dockZoomCanvas = document.getElementById('dockBrushTipZoomCanvas');
+      const dockZoomName = document.getElementById('dockBrushTipZoomName');
+      const dockZoomDesc = document.getElementById('dockBrushTipZoomDesc');
+      if (dockZoomName) dockZoomName.textContent = info.name;
+      if (dockZoomDesc) dockZoomDesc.textContent = `3x 笔头特写 · ${info.badge || ''}`;
+
       const targetCanvases = [];
       if (dockCanvas) targetCanvases.push(dockCanvas);
+      if (dockZoomCanvas) targetCanvases.push(dockZoomCanvas);
       if (key === 'watercolor' || key === 'chinese-brush' || key === 'airbrush') {
         if (drawerCanvas) targetCanvases.push(drawerCanvas);
       }
@@ -6212,10 +6238,76 @@
       openDrawer();
     });
 
-    document.getElementById('dockBrushTipBtn')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openDrawer(currentBrushMedium);
-    });
+    // 常用工具坞笔头图示：触控笔按下放大约 3 倍特写检视，放开触控笔即刻消失
+    const dockTipBtn = document.getElementById('dockBrushTipBtn');
+    const dockZoomCard = document.getElementById('dockBrushTipZoomCard');
+    const dockZoomCanvas = document.getElementById('dockBrushTipZoomCanvas');
+    const dockZoomName = document.getElementById('dockBrushTipZoomName');
+    const dockZoomDesc = document.getElementById('dockBrushTipZoomDesc');
+    let isTipZoomActive = false;
+
+    function showBrushTip3xZoom() {
+      if (!dockZoomCard || isTipZoomActive) return;
+      isTipZoomActive = true;
+      const key = getEffectiveBrushKey();
+      const info = BRUSH_TIPS_INFO[key] || BRUSH_TIPS_INFO.watercolor;
+
+      if (dockZoomName) dockZoomName.textContent = info.name;
+      if (dockZoomDesc) dockZoomDesc.textContent = `3x 笔头特写 · ${info.badge || ''}`;
+
+      if (dockZoomCanvas) {
+        renderTintedBrushTip(key, activeBrushRGB, [dockZoomCanvas]);
+      }
+
+      dockZoomCard.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        dockZoomCard.classList.remove('scale-95', 'opacity-0');
+        dockZoomCard.classList.add('scale-100', 'opacity-100');
+      });
+
+      if (typeof playSuctionPopSound === 'function') {
+        playSuctionPopSound(580, 0.06);
+      }
+    }
+
+    function hideBrushTip3xZoom() {
+      if (!dockZoomCard || !isTipZoomActive) return;
+      isTipZoomActive = false;
+      dockZoomCard.classList.remove('scale-100', 'opacity-100');
+      dockZoomCard.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        if (!isTipZoomActive) dockZoomCard.classList.add('hidden');
+      }, 160);
+    }
+
+    if (dockTipBtn) {
+      dockTipBtn.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        try { dockTipBtn.setPointerCapture(e.pointerId); } catch (_) {}
+        showBrushTip3xZoom();
+      });
+
+      dockTipBtn.addEventListener('pointerup', (e) => {
+        e.stopPropagation();
+        hideBrushTip3xZoom();
+      });
+
+      dockTipBtn.addEventListener('pointercancel', (e) => {
+        e.stopPropagation();
+        hideBrushTip3xZoom();
+      });
+
+      dockTipBtn.addEventListener('pointerleave', (e) => {
+        e.stopPropagation();
+        hideBrushTip3xZoom();
+      });
+
+      dockTipBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        hideBrushTip3xZoom();
+        openDrawer(currentBrushMedium);
+      });
+    }
 
     document.getElementById('leftDockActiveColor')?.addEventListener('click', (e) => {
       e.stopPropagation();
