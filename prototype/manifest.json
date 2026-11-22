@@ -1,7 +1,7 @@
 {
-  "name": "KaiDraw - 專屬兒童物理畫室",
+  "name": "KaiDraw",
   "short_name": "KaiDraw",
-  "description": "讓每一個孩子的奇思妙想躍然紙上 - 純粹3大畫種與真實紙張物理引擎",
+  "description": "KaiDraw",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "landscape",
