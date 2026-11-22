@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.117 · Pro Edition
+      B.26.11.118 · Pro Edition
     </div>
 
     <!-- 中心純淨 KaiDraw Logo 3秒藝術動畫容器 -->
@@ -287,12 +287,12 @@
       <!-- 當前畫筆顏色圓環 -->
       <div id="currentSwatchCircle" class="w-6 h-6 rounded-full border-2 border-white shadow-[0_2px_6px_rgba(0,0,0,0.18)] ring-1 ring-stone-200 transition-transform shrink-0 cursor-pointer hover:scale-110 active:scale-95" style="background: rgb(20, 85, 210);" title="當前畫筆顏色 (點選開啟調色抽屜)"></div>
 
-      <!-- 緊湊型 1 ~ 120px 筆觸粗細調節條 -->
+      <!-- 緊湊型 1 ~ 180px 筆觸粗細調節條 (適配 4倍大畫布) -->
       <div class="flex items-center gap-1 bg-stone-100/90 px-1.5 py-0.5 rounded-xl border border-stone-200/70 shadow-inner shrink-0">
         <button id="btnBrushSizeMinus" class="w-5 h-5 rounded-md bg-white hover:bg-stone-200 text-stone-700 font-bold text-xs flex items-center justify-center shadow-2xs active:scale-90 transition shrink-0 cursor-pointer" title="減小筆刷 (5px)">−</button>
-        <input id="brushSizeSlider" type="range" min="1" max="120" value="24" class="w-16 xl:w-24 accent-amber-500 cursor-pointer h-1.5 bg-stone-200 rounded-lg appearance-none" style="touch-action: pan-x;" title="平滑調節畫筆粗細 (1~120px)" />
+        <input id="brushSizeSlider" type="range" min="1" max="180" value="36" class="w-16 xl:w-24 accent-amber-500 cursor-pointer h-1.5 bg-stone-200 rounded-lg appearance-none" style="touch-action: pan-x;" title="平滑調節畫筆粗細 (1~180px)" />
         <button id="btnBrushSizePlus" class="w-5 h-5 rounded-md bg-white hover:bg-stone-200 text-stone-700 font-bold text-xs flex items-center justify-center shadow-2xs active:scale-90 transition shrink-0 cursor-pointer" title="增大筆刷 (5px)">+</button>
-        <span id="brushSizeLabel" class="text-[11px] font-mono font-bold text-amber-600 w-8 text-right shrink-0">24px</span>
+        <span id="brushSizeLabel" class="text-[11px] font-mono font-bold text-amber-600 w-8 text-right shrink-0">36px</span>
       </div>
     </div>
 
@@ -396,22 +396,22 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.117 · Pro Edition
+        B.26.11.118 · Pro Edition
       </div>
     </div>
 
-    <!-- 硬體加速視口變形包裹層 (Transform Wrapper - 重磅 300g 藝術畫紙懸浮光影) -->
-    <div id="transformCanvasWrapper" class="stagger-init-scale relative rounded-xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18),0_0_1px_rgba(0,0,0,0.2)] border border-stone-300/40 origin-center transition-none shrink-0 z-10" style="width: 720px; height: 520px; transform: translate(0px, 0px) scale(1); touch-action: none; -webkit-user-select: none; -webkit-touch-callout: none;">
+    <!-- 硬體加速視口變形包裹層 (Transform Wrapper - 重磅 300g 藝術畫紙懸浮光影，4倍超清超寬畫布 1440x1040) -->
+    <div id="transformCanvasWrapper" class="stagger-init-scale relative rounded-xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.18),0_0_1px_rgba(0,0,0,0.2)] border border-stone-300/40 origin-center transition-none shrink-0 z-10" style="width: 1440px; height: 1040px; transform: translate(0px, 0px) scale(1); touch-action: none; -webkit-user-select: none; -webkit-touch-callout: none;">
       <!-- 0. 真實物理紙張材質底層 -->
-      <canvas id="paperCanvas" width="720" height="520" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+      <canvas id="paperCanvas" width="1440" height="1040" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
       <!-- 1. 參考底圖層 -->
-      <canvas id="refCanvas" width="720" height="520" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+      <canvas id="refCanvas" width="1440" height="1040" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
       <!-- 2. 多圖層渲染容器 (存放 Layer 1, Layer 2, Layer 3... 等各圖層獨立畫布) -->
       <div id="layersCanvasContainer" class="absolute inset-0 w-full h-full pointer-events-none"></div>
       <!-- 3. 真實繪畫互動主圖層 (捕獲 Apple Pencil / 觸控事件並分發到活動圖層) -->
-      <canvas id="paintCanvas" width="720" height="520" class="absolute inset-0 w-full h-full cursor-none touch-none" style="touch-action: none; -webkit-user-select: none; -webkit-touch-callout: none;"></canvas>
+      <canvas id="paintCanvas" width="1440" height="1040" class="absolute inset-0 w-full h-full cursor-none touch-none" style="touch-action: none; -webkit-user-select: none; -webkit-touch-callout: none;"></canvas>
       <!-- 4. 九宮格輔助線層 -->
-      <canvas id="overlayCanvas" width="720" height="520" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+      <canvas id="overlayCanvas" width="1440" height="1040" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
 
       <!-- 5. 右下角物理翻書摺頁效果 (Dog-Ear Page Flip with Curl - 點選或向左上拖曳翻頁新建畫紙) -->
       <div id="pageFlipDogEar" class="stagger-init-fade absolute bottom-0 right-0 z-30 select-none touch-none cursor-pointer group" style="touch-action: none; width: 72px; height: 72px;" title="翻頁新建畫紙：輕點或向左上方拖曳翻開全新畫紙">
@@ -591,25 +591,25 @@
         </button>
       </div>
 
-      <!-- 第 4 行 (兩列)：垂直滑動條 + 快速粗細圓點 -->
+      <!-- 第 4 行 (兩列)：垂直滑動條 + 快速粗細圓點 (適配 4倍大畫布) -->
       <div class="grid grid-cols-2 gap-1 items-center pt-1 border-t border-stone-100">
         <!-- 列1：微調滑動條 -->
         <div class="flex flex-col items-center gap-0.5">
-          <input id="dockVerticalSizeSlider" type="range" min="1" max="120" value="24" class="h-10 w-1.5 accent-amber-500 cursor-pointer appearance-none bg-stone-200 rounded-full" style="writing-mode: vertical-lr; direction: rtl;" title="垂直滑動微調筆觸粗細 (1~120px)" />
-          <span id="dockSizeLabel" class="text-[7.5px] font-mono font-bold text-amber-600">24px</span>
+          <input id="dockVerticalSizeSlider" type="range" min="1" max="180" value="36" class="h-10 w-1.5 accent-amber-500 cursor-pointer appearance-none bg-stone-200 rounded-full" style="writing-mode: vertical-lr; direction: rtl;" title="垂直滑動微調筆觸粗細 (1~180px)" />
+          <span id="dockSizeLabel" class="text-[7.5px] font-mono font-bold text-amber-600">36px</span>
         </div>
         <!-- 列2：預設尺寸微型圓點 -->
         <div class="flex flex-col items-center gap-0.5" id="quickSizePresetsContainer">
-          <button data-quicksize="4" class="quick-size-btn w-4.5 h-4.5 rounded-md hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="極細 4px">
+          <button data-quicksize="6" class="quick-size-btn w-4.5 h-4.5 rounded-md hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="極細 6px">
             <span class="w-1 h-1 rounded-full bg-stone-700 block"></span>
           </button>
-          <button data-quicksize="12" class="quick-size-btn w-4.5 h-4.5 rounded-md hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="細筆 12px">
+          <button data-quicksize="18" class="quick-size-btn w-4.5 h-4.5 rounded-md hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="細筆 18px">
             <span class="w-1.5 h-1.5 rounded-full bg-stone-700 block"></span>
           </button>
-          <button data-quicksize="24" class="quick-size-btn active w-4.5 h-4.5 rounded-md bg-amber-100 ring-1 ring-amber-500 flex items-center justify-center transition active:scale-90" title="標準 24px">
+          <button data-quicksize="36" class="quick-size-btn active w-4.5 h-4.5 rounded-md bg-amber-100 ring-1 ring-amber-500 flex items-center justify-center transition active:scale-90" title="標準 36px">
             <span class="w-2.5 h-2.5 rounded-full bg-amber-600 block"></span>
           </button>
-          <button data-quicksize="48" class="quick-size-btn w-4.5 h-4.5 rounded-md hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="粗筆 48px">
+          <button data-quicksize="72" class="quick-size-btn w-4.5 h-4.5 rounded-md hover:bg-stone-100 flex items-center justify-center transition active:scale-90" title="粗筆 72px">
             <span class="w-3.5 h-3.5 rounded-full bg-stone-700 block"></span>
           </button>
         </div>
@@ -2033,9 +2033,9 @@
     }
 
     /********************************************************************
-     * 4. 全域性畫布與畫筆互動核心狀態
+     * 4. 全域性畫布與畫筆互動核心狀態 (4倍大畫布 1440x1040，超清視網膜解析度)
      ********************************************************************/
-    const W = 720, H = 520;
+    const W = 1440, H = 1040;
     const paperCanvas = document.getElementById('paperCanvas');
     const paperCtx = paperCanvas.getContext('2d');
     const paintCanvas = document.getElementById('paintCanvas');
@@ -2049,7 +2049,7 @@
 
     let currentBrushMedium = 'watercolor';
     let activeBrushRGB = [20, 85, 210];
-    let brushRadius = 24;
+    let brushRadius = 36;
     let brushDilution = 1.0;
     let isDrawing = false;
     let lastX = 0, lastY = 0;
@@ -2594,7 +2594,7 @@
       }
     }
 
-    // 智慧視口滿版自適應：自動計算最佳比例讓畫紙滿版鋪滿視口
+    // 智慧視口滿版自適應：自動計算最佳比例讓畫紙滿版鋪滿視口 (適配 1440x1040 4倍超清大畫布)
     function fitCanvasToScreen() {
       const container = document.getElementById('viewportContainer');
       if (!container) return;
@@ -2602,11 +2602,11 @@
       const availH = container.clientHeight;
       if (availW <= 50 || availH <= 50) return;
 
-      const scaleX = (availW * 0.94) / W;
-      const scaleY = (availH * 0.94) / H;
+      const scaleX = (availW * 0.95) / W;
+      const scaleY = (availH * 0.95) / H;
       const fitScale = Math.min(scaleX, scaleY);
 
-      viewScale = Math.max(0.75, Math.min(3.0, fitScale));
+      viewScale = Math.max(0.2, Math.min(4.0, fitScale));
       viewPanX = 0;
       viewPanY = 0;
       applyViewportTransform();
@@ -4392,7 +4392,7 @@
     let sizePreviewHideTimeout = null;
 
     function updateBrushSize(val) {
-      brushRadius = Math.max(1, Math.min(120, parseInt(val, 10)));
+      brushRadius = Math.max(1, Math.min(180, parseInt(val, 10)));
       if (sizeSlider) sizeSlider.value = brushRadius;
       if (dockVerticalSlider) dockVerticalSlider.value = brushRadius;
       if (sizeLabel) sizeLabel.textContent = `${brushRadius}px`;
@@ -5135,6 +5135,9 @@
     function drawPresetPhoto(name) {
       const ctx = sourcePhotoCtx;
       ctx.clearRect(0, 0, W, H);
+      ctx.save();
+      // 等比例向量無失真放大至 1440x1040 (放大 4 倍面積)
+      ctx.scale(W / 720, H / 520);
 
       if (name === 'dino' || name === 'shiba') {
         // 1. 萌萌小恐龍 (圓潤綠色身體、軟萌小肚皮、橘黃背刺與靈動大眼睛，幼童臨摹首選)
@@ -5372,6 +5375,7 @@
         ctx.beginPath(); ctx.arc(357, 238, 2, 0, Math.PI * 2); ctx.fill();
         ctx.beginPath(); ctx.arc(363, 238, 2, 0, Math.PI * 2); ctx.fill();
       }
+      ctx.restore();
       renderAllStylePreviews();
       renderRefCanvas();
     }
@@ -5530,6 +5534,7 @@
     });
     document.getElementById('btnCloseCameraModal').addEventListener('click', () => {
       camModal.classList.add('hidden'); camModal.classList.remove('flex');
+      if (typeof fitCanvasToScreen === 'function') fitCanvasToScreen();
       if (typeof onTourTargetClosed === 'function') onTourTargetClosed(0);
     });
 
@@ -5538,6 +5543,7 @@
       e?.stopPropagation?.();
       camModal.classList.add('hidden');
       camModal.classList.remove('flex');
+      if (typeof fitCanvasToScreen === 'function') fitCanvasToScreen();
       if (typeof playSuctionPopSound === 'function') playSuctionPopSound(520, 0.08);
       showToast('🎨 祝您創作愉快！已直接進入畫室畫布。');
       if (typeof onTourTargetClosed === 'function') onTourTargetClosed(0);
@@ -6520,6 +6526,9 @@
               el.classList.remove('stagger-init-top', 'stagger-init-left', 'stagger-init-right', 'stagger-init-scale', 'stagger-init-fade', 'stagger-visible', 'stagger-visible-right');
             }
           });
+
+          // 啟動完成後立即執行滿版自適應計算，讓 4 倍超大畫布優雅鋪滿視口
+          if (typeof fitCanvasToScreen === 'function') fitCanvasToScreen();
 
           // Logo 3秒動畫結束後：自動呈現相片轉換與臨摹實驗室，讓使用者決定是否拍照上傳或直接繪圖
           const cam = document.getElementById('cameraModal');
@@ -8418,7 +8427,7 @@
     applyBrushColor([20, 85, 210]);
     renderRecentColorsUI();
     switchBrushMedium('watercolor');
-    updateBrushSize(24);
+    updateBrushSize(36);
     if (typeof updateBrushTipDemo === 'function') updateBrushTipDemo();
     fitCanvasToScreen();
     saveCurrentSlotSnapshot(true);
