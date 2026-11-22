@@ -149,20 +149,101 @@
       position: relative !important;
       z-index: 60 !important;
     }
+
+    /* ==================== KaiDraw 3秒開場 Logo 專屬動畫 ==================== */
+    @keyframes logoBloom3s {
+      0% {
+        opacity: 0;
+        transform: scale(0.72);
+        filter: blur(8px);
+      }
+      28% {
+        opacity: 1;
+        transform: scale(1.06);
+        filter: blur(0px);
+      }
+      55% {
+        transform: scale(0.98);
+      }
+      80% {
+        transform: scale(1.02);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1.0);
+      }
+    }
+
+    @keyframes logoAuraPulse3s {
+      0% {
+        transform: scale(0.6);
+        opacity: 0;
+      }
+      35% {
+        transform: scale(1.2);
+        opacity: 0.75;
+      }
+      70% {
+        transform: scale(1.35);
+        opacity: 0.4;
+      }
+      100% {
+        transform: scale(1.5);
+        opacity: 0;
+      }
+    }
+
+    @keyframes logoTextFade3s {
+      0%, 25% {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      50% {
+        opacity: 0.85;
+        transform: translateY(0);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes logoShimmerProgress3s {
+      0% {
+        width: 0%;
+      }
+      100% {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body class="text-stone-800 antialiased h-screen flex flex-col p-0 select-none relative overflow-hidden bg-white" style="height: 100dvh;">
 
-  <!-- ==================== KaiDraw 純白極簡開屏 (純白底色，居中 Logo，頂部版本號，主功能逐次漸顯) ==================== -->
-  <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext(); this.classList.add('splash-fade-out'); setTimeout(() => this.remove(), 700);" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="輕點立即進入畫室">
+  <!-- ==================== KaiDraw 純白極簡開屏 (純白底色，居中 Logo 3秒藝術動畫，頂部版本號，底部進度光條) ==================== -->
+  <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 sm:top-8 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.115 · Pro Edition
+      B.26.11.116 · Pro Edition
     </div>
 
-    <!-- 中心純淨 KaiDraw Logo (純白無界背景) -->
-    <div class="relative flex flex-col items-center justify-center transition-all duration-700">
-      <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-36 h-36 sm:w-44 sm:h-44 object-contain mix-blend-multiply select-none pointer-events-none drop-shadow-xs transition duration-700" />
+    <!-- 中心純淨 KaiDraw Logo 3秒藝術動畫容器 -->
+    <div class="relative flex flex-col items-center justify-center select-none">
+      <!-- 柔彩水彩光暈光環 (3秒緩慢綻放流光) -->
+      <div class="absolute w-56 h-56 sm:w-68 sm:h-68 rounded-full bg-gradient-to-tr from-amber-300/40 via-rose-300/35 to-sky-300/40 blur-2xl animate-[logoAuraPulse3s_3s_cubic-bezier(0.16,1,0.3,1)_forwards] pointer-events-none"></div>
+
+      <!-- 中心 Logo 主體 (3秒優雅浮現微縮放動效) -->
+      <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="relative z-10 w-36 h-36 sm:w-44 sm:h-44 object-contain mix-blend-multiply select-none pointer-events-none drop-shadow-sm animate-[logoBloom3s_3s_cubic-bezier(0.16,1,0.3,1)_forwards]" />
+
+      <!-- 品牌標語 (3秒柔和浮現) -->
+      <div class="relative z-10 mt-3 text-xs sm:text-sm font-bold text-stone-600 tracking-wider text-center animate-[logoTextFade3s_3s_ease-out_forwards]">
+        純粹3大畫種 · 讓孩子的奇思妙想躍然紙上
+      </div>
+
+      <!-- 3 秒輕奢極簡金色進度光條 -->
+      <div class="w-32 h-1 bg-stone-100 rounded-full mt-4 overflow-hidden relative">
+        <div class="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full animate-[logoShimmerProgress3s_3s_linear_forwards]"></div>
+      </div>
     </div>
   </div>
 
@@ -307,7 +388,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.115 · Pro Edition
+        B.26.11.116 · Pro Edition
       </div>
     </div>
 
@@ -908,28 +989,39 @@
         <button id="btnCloseCameraModal" class="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold flex items-center justify-center active:scale-95 transition">✕</button>
       </div>
 
-      <div class="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-2.5">
+      <div class="bg-gradient-to-r from-amber-50/90 via-emerald-50/80 to-sky-50/80 border border-amber-200/90 rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
         <div>
-          <div class="text-xs font-bold text-emerald-800">📸 拍攝真實物體轉換為手繪藝術或黑白練習草稿</div>
-          <div class="text-[11px] text-emerald-700/80">支援直接轉為黑白線條圖供臨摹描邊填色，或轉為真實水彩暈染、蠟筆顆粒、馬克筆色塊！</div>
+          <div class="text-xs sm:text-sm font-extrabold text-stone-900 flex items-center gap-1.5">
+            <span>✨ 想先拍照臨摹，還是直接開始畫畫？</span>
+          </div>
+          <div class="text-[11px] text-stone-600 mt-0.5">
+            您可以拍照或選取範例轉成底圖進行描摹臨摹，也可以跳過拍照直接在空白畫紙上盡情創作！
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button id="btnMacHardwareSnap" class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition">
-            📸 啟動相機拍一張
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- 直接進入繪畫畫面的選項 -->
+          <button id="btnSkipPhotoDirectDraw" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-extrabold text-xs shadow-md shadow-amber-500/25 active:scale-95 transition flex items-center gap-1.5 cursor-pointer" title="跳過拍照，直接進入空白畫室開始繪畫">
+            <span>🎨</span>
+            <span>直接進入畫布繪畫</span>
           </button>
-          <label class="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs cursor-pointer shadow-md shadow-sky-500/20 active:scale-95 transition">
-            📂 上傳相片
+          <button id="btnMacHardwareSnap" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 active:scale-95 transition flex items-center gap-1 cursor-pointer">
+            <span>📸</span>
+            <span>啟動相機拍照</span>
+          </button>
+          <label class="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs cursor-pointer shadow-md shadow-sky-600/20 active:scale-95 transition flex items-center gap-1">
+            <span>📂</span>
+            <span>上傳相片</span>
             <input id="fileUploadInput" type="file" accept="image/*" class="hidden" />
           </label>
         </div>
       </div>
 
       <div class="flex items-center justify-between gap-2 flex-wrap bg-stone-50 p-3 rounded-2xl border border-stone-200/80">
-        <div class="flex items-center gap-1.5 text-xs">
-          <span class="text-stone-500 font-medium">內建示例:</span>
-          <button data-camerapreset="shiba" class="cam-preset-btn px-3 py-1.5 rounded-xl bg-amber-500 text-white font-bold active:scale-95 transition shadow-xs">🐶 小柴犬</button>
-          <button data-camerapreset="sunflower" class="cam-preset-btn px-3 py-1.5 rounded-xl bg-white border border-stone-200 text-stone-700 font-semibold active:scale-95 transition shadow-xs">🌻 向日葵小屋</button>
-          <button data-camerapreset="balloon" class="cam-preset-btn px-3 py-1.5 rounded-xl bg-white border border-stone-200 text-stone-700 font-semibold active:scale-95 transition shadow-xs">🎈 彩色熱氣球</button>
+        <div class="flex items-center gap-1.5 text-xs flex-wrap">
+          <span class="text-stone-500 font-medium">小朋友最愛臨摹示例:</span>
+          <button data-camerapreset="dino" class="cam-preset-btn px-3 py-1.5 rounded-xl bg-amber-500 text-white font-bold active:scale-95 transition shadow-xs">🦕 萌萌小恐龍</button>
+          <button data-camerapreset="donut" class="cam-preset-btn px-3 py-1.5 rounded-xl bg-white border border-stone-200 text-stone-700 font-semibold active:scale-95 transition shadow-xs">🍩 美味甜甜圈</button>
+          <button data-camerapreset="rocket" class="cam-preset-btn px-3 py-1.5 rounded-xl bg-white border border-stone-200 text-stone-700 font-semibold active:scale-95 transition shadow-xs">🚀 宇宙小火箭</button>
         </div>
         <div class="flex items-center gap-2 flex-1 min-w-[200px]">
           <span class="text-xs font-bold text-stone-700 shrink-0">🎨 藝術處理強度:</span>
@@ -5028,45 +5120,242 @@
     function drawPresetPhoto(name) {
       const ctx = sourcePhotoCtx;
       ctx.clearRect(0, 0, W, H);
-      if (name === 'shiba') {
-        ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
-        const bgGrad = ctx.createRadialGradient(360, 260, 50, 360, 260, 300);
-        bgGrad.addColorStop(0, '#fef08a'); bgGrad.addColorStop(1, '#0284c7');
-        ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, W, H);
 
-        ctx.fillStyle = '#d97706'; ctx.beginPath();
-        ctx.arc(360, 260, 130, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(270, 160); ctx.lineTo(240, 70); ctx.lineTo(310, 130); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(450, 160); ctx.lineTo(480, 70); ctx.lineTo(410, 130); ctx.fill();
-
-        ctx.fillStyle = '#fef3c7'; ctx.beginPath();
-        ctx.ellipse(360, 290, 85, 75, 0, 0, Math.PI * 2); ctx.fill();
-
-        ctx.fillStyle = '#1e293b'; ctx.beginPath();
-        ctx.arc(360, 260, 22, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(310, 220, 14, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(410, 220, 14, 0, Math.PI * 2); ctx.fill();
-      } else if (name === 'sunflower') {
+      if (name === 'dino' || name === 'shiba') {
+        // 1. 萌萌小恐龍 (圓潤綠色身體、軟萌小肚皮、橘黃背刺與靈動大眼睛，幼童臨摹首選)
         const sky = ctx.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, '#38bdf8'); sky.addColorStop(0.65, '#bae6fd'); sky.addColorStop(1, '#86efac');
+        sky.addColorStop(0, '#e0f2fe');
+        sky.addColorStop(0.7, '#f0fdf4');
+        sky.addColorStop(1, '#86efac');
         ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
 
-        ctx.fillStyle = '#22c55e'; ctx.fillRect(0, 360, W, 160);
+        // 遠景柔和草地丘陵
+        ctx.fillStyle = '#bbf7d0';
+        ctx.beginPath(); ctx.arc(180, 520, 240, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(540, 530, 260, 0, Math.PI * 2); ctx.fill();
 
-        ctx.fillStyle = '#eab308'; ctx.beginPath();
-        ctx.arc(360, 220, 110, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#78350f'; ctx.beginPath();
-        ctx.arc(360, 220, 55, 0, Math.PI * 2); ctx.fill();
-      } else if (name === 'balloon') {
-        const sky = ctx.createLinearGradient(0, 0, 0, H);
-        sky.addColorStop(0, '#1e1b4b'); sky.addColorStop(0.5, '#be185d'); sky.addColorStop(1, '#f97316');
-        ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+        // 漂浮軟萌白雲
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(160, 90, 30, 0, Math.PI * 2); ctx.arc(190, 80, 40, 0, Math.PI * 2); ctx.arc(230, 90, 30, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(530, 110, 25, 0, Math.PI * 2); ctx.arc(560, 100, 35, 0, Math.PI * 2); ctx.arc(595, 110, 25, 0, Math.PI * 2); ctx.fill();
 
-        ctx.fillStyle = '#fef08a'; ctx.beginPath();
-        ctx.arc(360, 240, 70, 0, Math.PI * 2); ctx.fill();
+        // 背部可愛橘黃背鰭骨刺
+        ctx.fillStyle = '#f97316';
+        const spikes = [[380, 130], [420, 175], [455, 230], [480, 290]];
+        spikes.forEach(([sx, sy]) => {
+          ctx.beginPath();
+          ctx.moveTo(sx - 16, sy + 14);
+          ctx.lineTo(sx + 18, sy - 14);
+          ctx.lineTo(sx + 14, sy + 24);
+          ctx.closePath();
+          ctx.fill();
+        });
 
-        ctx.fillStyle = '#312e81'; ctx.beginPath();
-        ctx.moveTo(0, H); ctx.lineTo(0, 320); ctx.lineTo(160, 280); ctx.lineTo(360, 340); ctx.lineTo(540, 290); ctx.lineTo(W, 330); ctx.lineTo(W, H); ctx.fill();
+        // 恐龍身體與圓圓大肚子
+        ctx.fillStyle = '#22c55e';
+        ctx.beginPath(); ctx.ellipse(360, 280, 115, 110, 0, 0, Math.PI * 2); ctx.fill();
+
+        // 恐龍可愛大頭
+        ctx.beginPath(); ctx.ellipse(305, 185, 75, 70, -0.15, 0, Math.PI * 2); ctx.fill();
+
+        // 恐龍尾巴
+        ctx.beginPath();
+        ctx.moveTo(440, 310);
+        ctx.quadraticCurveTo(530, 330, 545, 275);
+        ctx.quadraticCurveTo(490, 360, 420, 365);
+        ctx.closePath();
+        ctx.fill();
+
+        // 圓滾滾嫩黃色小肚皮
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath(); ctx.ellipse(365, 300, 60, 68, 0.1, 0, Math.PI * 2); ctx.fill();
+
+        // 恐龍胖乎乎小腳
+        ctx.fillStyle = '#16a34a';
+        ctx.beginPath(); ctx.ellipse(310, 385, 32, 22, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(400, 385, 32, 22, 0, 0, Math.PI * 2); ctx.fill();
+
+        // 靈動大眼睛
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(285, 165, 20, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath(); ctx.arc(288, 165, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(292, 161, 5, 0, Math.PI * 2); ctx.fill();
+
+        // 害羞粉紅小腮紅與微笑
+        ctx.fillStyle = 'rgba(251, 113, 133, 0.7)';
+        ctx.beginPath(); ctx.arc(260, 195, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.arc(285, 195, 16, 0.1 * Math.PI, 0.75 * Math.PI); ctx.stroke();
+
+      } else if (name === 'donut' || name === 'sunflower') {
+        // 2. 美味草莓甜甜圈 (粉紅波浪糖霜、彩虹糖針與超萌笑臉，幾何圓形極易描摹)
+        const bg = ctx.createRadialGradient(360, 260, 40, 360, 260, 340);
+        bg.addColorStop(0, '#ffffff');
+        bg.addColorStop(0.6, '#fdf2f8');
+        bg.addColorStop(1, '#f5d0fe');
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+        // 甜甜圈金黃烘焙本體
+        ctx.fillStyle = '#d97706';
+        ctx.beginPath(); ctx.arc(360, 260, 150, 0, Math.PI * 2); ctx.fill();
+
+        // 甜甜圈淺黃烘焙內圈陰影
+        ctx.fillStyle = '#fde68a';
+        ctx.beginPath(); ctx.arc(360, 260, 142, 0, Math.PI * 2); ctx.fill();
+
+        // 草莓粉紅糖霜厚層
+        ctx.fillStyle = '#f472b6';
+        ctx.beginPath(); ctx.arc(360, 260, 136, 0, Math.PI * 2); ctx.fill();
+
+        // 糖霜高光立體層
+        ctx.fillStyle = '#fb7185';
+        ctx.beginPath(); ctx.arc(356, 256, 125, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#f472b6';
+        ctx.beginPath(); ctx.arc(364, 264, 122, 0, Math.PI * 2); ctx.fill();
+
+        // 甜甜圈中心圓孔 (挖空透出背景)
+        ctx.fillStyle = '#fdf2f8';
+        ctx.beginPath(); ctx.arc(360, 260, 52, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#d97706'; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.arc(360, 260, 53, 0, Math.PI * 2); ctx.stroke();
+
+        // 五彩繽紛糖針 (彩虹糖果顆粒灑落)
+        const sprinkles = [
+          [310, 180, '#38bdf8', 0.5], [370, 155, '#facc15', -0.3], [420, 185, '#ffffff', 0.8],
+          [270, 240, '#a855f7', 0.2], [450, 235, '#22c55e', -0.6], [290, 310, '#facc15', -0.4],
+          [425, 315, '#38bdf8', 0.7], [355, 360, '#ffffff', 0.1], [390, 350, '#a855f7', -0.5],
+          [250, 275, '#f97316', 0.6], [470, 275, '#fb7185', -0.2], [335, 140, '#22c55e', 0.9]
+        ];
+        sprinkles.forEach(([px, py, col, rot]) => {
+          ctx.save();
+          ctx.translate(px, py);
+          ctx.rotate(rot);
+          ctx.fillStyle = col;
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(-10, -3.5, 20, 7, 3.5);
+          } else {
+            ctx.rect(-10, -3.5, 20, 7);
+          }
+          ctx.fill();
+          ctx.restore();
+        });
+
+        // 甜甜圈超萌微笑表情
+        ctx.fillStyle = '#1e1b4b';
+        ctx.beginPath(); ctx.arc(325, 245, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(395, 245, 7, 0, Math.PI * 2); ctx.fill();
+        // 腮紅
+        ctx.fillStyle = 'rgba(236, 72, 153, 0.75)';
+        ctx.beginPath(); ctx.arc(308, 255, 10, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(412, 255, 10, 0, Math.PI * 2); ctx.fill();
+        // 彎彎小笑嘴
+        ctx.strokeStyle = '#1e1b4b'; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.arc(360, 260, 12, 0.1 * Math.PI, 0.9 * Math.PI); ctx.stroke();
+
+      } else if (name === 'rocket' || name === 'balloon') {
+        // 3. 宇宙小火箭與璀璨星芒 (紅白經典火箭、舷窗萌星、噴射尾焰，激發航天探索想像力)
+        const space = ctx.createLinearGradient(0, 0, 0, H);
+        space.addColorStop(0, '#0f172a');
+        space.addColorStop(0.6, '#1e1b4b');
+        space.addColorStop(1, '#312e81');
+        ctx.fillStyle = space; ctx.fillRect(0, 0, W, H);
+
+        // 閃耀星星
+        const stars = [
+          [120, 80, 3], [220, 130, 4.5], [160, 260, 2.5], [100, 420, 3.5],
+          [580, 90, 4], [640, 220, 3], [590, 380, 4.5], [520, 470, 2.5],
+          [270, 60, 2], [450, 70, 2.5]
+        ];
+        ctx.fillStyle = '#fde047';
+        stars.forEach(([sx, sy, r]) => {
+          ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI * 2); ctx.fill();
+        });
+
+        // 右上方微笑金黃彎月
+        ctx.fillStyle = '#fde047';
+        ctx.beginPath(); ctx.arc(580, 120, 40, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#1e1b4b';
+        ctx.beginPath(); ctx.arc(568, 114, 34, 0, Math.PI * 2); ctx.fill();
+
+        // 火箭尾焰噴射火光 (紅黃漸變)
+        const flame = ctx.createLinearGradient(360, 360, 360, 480);
+        flame.addColorStop(0, '#fef08a');
+        flame.addColorStop(0.35, '#f59e0b');
+        flame.addColorStop(1, '#ef4444');
+        ctx.fillStyle = flame;
+        ctx.beginPath();
+        ctx.moveTo(330, 360);
+        ctx.quadraticCurveTo(310, 440, 360, 480);
+        ctx.quadraticCurveTo(410, 440, 390, 360);
+        ctx.closePath();
+        ctx.fill();
+
+        // 內層高溫亮黃小火焰
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(345, 360);
+        ctx.quadraticCurveTo(335, 415, 360, 435);
+        ctx.quadraticCurveTo(385, 415, 375, 360);
+        ctx.closePath();
+        ctx.fill();
+
+        // 火箭兩側紅色穩定尾翼
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath();
+        ctx.moveTo(315, 275);
+        ctx.lineTo(255, 370);
+        ctx.lineTo(315, 355);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(405, 275);
+        ctx.lineTo(465, 370);
+        ctx.lineTo(405, 355);
+        ctx.closePath();
+        ctx.fill();
+
+        // 火箭主體機身 (純白圓滑火箭柱體)
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath();
+        ctx.moveTo(315, 170);
+        ctx.quadraticCurveTo(360, 155, 405, 170);
+        ctx.lineTo(405, 360);
+        ctx.lineTo(315, 360);
+        ctx.closePath();
+        ctx.fill();
+
+        // 火箭頂部鮮紅鼻錐
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.moveTo(315, 170);
+        ctx.quadraticCurveTo(360, 80, 360, 80);
+        ctx.quadraticCurveTo(360, 80, 405, 170);
+        ctx.closePath();
+        ctx.fill();
+
+        // 機身裝飾條紋
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(315, 320, 90, 10);
+
+        // 火箭圓形觀景舷窗
+        ctx.fillStyle = '#94a3b8';
+        ctx.beginPath(); ctx.arc(360, 240, 32, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#0284c7';
+        ctx.beginPath(); ctx.arc(360, 240, 25, 0, Math.PI * 2); ctx.fill();
+        // 窗戶反光流光
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.beginPath(); ctx.arc(354, 234, 18, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#0284c7';
+        ctx.beginPath(); ctx.arc(358, 238, 17, 0, Math.PI * 2); ctx.fill();
+        // 舷窗內向外張望的可愛萌星
+        ctx.fillStyle = '#fde047';
+        ctx.beginPath(); ctx.arc(360, 240, 10, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath(); ctx.arc(357, 238, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(363, 238, 2, 0, Math.PI * 2); ctx.fill();
       }
       renderAllStylePreviews();
       renderRefCanvas();
@@ -5226,6 +5515,16 @@
     });
     document.getElementById('btnCloseCameraModal').addEventListener('click', () => {
       camModal.classList.add('hidden'); camModal.classList.remove('flex');
+      if (typeof onTourTargetClosed === 'function') onTourTargetClosed(0);
+    });
+
+    // 跳過拍照直接進入畫布繪畫
+    document.getElementById('btnSkipPhotoDirectDraw')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      camModal.classList.add('hidden');
+      camModal.classList.remove('flex');
+      if (typeof playSuctionPopSound === 'function') playSuctionPopSound(520, 0.08);
+      showToast('🎨 祝您創作愉快！已直接進入畫室畫布。');
       if (typeof onTourTargetClosed === 'function') onTourTargetClosed(0);
     });
 
@@ -6196,23 +6495,41 @@
               el.classList.remove('stagger-init-top', 'stagger-init-left', 'stagger-init-right', 'stagger-init-scale', 'stagger-init-fade', 'stagger-visible', 'stagger-visible-right');
             }
           });
-        }, 1250);
+
+          // Logo 3秒動畫結束後：自動呈現相片轉換與臨摹實驗室，讓使用者決定是否拍照上傳或直接繪圖
+          const cam = document.getElementById('cameraModal');
+          if (cam) {
+            cam.classList.remove('hidden');
+            cam.classList.add('flex');
+            if (typeof renderAllStylePreviews === 'function') renderAllStylePreviews();
+            if (typeof renderRefCanvas === 'function') renderRefCanvas();
+          }
+        }, 1100);
       };
 
       splashEl.addEventListener('click', dismissSplash);
       splashEl.addEventListener('pointerdown', dismissSplash);
-      setTimeout(dismissSplash, 900);
+      setTimeout(dismissSplash, 3000); // 3 秒鐘的出現動畫
     }
 
-    // 全域性開屏保底計時器：無論如何 1.2 秒後平滑隱去開屏 Logo，絕不卡屏
+    // 全域性開屏保底計時器：無論如何 3.5 秒後平滑隱去開屏 Logo，並引導至相片轉換介面
     setTimeout(() => {
       const s = document.getElementById('kaiQuestSplash');
       if (s && !s.dataset.dismissed) {
         s.dataset.dismissed = 'true';
         s.classList.add('splash-fade-out');
-        setTimeout(() => s.remove(), 700);
+        setTimeout(() => {
+          s.remove();
+          const cam = document.getElementById('cameraModal');
+          if (cam) {
+            cam.classList.remove('hidden');
+            cam.classList.add('flex');
+            if (typeof renderAllStylePreviews === 'function') renderAllStylePreviews();
+            if (typeof renderRefCanvas === 'function') renderRefCanvas();
+          }
+        }, 700);
       }
-    }, 1200);
+    }, 3500);
 
     // 2. 自由拖移元件：Logo 按鈕、圖層按鈕、AI 按鈕、畫紙按鈕 及 浮動迷你面板 (支援手指觸控、Apple Pencil 觸控筆及滑鼠拖移至螢幕任意位置)
     function makeElementDraggable(element, onTapped) {
@@ -8020,7 +8337,7 @@
     renderMarkerRack();
     renderPaperModalCards();
     initPorcelainPalette();
-    drawPresetPhoto('shiba');
+    drawPresetPhoto('dino');
     applyBrushColor([20, 85, 210]);
     renderRecentColorsUI();
     switchBrushMedium('watercolor');
