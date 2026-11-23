@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.145 · Pro Edition
+      B.26.11.146 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -416,7 +416,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.145 · Pro Edition
+        B.26.11.146 · Pro Edition
       </div>
     </div>
 
@@ -1426,96 +1426,78 @@
               <canvas id="aiSourceCanvas" width="900" height="648" class="w-full rounded-xl border border-stone-200 shadow-inner bg-white"></canvas>
             </div>
             <!-- 右側：AI 優化結果預覽圖 -->
-            <div class="bg-stone-50 p-3 rounded-2xl border border-stone-200 flex flex-col items-center gap-2 relative">
+            <div class="bg-stone-50 p-3 rounded-2xl border border-stone-200 flex flex-col items-center gap-2 relative overflow-hidden">
               <div class="flex items-center justify-between w-full">
                 <span class="text-xs font-bold text-purple-700">✨ AI 結構最佳化繪本 (Output)</span>
                 <span id="aiPolishStatus" class="text-[10px] text-stone-500 font-mono">就緒</span>
               </div>
               <canvas id="aiResultCanvas" width="900" height="648" class="w-full rounded-xl border border-stone-200 shadow-inner bg-white"></canvas>
-              <div id="aiPolishSpinner" class="hidden absolute inset-0 bg-white/85 backdrop-blur-xs rounded-2xl flex flex-col items-center justify-center gap-2">
-                <div class="w-8 h-8 border-3 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-                <span class="text-xs font-bold text-purple-700">正在重構輪廓、平滑線條與光影渲染...</span>
+              <div id="aiPolishSpinner" class="hidden absolute inset-0 bg-white/92 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center gap-2.5 p-4 text-center z-20">
+                <div class="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                <span id="aiPolishSpinnerMsg" class="text-xs font-extrabold text-purple-800">正在傳送畫作給 AI 魔法師...</span>
+                <div class="w-40 h-1.5 bg-purple-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-amber-500 animate-pulse rounded-full w-full"></div>
+                </div>
+                <span class="text-[10px] text-stone-500">約需 7 ~ 30 秒（首次暖機較久），請稍候勿重複點擊</span>
               </div>
             </div>
           </div>
 
-          <!-- 4 大維度 AI 以圖生圖微調工坊 (4-Dimensional Image-to-Image Suite) -->
-          <div class="bg-purple-50/60 border border-purple-100 rounded-2xl p-3 flex flex-col gap-2.5">
+          <!-- 精簡對齊雲端 API 的 AI 繪圖控制面板 (只保留真正送往 ComfyUI 生效的選項) -->
+          <div class="bg-purple-50/60 border border-purple-100 rounded-2xl p-3 flex flex-col gap-3">
             <div class="flex items-center justify-between flex-wrap gap-1.5">
-              <span class="text-xs font-bold text-purple-900">✨ 選擇 AI 以圖生圖修改維度 (ControlNet + SDXL/Flux):</span>
-              <span id="currentEngineBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-purple-200 text-purple-800 font-bold">🧠 本地 Pillow + 神經輪廓引擎</span>
+              <span class="text-xs font-bold text-purple-900">✨ 選擇 AI 繪圖優化模式:</span>
+              <span id="currentEngineBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-purple-200 text-purple-800 font-bold">☁️ Cloudflare Worker → ComfyUI</span>
             </div>
 
-            <!-- 4 大維度切換按鈕 -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5" id="aiCategoryTabs">
-              <button type="button" data-aicat="line_contour" class="ai-cat-btn active p-2 rounded-xl bg-purple-600 text-white text-left transition shadow-xs">
-                <div class="text-xs font-bold">🖋️ 1. 線條與外型</div>
-                <div class="text-[9px] opacity-85">平滑防抖·外框閉合完整性</div>
+            <!-- 2 大真實雲端模式切換 -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="aiCategoryTabs">
+              <button type="button" data-aicat="line_contour" class="ai-cat-btn active p-2.5 rounded-xl bg-purple-600 text-white text-left transition shadow-xs cursor-pointer">
+                <div class="text-xs font-bold">🖋️ 線條平滑與外型修補 (Line)</div>
+                <div class="text-[10px] opacity-85 mt-0.5">平滑手繪抖動線條、自動閉合與修飾外型</div>
               </button>
-              <button type="button" data-aicat="color_shading" class="ai-cat-btn p-2 rounded-xl bg-white text-stone-700 border border-purple-200 hover:border-purple-400 text-left transition">
-                <div class="text-xs font-bold">🎨 2. 色彩與著色</div>
-                <div class="text-[9px] text-stone-500">色調和諧·立體光影渲染</div>
-              </button>
-              <button type="button" data-aicat="medium_style" class="ai-cat-btn p-2 rounded-xl bg-white text-stone-700 border border-purple-200 hover:border-purple-400 text-left transition">
-                <div class="text-xs font-bold">🖌️ 3. 整體畫風修改</div>
-                <div class="text-[9px] text-stone-500">蠟筆/水彩/素描·引數精調</div>
-              </button>
-              <button type="button" data-aicat="cartoon_style" class="ai-cat-btn p-2 rounded-xl bg-white text-stone-700 border border-purple-200 hover:border-purple-400 text-left transition">
-                <div class="text-xs font-bold">🏰 4. 卡通化風格</div>
-                <div class="text-[9px] text-stone-500">3D皮克斯·吉卜力·黏土風</div>
+              <button type="button" data-aicat="color_shading" class="ai-cat-btn p-2.5 rounded-xl bg-white text-stone-700 border border-purple-200 hover:border-purple-400 text-left transition cursor-pointer">
+                <div class="text-xs font-bold">🎨 上色與光影優化 (Color)</div>
+                <div class="text-[10px] text-stone-500 mt-0.5">保留原作配色、使塗色更均勻平滑並增添柔光</div>
               </button>
             </div>
 
-            <!-- 子風格單選區 (隨選中的維度動態切換) -->
-            <div id="aiSubStylesContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <!-- JS 動態渲染子風格選項 -->
-            </div>
-
-            <!-- 該維度的專屬引數調節滑桿組 (3 組動態引數) -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 bg-white/90 p-2.5 rounded-xl border border-purple-200/80">
+            <!-- 2 個真正會送往雲端模型的有效參數拉桿 -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white/90 p-3 rounded-xl border border-purple-200/80">
               <div class="flex flex-col gap-1">
                 <div class="flex justify-between text-[11px]">
-                  <span id="aiParam1Name" class="font-bold text-stone-700">線條平滑度</span>
-                  <span id="aiParam1Val" class="font-mono font-bold text-purple-700">75%</span>
+                  <span class="font-bold text-stone-700">AI 自由創作幅度 (Denoise)</span>
+                  <span id="aiStrengthLabel" class="font-mono font-bold text-purple-700">30%</span>
                 </div>
-                <input id="aiParam1Slider" type="range" min="10" max="100" value="75" class="accent-purple-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer">
+                <input id="aiPolishStrength" type="range" min="20" max="85" value="30" class="accent-purple-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer">
+                <div class="flex justify-between text-[9px] text-stone-400">
+                  <span>極貼近原畫 (0.25)</span>
+                  <span>AI 自由發揮 (0.80)</span>
+                </div>
               </div>
               <div class="flex flex-col gap-1">
                 <div class="flex justify-between text-[11px]">
-                  <span id="aiParam2Name" class="font-bold text-stone-700">外型閉合完整性</span>
-                  <span id="aiParam2Val" class="font-mono font-bold text-purple-700">70%</span>
+                  <span class="font-bold text-stone-700">原畫輪廓鎖定強度 (ControlNet)</span>
+                  <span id="aiControlNetLabel" class="font-mono font-bold text-purple-700">85%</span>
                 </div>
-                <input id="aiParam2Slider" type="range" min="10" max="100" value="70" class="accent-purple-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer">
-              </div>
-              <div class="flex flex-col gap-1">
-                <div class="flex justify-between text-[11px]">
-                  <span id="aiParam3Name" class="font-bold text-stone-700">邊緣銳利度</span>
-                  <span id="aiParam3Val" class="font-mono font-bold text-purple-700">65%</span>
+                <input id="aiControlNetStrength" type="range" min="35" max="100" value="85" class="accent-purple-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer">
+                <div class="flex justify-between text-[9px] text-stone-400">
+                  <span>寬鬆參考</span>
+                  <span>嚴格鎖定輪廓</span>
                 </div>
-                <input id="aiParam3Slider" type="range" min="10" max="100" value="65" class="accent-purple-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer">
               </div>
             </div>
 
-            <div class="flex items-center gap-2 bg-white/90 p-2 rounded-xl border border-purple-200">
-              <span class="text-xs font-bold text-purple-800 shrink-0">💡 魔法引導詞:</span>
-              <input id="aiCustomPrompt" type="text" placeholder="例如：可愛的小狗在草地上曬太陽，溫暖陽光，細膩圓潤的繪本插畫" value="精美兒童故事繪本插畫，線條圓潤流暢，外型完整閉合，溫馨明亮童話光影，保留兒童畫作構圖" class="flex-1 text-xs text-stone-700 outline-none bg-transparent" />
-            </div>
-
-            <div class="flex items-center justify-between pt-1 flex-wrap gap-2">
-              <div class="flex items-center gap-2">
-                <span class="text-xs text-stone-600">AI 重繪強度 (Denoise):</span>
-                <input id="aiPolishStrength" type="range" min="25" max="95" value="70" class="accent-purple-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer">
-                <span id="aiStrengthLabel" class="text-xs font-mono font-bold text-purple-700">70%</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <button id="btnRunAiPolish" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white font-bold text-xs shadow-md shadow-purple-500/25 active:scale-95 transition flex items-center gap-1.5 cursor-pointer">
+            <div class="flex items-center justify-end pt-1 flex-wrap gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
+                <button id="btnRunAiPolish" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs shadow-md shadow-purple-500/25 active:scale-95 transition flex items-center gap-1.5 cursor-pointer">
                   <span>🚀 施展以圖生圖魔法</span>
                   <span class="px-1.5 py-0.5 rounded-full bg-amber-300 text-amber-950 text-[10px] font-black shadow-2xs flex items-center gap-0.5">🚧 開發中</span>
                 </button>
-                <button id="btnApplyAiToNewLayer" class="hidden px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white font-bold text-xs active:scale-95 transition shadow-md shadow-indigo-500/20">
+                <button id="btnApplyAiToNewLayer" class="hidden px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white font-bold text-xs active:scale-95 transition shadow-md shadow-indigo-500/20 cursor-pointer">
                   📥 存為新圖層 (繼續修改)
                 </button>
-                <button id="btnDownloadAiResult" class="hidden px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs active:scale-95 transition">
+                <button id="btnDownloadAiResult" class="hidden px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs active:scale-95 transition cursor-pointer">
                   💾 下載圖片
                 </button>
               </div>
@@ -1523,66 +1505,51 @@
           </div>
         </div>
 
-        <!-- Tab 2: 2~3秒以圖生動畫 (Image-to-Video - 第一幀條件生成) -->
+        <!-- Tab 2: 2秒輕量以圖生動畫 (Image-to-Video) -->
         <div id="aiTabVideo" class="hidden flex flex-col gap-3">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
-            <!-- 左側：動態微電影預覽 (影片播放器 / 動態渲染畫板) -->
+            <!-- 左側：動態微電影預覽 -->
             <div class="bg-stone-50 p-3 rounded-2xl border border-stone-200 flex flex-col items-center gap-2">
               <div class="flex items-center justify-between w-full">
-                <span class="text-xs font-bold text-stone-700">🎬 2.5 秒微電影渲染 (Output Video)</span>
-                <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold">第一幀條件生成</span>
+                <span class="text-xs font-bold text-stone-700">🎬 2 秒微電影渲染 (Output Video)</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold">512×384 · 24fps</span>
               </div>
               <div class="w-full relative aspect-[4/3] rounded-xl overflow-hidden bg-black flex items-center justify-center border border-stone-300">
                 <canvas id="aiVideoPreviewCanvas" width="320" height="240" class="w-full h-full object-contain"></canvas>
                 <video id="aiResultVideo" class="hidden w-full h-full object-contain" loop autoplay playsinline muted controls></video>
-                <div id="aiVideoSpinner" class="hidden absolute inset-0 bg-stone-900/80 backdrop-blur-xs flex flex-col items-center justify-center gap-2 text-white">
-                  <div class="w-8 h-8 border-3 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
-                  <span id="aiVideoSpinnerText" class="text-xs font-bold">正在根據第一幀推理 2 秒動態微電影...</span>
+                <div id="aiVideoSpinner" class="hidden absolute inset-0 bg-stone-900/90 backdrop-blur-sm flex flex-col items-center justify-center gap-2.5 p-4 text-center text-white z-20">
+                  <div class="w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+                  <span id="aiVideoSpinnerText" class="text-xs font-extrabold text-amber-200">正在傳送畫作至雲端生成 2 秒微動畫...</span>
+                  <div class="w-40 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400 animate-pulse rounded-full w-full"></div>
+                  </div>
+                  <span class="text-[10px] text-stone-300">生成約需 30 ~ 50 秒，請耐心稍候</span>
                 </div>
               </div>
             </div>
 
-            <!-- 右側：動態鏡頭與動效選擇 -->
-            <div class="flex flex-col gap-2.5 bg-amber-50/70 border border-amber-200/80 rounded-2xl p-3.5">
-              <div class="flex items-center justify-between">
-                <h3 class="text-xs font-bold text-amber-900">真·以圖生動畫 (CogVideoX / SVD)</h3>
-                <span class="text-[10px] text-amber-700 font-mono">2.5s @ 30fps</span>
-              </div>
-              <p class="text-[11px] text-stone-600 leading-relaxed">
-                以當前畫作為<strong>「第 1 幀」</strong>，AI 模型利用時間跨幀注意力，推理角色眨眼、尾巴擺動、樹葉微風與奇幻星芒。
-              </p>
-              
-              <div class="flex flex-col gap-1.5">
-                <label class="flex items-center gap-2 p-2 rounded-xl bg-white border border-amber-200 cursor-pointer">
-                  <input type="radio" name="videoMotion" value="breathe" checked class="accent-amber-600">
-                  <div>
-                    <div class="text-xs font-bold text-stone-800">🍃 角色呼吸 & 微風律動</div>
-                    <div class="text-[10px] text-stone-500">主體起伏呼吸，草木微風搖曳，光線自然明暗</div>
-                  </div>
-                </label>
-                <label class="flex items-center gap-2 p-2 rounded-xl bg-white border border-amber-200 cursor-pointer">
-                  <input type="radio" name="videoMotion" value="sparkle" class="accent-amber-600">
-                  <div>
-                    <div class="text-xs font-bold text-stone-800">🌟 奇幻魔法粒子 & 閃爍光斑</div>
-                    <div class="text-[10px] text-stone-500">金色流光粒子在主體周圍翩翩起舞</div>
-                  </div>
-                </label>
-                <label class="flex items-center gap-2 p-2 rounded-xl bg-white border border-amber-200 cursor-pointer">
-                  <input type="radio" name="videoMotion" value="zoom" class="accent-amber-600">
-                  <div>
-                    <div class="text-xs font-bold text-stone-800">🔍 電影級緩推鏡頭 (Slow Dolly-in)</div>
-                    <div class="text-[10px] text-stone-500">平滑推入主體，帶來三維立體空間縱深感</div>
-                  </div>
-                </label>
+            <!-- 右側：簡潔明確的 2 秒動畫說明與執行按鈕 -->
+            <div class="flex flex-col justify-between gap-3 bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 h-full">
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-extrabold text-amber-900">✨ 讓作品動起來（2 秒輕微動畫）</h3>
+                  <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 font-mono font-bold">2.0s MP4</span>
+                </div>
+                <p class="text-xs text-stone-600 leading-relaxed">
+                  以您目前的完成畫作作為<strong>「第 1 幀」</strong>，透過雲端 ComfyUI 生成約 <strong>2 秒</strong> 的柔和微動畫（輕微左右搖晃、呼吸起伏或眨眼動效），讓小朋友看到自己的作品動起來！
+                </p>
+                <div class="text-[11px] text-amber-800 bg-white/80 rounded-xl p-2.5 border border-amber-200/70">
+                  💡 <strong>溫馨提示：</strong>動畫運算約需 30～50 秒，點擊生成後請稍候，完成即可直接循環播放並下載 MP4。
+                </div>
               </div>
 
-              <div class="flex items-center justify-between pt-2">
-                <button id="btnGenerateVideo" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white font-bold text-xs shadow-md shadow-amber-500/25 active:scale-95 transition flex items-center gap-1.5 cursor-pointer">
-                  <span>🎬 生成 2.5 秒微電影</span>
+              <div class="flex items-center justify-between gap-2 pt-2 flex-wrap">
+                <button id="btnGenerateVideo" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs shadow-md shadow-amber-500/25 active:scale-95 transition flex items-center gap-1.5 cursor-pointer">
+                  <span>🎬 生成 2 秒微電影</span>
                   <span class="px-1.5 py-0.5 rounded-full bg-white text-amber-900 text-[10px] font-black shadow-2xs flex items-center gap-0.5">🚧 開發中</span>
                 </button>
-                <button id="btnDownloadVideo" class="hidden px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs active:scale-95 transition">
-                  📥 下載影片 (MP4/WebM)
+                <button id="btnDownloadVideo" class="hidden px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs active:scale-95 transition cursor-pointer">
+                  📥 下載 MP4 影片
                 </button>
               </div>
             </div>
@@ -6692,65 +6659,16 @@
 
     const AI_CATEGORIES_CONFIG = {
       line_contour: {
-        name: '線條平滑與外型完整',
-        p1: ['線條平滑防抖度', 78],
-        p2: ['外型閉合完整性', 75],
-        p3: ['邊緣清晰銳利度', 72],
-        prompt: '兒童手繪線條平滑重構，自動閉合斷裂輪廓，圓潤向量繪本描邊，清晰銳利外框',
-        styles: [
-          { id: 'crisp_outline', title: '🖋️ 銳利圓滑描邊', desc: '外框清晰·平滑抖動線條' },
-          { id: 'geo_complete', title: '📐 外型完整性補全', desc: '閉合缺口·幾何圓滑規整' },
-          { id: 'smooth_ink', title: '✒️ 柔順繪本鋼筆線', desc: '抑揚頓挫·手繪故事線稿' },
-          { id: 'bold_comic', title: '⚡ 張力卡通粗輪廓', desc: '飽滿黑邊·突出主體結構' }
-        ]
+        name: '線條平滑與外型修補',
+        defaultDenoise: 30,
+        defaultControlNet: 85
       },
       color_shading: {
-        name: '色彩與著色調整',
-        p1: ['色彩和諧與飽和度', 76],
-        p2: ['立體光影體積感', 74],
-        p3: ['色彩漸變柔化度', 70],
-        prompt: '大師級兒童繪本色彩調和，自動補充柔和體積光影與環境漸變色，保留原作配色精神',
-        styles: [
-          { id: 'warm_sunlight', title: '☀️ 溫暖晨光著色', desc: '金黃暖調·立體受光陰影' },
-          { id: 'pastel_harmony', title: '🍬 馬卡龍柔光配色', desc: '粉嫩和諧·治癒系繪本感' },
-          { id: 'volumetric_3d', title: '💡 立體球面光影', desc: '明暗交界·增強畫面體積' },
-          { id: 'vibrant_pop', title: '🌈 絢麗高飽和插畫', desc: '色彩濃郁·填補塗色空白' }
-        ]
-      },
-      medium_style: {
-        name: '整體風格修改 (可調引數)',
-        p1: ['畫材紋理顆粒度', 72],
-        p2: ['水份暈染擴散度', 68],
-        p3: ['筆觸厚重肌理感', 75],
-        prompt: '真實藝術媒介風格轉換，自然畫紙肌理與筆觸層次，大師手繪質感',
-        styles: [
-          { id: 'crayon', title: '🖍️ 質感油性蠟筆', desc: '粗紋蠟質·顆粒留白質感' },
-          { id: 'watercolor', title: '🎨 大師透光水彩', desc: '濕畫水痕·自然邊緣暈染' },
-          { id: 'sketch', title: '✏️ 學院派炭筆素描', desc: '排線明暗·黑白紙本速寫' },
-          { id: 'oil', title: '🖼️ 厚塗肌理油畫', desc: '刮刀立體·濃郁油彩堆疊' }
-        ]
-      },
-      cartoon_style: {
-        name: '卡通化風格修改',
-        p1: ['卡通造型誇張度', 78],
-        p2: ['原作構圖保留度', 82],
-        p3: ['Q版立體高光感', 75],
-        prompt: '高品質動畫電影角色與場景重繪，圓潤萌系比例，電影級全域性光照',
-        styles: [
-          { id: 'pixar_3d', title: '🏰 3D 皮克斯動畫', desc: '立體圓潤·電影級次表面散射' },
-          { id: 'ghibli', title: '🌿 吉卜力手繪動漫', desc: '治癒藍天綠草·水粉手繪風' },
-          { id: 'cute_vector', title: '🎈 萌系兒童繪本風', desc: '圓潤可愛·北歐扁平插畫' },
-          { id: 'clay_3d', title: '🧸 定格手作黏土風', desc: '圓潤捏塑·微距攝影質感' }
-        ]
+        name: '上色與光影優化',
+        defaultDenoise: 40,
+        defaultControlNet: 80
       }
     };
-
-    const aiParam1Slider = document.getElementById('aiParam1Slider');
-    const aiParam2Slider = document.getElementById('aiParam2Slider');
-    const aiParam3Slider = document.getElementById('aiParam3Slider');
-    const aiParam1Val = document.getElementById('aiParam1Val');
-    const aiParam2Val = document.getElementById('aiParam2Val');
-    const aiParam3Val = document.getElementById('aiParam3Val');
 
     function renderAiCategoryUI(catKey) {
       currentAiCategory = catKey;
@@ -6759,50 +6677,37 @@
 
       document.querySelectorAll('.ai-cat-btn').forEach(btn => {
         if (btn.dataset.aicat === catKey) {
-          btn.className = 'ai-cat-btn active p-2 rounded-xl bg-purple-600 text-white text-left transition shadow-xs';
-          btn.querySelector('div:last-child').className = 'text-[9px] opacity-85';
+          btn.className = 'ai-cat-btn active p-2.5 rounded-xl bg-purple-600 text-white text-left transition shadow-xs cursor-pointer';
+          btn.querySelector('div:last-child').className = 'text-[10px] opacity-85 mt-0.5';
         } else {
-          btn.className = 'ai-cat-btn p-2 rounded-xl bg-white text-stone-700 border border-purple-200 hover:border-purple-400 text-left transition';
-          btn.querySelector('div:last-child').className = 'text-[9px] text-stone-500';
+          btn.className = 'ai-cat-btn p-2.5 rounded-xl bg-white text-stone-700 border border-purple-200 hover:border-purple-400 text-left transition cursor-pointer';
+          btn.querySelector('div:last-child').className = 'text-[10px] text-stone-500 mt-0.5';
         }
       });
 
-      const subContainer = document.getElementById('aiSubStylesContainer');
-      if (subContainer) {
-        subContainer.innerHTML = cfg.styles.map((st, idx) => `
-          <label class="flex items-center gap-2 p-2 rounded-xl bg-white border border-purple-200 cursor-pointer shadow-2xs hover:border-purple-400">
-            <input type="radio" name="aiStyle" value="${st.id}" ${idx === 0 ? 'checked' : ''} class="accent-purple-600">
-            <div>
-              <div class="text-xs font-bold">${st.title}</div>
-              <div class="text-[9px] text-stone-500">${st.desc}</div>
-            </div>
-          </label>
-        `).join('');
+      const denoiseEl = document.getElementById('aiPolishStrength');
+      const denoiseLbl = document.getElementById('aiStrengthLabel');
+      if (denoiseEl && denoiseLbl) {
+        denoiseEl.value = cfg.defaultDenoise;
+        denoiseLbl.textContent = `${cfg.defaultDenoise}%`;
       }
 
-      document.getElementById('aiParam1Name').textContent = cfg.p1[0];
-      aiParam1Slider.value = cfg.p1[1];
-      aiParam1Val.textContent = `${cfg.p1[1]}%`;
-
-      document.getElementById('aiParam2Name').textContent = cfg.p2[0];
-      aiParam2Slider.value = cfg.p2[1];
-      aiParam2Val.textContent = `${cfg.p2[1]}%`;
-
-      document.getElementById('aiParam3Name').textContent = cfg.p3[0];
-      aiParam3Slider.value = cfg.p3[1];
-      aiParam3Val.textContent = `${cfg.p3[1]}%`;
-
-      const promptInput = document.getElementById('aiCustomPrompt');
-      if (promptInput) promptInput.value = cfg.prompt;
+      const cnEl = document.getElementById('aiControlNetStrength');
+      const cnLbl = document.getElementById('aiControlNetLabel');
+      if (cnEl && cnLbl) {
+        cnEl.value = cfg.defaultControlNet;
+        cnLbl.textContent = `${cfg.defaultControlNet}%`;
+      }
     }
 
     document.querySelectorAll('.ai-cat-btn').forEach(btn => {
       btn.addEventListener('click', () => renderAiCategoryUI(btn.dataset.aicat));
     });
 
-    aiParam1Slider?.addEventListener('input', (e) => { aiParam1Val.textContent = `${e.target.value}%`; });
-    aiParam2Slider?.addEventListener('input', (e) => { aiParam2Val.textContent = `${e.target.value}%`; });
-    aiParam3Slider?.addEventListener('input', (e) => { aiParam3Val.textContent = `${e.target.value}%`; });
+    document.getElementById('aiControlNetStrength')?.addEventListener('input', (e) => {
+      const lbl = document.getElementById('aiControlNetLabel');
+      if (lbl) lbl.textContent = `${e.target.value}%`;
+    });
 
     renderAiCategoryUI('line_contour');
 
@@ -7246,33 +7151,34 @@
       throw new Error('雲端運算逾時，請稍後再試');
     }
 
-    // 1. 執行 4維以圖生圖魔法最佳化 (Magic Polish)
+    // 1. 執行雲端以圖生圖魔法最佳化 (Magic Polish)
     document.getElementById('btnRunAiPolish').addEventListener('click', async () => {
+      const btnRunPolish = document.getElementById('btnRunAiPolish');
+      if (btnRunPolish.disabled) return;
+
       const spinner = document.getElementById('aiPolishSpinner');
+      const spinnerMsg = document.getElementById('aiPolishSpinnerMsg');
       const status = document.getElementById('aiPolishStatus');
       const btnDownload = document.getElementById('btnDownloadAiResult');
       const btnApplyLayer = document.getElementById('btnApplyAiToNewLayer');
 
+      btnRunPolish.disabled = true;
       spinner.classList.remove('hidden');
+      if (spinnerMsg) spinnerMsg.textContent = '正在傳送畫作給 AI 魔法師...';
       status.textContent = 'AI 推理中...';
 
-      const selStyle = document.querySelector('input[name="aiStyle"]:checked')?.value || 'crisp_outline';
       const strength = parseInt(aiStrengthSlider.value, 10) / 100;
-      const p1 = parseInt(aiParam1Slider?.value || '75', 10) / 100;
-      const p2 = parseInt(aiParam2Slider?.value || '70', 10) / 100;
-      const p3 = parseInt(aiParam3Slider?.value || '65', 10) / 100;
+      const cnStrength = parseInt(document.getElementById('aiControlNetStrength')?.value || '85', 10) / 100;
 
       const workerToken = getWorkerToken();
       if (workerToken) {
         try {
           const mode = currentAiCategory === 'line_contour' ? 'line' : 'color';
-          // 線稿依拉桿對應 0.25~0.80；上色預設約 0.40 並受拉桿微調
-          const denoise = mode === 'line'
-            ? Number((0.22 + strength * 0.58).toFixed(2))
-            : Number((0.25 + strength * 0.35).toFixed(2));
-          const controlnetStrength = Number((0.35 + p2 * 0.65).toFixed(2));
+          const denoise = Number(strength.toFixed(2));
+          const controlnetStrength = Number(cnStrength.toFixed(2));
 
           status.textContent = '上傳至雲端 ComfyUI...';
+          if (spinnerMsg) spinnerMsg.textContent = '上傳畫作至雲端 AI 魔法師...';
           const submitResp = await fetch(`${KAIDRAW_AI_API_BASE}/api/ai/polish`, {
             method: 'POST',
             headers: {
@@ -7292,8 +7198,10 @@
             const job = await submitResp.json();
             if (!job.status_url) throw new Error('後端未回傳 status_url');
             status.textContent = '雲端 AI 生成中 (0s)...';
+            if (spinnerMsg) spinnerMsg.textContent = '雲端 AI 繪製中 (0s，請稍候)...';
             resultBlob = await pollKaiDrawTask(job.status_url, workerToken, (sec) => {
               status.textContent = `雲端 AI 生成中 (${sec}s)...`;
+              if (spinnerMsg) spinnerMsg.textContent = `雲端 AI 繪製中 (${sec}s，請稍候)...`;
             });
           } else if (submitResp.status === 200) {
             resultBlob = await submitResp.blob();
@@ -7331,13 +7239,15 @@
       }
 
       // 若未填入測試 Token 或雲端失敗，使用本地平滑預覽引擎
-      executeLocalNeuralPolish(aiSourceCanvas, aiResultCanvas, currentAiCategory, selStyle, strength, p1, p2, p3);
+      if (spinnerMsg) spinnerMsg.textContent = '正在以本地預覽引擎處理...';
+      executeLocalNeuralPolish(aiSourceCanvas, aiResultCanvas, currentAiCategory, 'crisp_outline', strength, 0.78, cnStrength, 0.72);
       setTimeout(() => {
         finishAiPolish(false);
       }, 450);
 
       function finishAiPolish(isCloud) {
         spinner.classList.add('hidden');
+        btnRunPolish.disabled = false;
         status.textContent = isCloud ? '雲端 AI 完成 ✨' : '本地預覽完成 ✨';
         btnDownload.classList.remove('hidden');
         btnApplyLayer.classList.remove('hidden');
@@ -7380,13 +7290,17 @@
      * 14.7 真實以圖生動畫微電影 (Image-to-Video 第一幀條件生成)
      ********************************************************************/
     document.getElementById('btnGenerateVideo').addEventListener('click', async () => {
+      const btnGenVideo = document.getElementById('btnGenerateVideo');
+      if (btnGenVideo.disabled) return;
+
       const spinner = document.getElementById('aiVideoSpinner');
       const spinnerTxt = document.getElementById('aiVideoSpinnerText');
       const btnDownload = document.getElementById('btnDownloadVideo');
+      btnGenVideo.disabled = true;
       spinner.classList.remove('hidden');
-      if (spinnerTxt) spinnerTxt.textContent = '正在上傳畫作至雲端生成 2 秒微電影...';
+      if (spinnerTxt) spinnerTxt.textContent = '正在上傳畫作至雲端生成 2 秒微動畫...';
 
-      const motion = document.querySelector('input[name="videoMotion"]:checked')?.value || 'breathe';
+      const motion = 'breathe';
       const fps = 30;
       const duration = 2.5;
       const totalFrames = Math.round(fps * duration);
@@ -7414,9 +7328,9 @@
           if (submitResp.status === 202) {
             const job = await submitResp.json();
             if (!job.status_url) throw new Error('後端未回傳 status_url');
-            if (spinnerTxt) spinnerTxt.textContent = '雲端 2 秒動畫生成中 (0s)...';
+            if (spinnerTxt) spinnerTxt.textContent = '雲端 2 秒動畫生成中 (0s，約需 30~50 秒)...';
             videoBlob = await pollKaiDrawTask(job.status_url, workerToken, (sec) => {
-              if (spinnerTxt) spinnerTxt.textContent = `雲端 2 秒動畫生成中 (${sec}s)...`;
+              if (spinnerTxt) spinnerTxt.textContent = `雲端 2 秒動畫生成中 (${sec}s，約需 30~50 秒)...`;
             });
           } else if (submitResp.status === 200) {
             videoBlob = await submitResp.blob();
@@ -7434,6 +7348,7 @@
           aiVideoPreviewCanvas.classList.add('hidden');
           aiResultVideo.play().catch(() => {});
           spinner.classList.add('hidden');
+          btnGenVideo.disabled = false;
           btnDownload.classList.remove('hidden');
           updateWorkerTokenBadge(true);
           showToast('🎬 雲端 2 秒 AI 微電影生成成功！');
@@ -7460,7 +7375,7 @@
               motion: motion,
               duration: duration,
               fps: fps,
-              prompt: document.getElementById('aiCustomPrompt')?.value || ''
+              prompt: ''
             })
           });
 
@@ -7473,6 +7388,7 @@
               aiVideoPreviewCanvas.classList.add('hidden');
               aiResultVideo.play();
               spinner.classList.add('hidden');
+              btnGenVideo.disabled = false;
               btnDownload.classList.remove('hidden');
               showToast(`🎉 本地 API 成功生成真實 H.264 MP4 動畫 (75幀 / 2.5秒)！授權: ${data.authorized_by || 'Pass'}`);
               return;
@@ -7512,6 +7428,7 @@
           aiResultVideo.play();
 
           spinner.classList.add('hidden');
+          btnGenVideo.disabled = false;
           btnDownload.classList.remove('hidden');
           showToast('2.5 秒微電影生成成功！已為您開始迴圈播放');
         };
@@ -7581,6 +7498,7 @@
             recorder.stop();
           } else {
             spinner.classList.add('hidden');
+            btnGenVideo.disabled = false;
             btnDownload.classList.remove('hidden');
           }
         }
