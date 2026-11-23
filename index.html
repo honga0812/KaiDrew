@@ -224,7 +224,7 @@
   <div id="kaiQuestSplash" onclick="if (typeof getSharedAudioContext === 'function') getSharedAudioContext();" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center select-none overflow-hidden transition-all duration-700 cursor-pointer p-4" title="KaiDraw 畫室啟動中 (輕點亦可提前進入)">
     <!-- 頂部居中極簡版本編號 -->
     <div class="absolute top-6 left-1/2 -translate-x-1/2 text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-      B.26.11.144 · Pro Edition
+      B.26.11.145 · Pro Edition
     </div>
 
     <!-- 右上角跳過按鍵 -->
@@ -416,7 +416,7 @@
       <img src="images/logo_v1.jpeg" alt="KaiDraw Logo" class="w-56 h-56 sm:w-68 sm:h-68 md:w-80 md:h-80 object-contain opacity-40 mix-blend-multiply select-none pointer-events-none" />
 
       <div class="text-xs sm:text-sm font-mono font-bold tracking-widest text-stone-400 select-none">
-        B.26.11.144 · Pro Edition
+        B.26.11.145 · Pro Edition
       </div>
     </div>
 
@@ -1392,10 +1392,23 @@
         <button id="btnCloseAiModal" class="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 flex items-center justify-center text-base font-bold transition active:scale-95">✕</button>
       </div>
 
-      <!-- Tab 切換 -->
-      <div class="flex items-center gap-2 border-b border-stone-200 pb-2 flex-wrap">
-        <button id="tabBtnPolish" class="ai-tab-btn active px-3.5 py-1.5 rounded-xl text-xs font-bold bg-purple-600 text-white shadow-sm transition">✨ 魔法畫作最佳化</button>
-        <button id="tabBtnVideo" class="ai-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition">🎬 2~3秒讓畫動起來</button>
+      <!-- Tab 切換 + 雲端測試憑證狀態 -->
+      <div class="flex items-center justify-between gap-2 border-b border-stone-200 pb-2 flex-wrap">
+        <div class="flex items-center gap-2 flex-wrap">
+          <button id="tabBtnPolish" class="ai-tab-btn active px-3.5 py-1.5 rounded-xl text-xs font-bold bg-purple-600 text-white shadow-sm transition">✨ 魔法畫作最佳化</button>
+          <button id="tabBtnVideo" class="ai-tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition">🎬 2秒讓畫動起來</button>
+        </div>
+        <button id="btnToggleAiTokenBar" type="button" class="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition active:scale-95 cursor-pointer flex items-center gap-1" title="設定測試用 CLIENT_ACCESS_TOKEN (僅存於本機瀏覽器)">
+          <span id="aiTokenStatusDot">🔑</span>
+          <span id="aiTokenStatusText">輸入測試 Token</span>
+        </button>
+      </div>
+
+      <!-- 測試用 Worker Token 輸入條 (僅存於 localStorage，絕不寫入原始碼) -->
+      <div id="aiWorkerTokenBar" class="hidden bg-stone-50 border border-stone-200 rounded-2xl p-2.5 flex items-center gap-2 flex-wrap">
+        <span class="text-[11px] font-bold text-stone-700 shrink-0">🔐 雲端測試 Token:</span>
+        <input id="aiWorkerTokenInput" type="password" placeholder="貼上 CLIENT_ACCESS_TOKEN (僅存於此裝置)" class="flex-1 min-w-[180px] px-2.5 py-1.5 rounded-xl border border-stone-200 bg-white text-xs font-mono text-stone-800 outline-none focus:border-purple-500" />
+        <button id="btnSaveAndTestWorkerToken" type="button" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold active:scale-95 transition cursor-pointer shrink-0">✓ 儲存並測試</button>
       </div>
 
       <!-- 彈窗主體容器 -->
@@ -1524,7 +1537,7 @@
                 <video id="aiResultVideo" class="hidden w-full h-full object-contain" loop autoplay playsinline muted controls></video>
                 <div id="aiVideoSpinner" class="hidden absolute inset-0 bg-stone-900/80 backdrop-blur-xs flex flex-col items-center justify-center gap-2 text-white">
                   <div class="w-8 h-8 border-3 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
-                  <span class="text-xs font-bold">正在根據第一幀推理後續 75 幀物理運動...</span>
+                  <span id="aiVideoSpinnerText" class="text-xs font-bold">正在根據第一幀推理 2 秒動態微電影...</span>
                 </div>
               </div>
             </div>
@@ -7119,6 +7132,120 @@
       dctx.restore();
     }
 
+    // ==================== Cloudflare Worker -> Modal 公開 API 串接引擎 ====================
+    const KAIDRAW_AI_API_BASE = 'https://kaidraw-api.honga-ggai.workers.dev';
+    const WORKER_TOKEN_STORAGE_KEY = 'kaidraw_worker_token';
+
+    function getWorkerToken() {
+      return (localStorage.getItem(WORKER_TOKEN_STORAGE_KEY) || '').trim();
+    }
+
+    function updateWorkerTokenBadge(verified = false) {
+      const dot = document.getElementById('aiTokenStatusDot');
+      const txt = document.getElementById('aiTokenStatusText');
+      const btn = document.getElementById('btnToggleAiTokenBar');
+      const tok = getWorkerToken();
+      if (!dot || !txt || !btn) return;
+      if (tok) {
+        dot.textContent = verified ? '🟢' : '🟡';
+        txt.textContent = verified ? '雲端 AI 已連線' : '已填測試 Token';
+        btn.className = 'px-2.5 py-1 rounded-xl text-[11px] font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition active:scale-95 cursor-pointer flex items-center gap-1';
+      } else {
+        dot.textContent = '🔑';
+        txt.textContent = '輸入測試 Token';
+        btn.className = 'px-2.5 py-1 rounded-xl text-[11px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition active:scale-95 cursor-pointer flex items-center gap-1';
+      }
+    }
+
+    const tokenBarEl = document.getElementById('aiWorkerTokenBar');
+    const tokenInputEl = document.getElementById('aiWorkerTokenInput');
+    if (tokenInputEl && getWorkerToken()) {
+      tokenInputEl.value = getWorkerToken();
+    }
+    updateWorkerTokenBadge(false);
+
+    document.getElementById('btnToggleAiTokenBar')?.addEventListener('click', () => {
+      tokenBarEl?.classList.toggle('hidden');
+    });
+
+    document.getElementById('btnSaveAndTestWorkerToken')?.addEventListener('click', async () => {
+      const val = (tokenInputEl?.value || '').trim();
+      if (!val) {
+        localStorage.removeItem(WORKER_TOKEN_STORAGE_KEY);
+        updateWorkerTokenBadge(false);
+        showToast('已清除測試 Token');
+        return;
+      }
+      try {
+        const resp = await fetch(`${KAIDRAW_AI_API_BASE}/api/health`, {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${val}` }
+        });
+        if (resp.ok) {
+          localStorage.setItem(WORKER_TOKEN_STORAGE_KEY, val);
+          updateWorkerTokenBadge(true);
+          tokenBarEl?.classList.add('hidden');
+          showToast('✅ Cloudflare Worker → Modal 連線成功！(200 OK)');
+        } else if (resp.status === 401) {
+          updateWorkerTokenBadge(false);
+          showToast('❌ Token 無效 (401 Unauthorized)，請確認後重試');
+        } else {
+          showToast(`⚠️ 健康檢查回傳 HTTP ${resp.status}`);
+        }
+      } catch (err) {
+        showToast('⚠️ 無法連線至 Cloudflare Worker，請檢查網路狀態');
+      }
+    });
+
+    function canvasToPureBase64(srcCanvas) {
+      const maxDim = 1024;
+      const scale = Math.min(1, maxDim / Math.max(srcCanvas.width, srcCanvas.height));
+      const tw = Math.max(1, Math.round(srcCanvas.width * scale));
+      const th = Math.max(1, Math.round(srcCanvas.height * scale));
+      const tmp = document.createElement('canvas');
+      tmp.width = tw;
+      tmp.height = th;
+      const tctx = tmp.getContext('2d');
+      tctx.fillStyle = '#ffffff';
+      tctx.fillRect(0, 0, tw, th);
+      tctx.imageSmoothingEnabled = true;
+      tctx.imageSmoothingQuality = 'high';
+      tctx.drawImage(srcCanvas, 0, 0, tw, th);
+      const dataUrl = tmp.toDataURL('image/png');
+      return dataUrl.replace(/^data:image\/\w+;base64,/, '');
+    }
+
+    async function pollKaiDrawTask(statusUrl, token, onProgress) {
+      const fullUrl = new URL(statusUrl, KAIDRAW_AI_API_BASE).toString();
+      const startTs = Date.now();
+      const maxWaitMs = 150000; // 最長等待 150 秒
+
+      while (Date.now() - startTs < maxWaitMs) {
+        const resp = await fetch(fullUrl, {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (resp.status === 200) {
+          return await resp.blob();
+        }
+        if (resp.status === 202) {
+          const elapsed = Math.round((Date.now() - startTs) / 1000);
+          if (typeof onProgress === 'function') onProgress(elapsed);
+          await new Promise(r => setTimeout(r, 3000));
+          continue;
+        }
+        if (resp.status === 401) {
+          throw new Error('Token 無效或已過期 (401)');
+        }
+        if (resp.status === 404) {
+          throw new Error('任務憑證無效或結果已過期 (404)');
+        }
+        throw new Error(`雲端服務回應異常 (${resp.status})`);
+      }
+      throw new Error('雲端運算逾時，請稍後再試');
+    }
+
     // 1. 執行 4維以圖生圖魔法最佳化 (Magic Polish)
     document.getElementById('btnRunAiPolish').addEventListener('click', async () => {
       const spinner = document.getElementById('aiPolishSpinner');
@@ -7127,76 +7254,97 @@
       const btnApplyLayer = document.getElementById('btnApplyAiToNewLayer');
 
       spinner.classList.remove('hidden');
-      status.textContent = 'AI 4維以圖生圖推理中...';
+      status.textContent = 'AI 推理中...';
 
       const selStyle = document.querySelector('input[name="aiStyle"]:checked')?.value || 'crisp_outline';
       const strength = parseInt(aiStrengthSlider.value, 10) / 100;
       const p1 = parseInt(aiParam1Slider?.value || '75', 10) / 100;
       const p2 = parseInt(aiParam2Slider?.value || '70', 10) / 100;
       const p3 = parseInt(aiParam3Slider?.value || '65', 10) / 100;
-      const promptText = document.getElementById('aiCustomPrompt')?.value || '';
 
-      // 先執行前端多通道神經輪廓與光影重構
-      executeLocalNeuralPolish(aiSourceCanvas, aiResultCanvas, currentAiCategory, selStyle, strength, p1, p2, p3);
+      const workerToken = getWorkerToken();
+      if (workerToken) {
+        try {
+          const mode = currentAiCategory === 'line_contour' ? 'line' : 'color';
+          // 線稿依拉桿對應 0.25~0.80；上色預設約 0.40 並受拉桿微調
+          const denoise = mode === 'line'
+            ? Number((0.22 + strength * 0.58).toFixed(2))
+            : Number((0.25 + strength * 0.35).toFixed(2));
+          const controlnetStrength = Number((0.35 + p2 * 0.65).toFixed(2));
 
-      // 同時嘗試呼叫本地 Python Pillow / ComfyUI 閘道器或雲端 GPU API
-      const targetEndpoint = apiConfig.endpoint && apiConfig.endpoint.includes('/polish')
-        ? apiConfig.endpoint
-        : 'http://127.0.0.1:8765/api/ai/polish';
+          status.textContent = '上傳至雲端 ComfyUI...';
+          const submitResp = await fetch(`${KAIDRAW_AI_API_BASE}/api/ai/polish`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${workerToken}`
+            },
+            body: JSON.stringify({
+              image_base64: canvasToPureBase64(aiSourceCanvas),
+              mode,
+              denoise,
+              controlnet_strength: controlnetStrength
+            })
+          });
 
-      try {
-        const payload = {
-          image: aiResultCanvas.toDataURL('image/png'),
-          category: currentAiCategory,
-          style: selStyle,
-          prompt: promptText,
-          comfyui_url: apiConfig.provider === 'comfyui' ? apiConfig.comfyUrl : '',
-          params: {
-            strength: Math.round(strength * 100),
-            p1: Math.round(p1 * 100),
-            p2: Math.round(p2 * 100),
-            p3: Math.round(p3 * 100)
+          let resultBlob = null;
+          if (submitResp.status === 202) {
+            const job = await submitResp.json();
+            if (!job.status_url) throw new Error('後端未回傳 status_url');
+            status.textContent = '雲端 AI 生成中 (0s)...';
+            resultBlob = await pollKaiDrawTask(job.status_url, workerToken, (sec) => {
+              status.textContent = `雲端 AI 生成中 (${sec}s)...`;
+            });
+          } else if (submitResp.status === 200) {
+            resultBlob = await submitResp.blob();
+          } else if (submitResp.status === 401) {
+            throw new Error('Token 無效 (401)，請檢查測試 Token');
+          } else {
+            throw new Error(`提交失敗 (${submitResp.status})`);
           }
-        };
-        const resp = await fetch(targetEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiConfig.key || 'kaidraw-test-key-2026'}`
-          },
-          body: JSON.stringify(payload)
-        });
-        if (resp.ok) {
-          const resData = await resp.json();
-          if (resData.ok && resData.image) {
+
+          const blobUrl = URL.createObjectURL(resultBlob);
+          await new Promise((resolve, reject) => {
             const img = new Image();
             img.onload = () => {
-              // 將後端 Pillow 處理結果與透明通道融合
-              aiResultCtx.save();
-              aiResultCtx.globalCompositeOperation = 'source-atop';
+              aiResultCtx.clearRect(0, 0, aiResultCanvas.width, aiResultCanvas.height);
+              aiResultCtx.imageSmoothingEnabled = true;
+              aiResultCtx.imageSmoothingQuality = 'high';
               aiResultCtx.drawImage(img, 0, 0, aiResultCanvas.width, aiResultCanvas.height);
-              aiResultCtx.restore();
-              finishAiPolish();
+              URL.revokeObjectURL(blobUrl);
+              resolve();
             };
-            img.src = resData.image;
-            return;
-          }
+            img.onerror = () => {
+              URL.revokeObjectURL(blobUrl);
+              reject(new Error('回傳圖片解碼失敗'));
+            };
+            img.src = blobUrl;
+          });
+
+          updateWorkerTokenBadge(true);
+          finishAiPolish(true);
+          return;
+        } catch (err) {
+          console.warn('雲端 AI 請求失敗，降級為本地預覽:', err);
+          showToast(`⚠️ 雲端 AI 暫時失敗：${err.message}`);
         }
-      } catch (err) {
-        console.warn('本地/雲端閘道器跳過，使用前端 4維引擎結果:', err);
       }
 
+      // 若未填入測試 Token 或雲端失敗，使用本地平滑預覽引擎
+      executeLocalNeuralPolish(aiSourceCanvas, aiResultCanvas, currentAiCategory, selStyle, strength, p1, p2, p3);
       setTimeout(() => {
-        finishAiPolish();
-      }, 650);
+        finishAiPolish(false);
+      }, 450);
 
-      function finishAiPolish() {
+      function finishAiPolish(isCloud) {
         spinner.classList.add('hidden');
-        status.textContent = '以圖生圖完成 ✨';
+        status.textContent = isCloud ? '雲端 AI 完成 ✨' : '本地預覽完成 ✨';
         btnDownload.classList.remove('hidden');
         btnApplyLayer.classList.remove('hidden');
         const catName = AI_CATEGORIES_CONFIG[currentAiCategory]?.name || 'AI 魔法';
-        showToast(`✨「${catName}」以圖生圖完成！可存為新圖層繼續手繪修改`);
+        showToast(isCloud
+          ? `✨ 雲端「${catName}」生成完成！可存為新圖層繼續繪製`
+          : `✨「${catName}」本地預覽完成（右上輸入測試 Token 可啟用雲端真 AI）`);
       }
     });
 
@@ -7233,8 +7381,10 @@
      ********************************************************************/
     document.getElementById('btnGenerateVideo').addEventListener('click', async () => {
       const spinner = document.getElementById('aiVideoSpinner');
+      const spinnerTxt = document.getElementById('aiVideoSpinnerText');
       const btnDownload = document.getElementById('btnDownloadVideo');
       spinner.classList.remove('hidden');
+      if (spinnerTxt) spinnerTxt.textContent = '正在上傳畫作至雲端生成 2 秒微電影...';
 
       const motion = document.querySelector('input[name="videoMotion"]:checked')?.value || 'breathe';
       const fps = 30;
@@ -7244,7 +7394,59 @@
       // 將當前合成畫作作為第一幀 (Frame 1)
       const firstFrameComp = getComposedCanvas(true);
 
-      // 1. 若配置了 API 端點 (例如本地 http://127.0.0.1:8765/api/ai/image-to-video)
+      // 1. 若已填入 Cloudflare Worker 測試 Token，優先呼叫雲端 Modal 2 秒動畫 API (202 + status_url 輪詢)
+      const workerToken = getWorkerToken();
+      if (workerToken) {
+        try {
+          const submitResp = await fetch(`${KAIDRAW_AI_API_BASE}/api/ai/image-to-video`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${workerToken}`
+            },
+            body: JSON.stringify({
+              image_base64: canvasToPureBase64(firstFrameComp),
+              duration_seconds: 2
+            })
+          });
+
+          let videoBlob = null;
+          if (submitResp.status === 202) {
+            const job = await submitResp.json();
+            if (!job.status_url) throw new Error('後端未回傳 status_url');
+            if (spinnerTxt) spinnerTxt.textContent = '雲端 2 秒動畫生成中 (0s)...';
+            videoBlob = await pollKaiDrawTask(job.status_url, workerToken, (sec) => {
+              if (spinnerTxt) spinnerTxt.textContent = `雲端 2 秒動畫生成中 (${sec}s)...`;
+            });
+          } else if (submitResp.status === 200) {
+            videoBlob = await submitResp.blob();
+          } else if (submitResp.status === 401) {
+            throw new Error('Token 無效 (401)，請檢查測試 Token');
+          } else {
+            throw new Error(`提交失敗 (${submitResp.status})`);
+          }
+
+          if (currentVideoBlobUrl) URL.revokeObjectURL(currentVideoBlobUrl);
+          currentVideoBlobUrl = URL.createObjectURL(videoBlob);
+          window.currentVideoExt = 'mp4';
+          aiResultVideo.src = currentVideoBlobUrl;
+          aiResultVideo.classList.remove('hidden');
+          aiVideoPreviewCanvas.classList.add('hidden');
+          aiResultVideo.play().catch(() => {});
+          spinner.classList.add('hidden');
+          btnDownload.classList.remove('hidden');
+          updateWorkerTokenBadge(true);
+          showToast('🎬 雲端 2 秒 AI 微電影生成成功！');
+          return;
+        } catch (err) {
+          console.warn('雲端動畫生成失敗，降級為本地預覽動畫:', err);
+          showToast(`⚠️ 雲端動畫暫時失敗：${err.message}`);
+        }
+      }
+
+      if (spinnerTxt) spinnerTxt.textContent = '正在以本地動態引擎渲染微電影預覽...';
+
+      // 2. 若未填入雲端 Token 或雲端失敗，保留本地動態預覽降級方案
       if (apiConfig.endpoint && apiConfig.endpoint.trim().length > 0) {
         try {
           const resp = await fetch(apiConfig.endpoint, {
@@ -7390,7 +7592,7 @@
     document.getElementById('btnDownloadVideo').addEventListener('click', () => {
       if (!currentVideoBlobUrl) return;
       const a = document.createElement('a');
-      const isMp4 = currentVideoBlobUrl.includes('.mp4') || currentVideoBlobUrl.startsWith('data:video/mp4');
+      const isMp4 = window.currentVideoExt === 'mp4' || currentVideoBlobUrl.includes('.mp4') || currentVideoBlobUrl.startsWith('data:video/mp4');
       a.download = `KaiDraw_Alive_Video_${Date.now()}.${isMp4 ? 'mp4' : 'webm'}`;
       a.href = currentVideoBlobUrl;
       a.click();
